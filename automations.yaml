@@ -1,0 +1,864 @@
+- id: '1602097080450'
+  alias: Auto - Turn on Vitrine when sun goes down
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: sun.sun
+    from: above_horizon
+    to: below_horizon
+  condition:
+  - condition: state
+    entity_id: input_boolean.away_mode
+    state: 'off'
+  - condition: state
+    entity_id: group.any_home
+    state: home
+  - condition: time
+    before: 02:00:00
+    after: '12:00:00'
+  - condition: sun
+    after: sunset
+    before: sunrise
+  action:
+  - type: turn_on
+    device_id: f2338eee06de11eba65eb3aa68dad3d5
+    entity_id: switch.vitrine
+    domain: switch
+  mode: single
+- id: '1602155183627'
+  alias: Light - Livingroom - Switch 1 - Desktop On
+  description: ''
+  trigger:
+  - device_id: a4241273071711ebb5261fcfb2d6276f
+    domain: deconz
+    platform: device
+    type: remote_button_short_press
+    subtype: turn_on
+  condition: []
+  action:
+  - service: light.turn_on
+    data: {}
+    entity_id: light.skrivebord
+  mode: single
+- id: '1602155267210'
+  alias: Light - Livingroom - Switch 1 - Desktop Off
+  description: ''
+  trigger:
+  - device_id: a4241273071711ebb5261fcfb2d6276f
+    domain: deconz
+    platform: device
+    type: remote_button_short_press
+    subtype: turn_off
+  condition: []
+  action:
+  - service: light.turn_off
+    data: {}
+    entity_id: light.skrivebord
+  mode: single
+- id: '1602158001584'
+  alias: Light - Livingroom - Toggle Deathstar
+  description: ''
+  trigger:
+  - device_id: b8eb1abd095c11eb89301f478a9e0ae6
+    domain: deconz
+    platform: device
+    type: remote_button_short_press
+    subtype: turn_on
+  condition: []
+  action:
+  - type: toggle
+    device_id: a0d3944505a411eb9a90dbc131472481
+    entity_id: light.deathstar
+    domain: light
+  mode: single
+- id: '1602158073953'
+  alias: Light - Livingroom - Toggle Desktop
+  description: ''
+  trigger:
+  - device_id: b8eb1abd095c11eb89301f478a9e0ae6
+    domain: deconz
+    platform: device
+    type: remote_button_short_press
+    subtype: turn_off
+  condition: []
+  action:
+  - service: light.toggle
+    data: {}
+    entity_id: light.skrivebord
+  mode: single
+- id: '1602228352429'
+  alias: State - Set volume on TV input
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: media_player.stue
+    to: TV
+    attribute: source
+  condition: []
+  action:
+  - service: media_player.volume_set
+    data:
+      volume_level: 0.22
+    entity_id: media_player.stue
+  mode: single
+- id: '1602229830948'
+  alias: State - Set volume on non-TV input
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: media_player.stue
+    attribute: source
+    from: TV
+  condition: []
+  action:
+  - service: media_player.volume_set
+    data:
+      volume_level: 0.12
+    entity_id: media_player.stue
+  mode: single
+- id: '1602610466182'
+  alias: State - Turn on kitchen light when dark and coming home
+  description: ''
+  trigger:
+  - platform: state
+    to: home
+    from: not_home
+    entity_id: device_tracker.kia_niro
+  condition:
+  - condition: device
+    type: is_off
+    device_id: 0d1105db04db11eba9b831c6366dda8c
+    entity_id: light.kitchen
+    domain: light
+  - condition: state
+    entity_id: sun.sun
+    state: below_horizon
+  action:
+  - type: turn_on
+    device_id: 0d1105db04db11eba9b831c6366dda8c
+    entity_id: light.kitchen
+    domain: light
+    brightness_pct: 100
+  - type: turn_on
+    device_id: f2338eee06de11eba65eb3aa68dad3d5
+    entity_id: switch.vitrine
+    domain: switch
+  mode: single
+- id: '1604828109538'
+  alias: Light - Diningroom - Table On
+  description: ''
+  trigger:
+  - device_id: 8bfa641737a1fa5ecaf45de0848366df
+    domain: deconz
+    platform: device
+    type: remote_button_short_press
+    subtype: turn_on
+  condition: []
+  action:
+  - type: turn_on
+    device_id: 5e2dcf9304e111eb9a30e3199109ec3d
+    entity_id: light.spisebord
+    domain: light
+  mode: single
+- id: '1604828205176'
+  alias: Light - Diningroom - Table Off
+  description: ''
+  trigger:
+  - device_id: 8bfa641737a1fa5ecaf45de0848366df
+    domain: deconz
+    platform: device
+    type: remote_button_short_press
+    subtype: turn_off
+  condition: []
+  action:
+  - type: turn_off
+    device_id: 5e2dcf9304e111eb9a30e3199109ec3d
+    entity_id: light.spisebord
+    domain: light
+  mode: single
+- id: '1604828285058'
+  alias: Light - Dimmer - Brighten - Diningtable
+  description: ''
+  trigger:
+  - device_id: 8bfa641737a1fa5ecaf45de0848366df
+    domain: deconz
+    platform: device
+    type: remote_button_long_press
+    subtype: turn_on
+  condition: []
+  action:
+  - service: script.turn_on
+    data:
+      variables:
+        entity: light.spisebord
+    entity_id: script.dimmer_brighten_light
+  - wait_for_trigger:
+    - device_id: 8bfa641737a1fa5ecaf45de0848366df
+      domain: deconz
+      platform: device
+      type: remote_button_long_release
+      subtype: turn_on
+  - service: script.turn_off
+    data: {}
+    entity_id: script.dimmer_brighten_light
+  mode: single
+- id: '1604829939677'
+  alias: Light - Dimmer - Dim - Diningtable
+  description: ''
+  trigger:
+  - device_id: 8bfa641737a1fa5ecaf45de0848366df
+    domain: deconz
+    platform: device
+    type: remote_button_long_press
+    subtype: turn_off
+  condition: []
+  action:
+  - service: script.turn_on
+    data:
+      variables:
+        entity: light.spisebord
+    entity_id: script.dimmer_dim_light
+  - wait_for_trigger:
+    - device_id: 8bfa641737a1fa5ecaf45de0848366df
+      domain: deconz
+      platform: device
+      type: remote_button_long_release
+      subtype: turn_off
+  - service: script.turn_off
+    data: {}
+    entity_id: script.dimmer_brighten_light
+  mode: single
+- id: '1604851759294'
+  alias: Light - Dimmer - Brighten - Desktop
+  description: ''
+  trigger:
+  - device_id: a4241273071711ebb5261fcfb2d6276f
+    domain: deconz
+    platform: device
+    type: remote_button_long_press
+    subtype: turn_on
+  condition: []
+  action:
+  - service: script.turn_on
+    data:
+      variables:
+        entity: light.skrivebord
+    entity_id: script.dimmer_brighten_light
+  - wait_for_trigger:
+    - device_id: a4241273071711ebb5261fcfb2d6276f
+      domain: deconz
+      platform: device
+      type: remote_button_long_release
+      subtype: turn_on
+  - service: script.turn_off
+    data: {}
+    entity_id: script.dimmer_brighten_light
+  mode: single
+- id: '1604851828202'
+  alias: Light - Dimmer - Dim - Desktop
+  description: ''
+  trigger:
+  - device_id: a4241273071711ebb5261fcfb2d6276f
+    domain: deconz
+    platform: device
+    type: remote_button_long_press
+    subtype: turn_off
+  condition: []
+  action:
+  - service: script.turn_on
+    data:
+      variables:
+        entity: light.skrivebord
+    entity_id: script.dimmer_dim_light
+  - wait_for_trigger:
+    - device_id: a4241273071711ebb5261fcfb2d6276f
+      domain: deconz
+      platform: device
+      type: remote_button_long_release
+      subtype: turn_off
+  - service: script.turn_off
+    data: {}
+    entity_id: script.dimmer_dim_light
+  mode: single
+- id: '1605100832268'
+  alias: State - Toggle away mode
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: input_boolean.away_mode
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.away_mode
+        state: 'on'
+      sequence:
+      - service: climate.set_preset_mode
+        data:
+          preset_mode: away
+        entity_id: climate.kokken
+      - service: climate.set_temperature
+        data:
+          temperature: 18
+        entity_id: climate.floorbcddc2149233_0_climate
+      - service: climate.set_temperature
+        data:
+          temperature: 18
+        entity_id: climate.floorbcddc2149233_2_climate
+    default:
+    - service: climate.set_preset_mode
+      data:
+        preset_mode: home
+      entity_id: climate.kokken
+    - service: climate.set_temperature
+      data:
+        temperature: 22
+      entity_id: climate.floorbcddc2149233_0_climate
+    - service: climate.set_temperature
+      data:
+        temperature: 22
+      entity_id: climate.floorbcddc2149233_2_climate
+  mode: single
+- id: '1606586819683'
+  alias: Auto - Turn off lights if on after 02:00 AM
+  description: ''
+  trigger:
+  - platform: time
+    at: 02:00:00
+  condition: []
+  action:
+  - type: turn_off
+    device_id: f2338eee06de11eba65eb3aa68dad3d5
+    entity_id: switch.vitrine
+    domain: switch
+  - type: turn_off
+    device_id: f9692b510dd3de15c7384c1c23afd976
+    entity_id: light.outside
+    domain: light
+  mode: single
+- id: '1607082699961'
+  alias: TTS - DJ Skoge Stremer
+  description: Giv besked når Skoge streamer
+  trigger:
+  - platform: state
+    entity_id: sensor.djskoge
+    from: offline
+    to: streaming
+    for: 00:02:00
+  condition:
+  - condition: time
+    after: '10:00:00'
+    before: '22:00:00'
+  action:
+  - service: sonos.snapshot
+    data: {}
+    entity_id: media_player.stue
+  - service: media_player.volume_set
+    data:
+      volume_level: 0.3
+    entity_id: media_player.stue
+  - service: media_player.play_media
+    data:
+      media_content_id: https://home.trab.dk/local/djskoge.mp3
+      media_content_type: music
+    entity_id: media_player.stue
+  - delay: 00:00:05
+  - service: sonos.restore
+    data: {}
+    entity_id: media_player.stue
+  mode: single
+- id: '1608025961275'
+  alias: Alert - Doorbell
+  description: Afspil lyd i Sonos, ved tryk på dørklokke knappen
+  trigger:
+  - device_id: 528fb92806e011eb9d4123731768269e
+    domain: deconz
+    platform: device
+    type: remote_button_short_press
+    subtype: turn_on
+  condition:
+  - condition: time
+    after: 06:00:00
+    before: '22:00:00'
+  action:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ states(''person.morten_trab'') != ''home'' }}'
+      sequence:
+      - service: notify.mobile_app_mt_samsung_a42
+        data:
+          message: Det ringede på døren {{ now().strftime("%H:%M %d-%m-%Y") }}
+          data:
+            subject: Det ringer på døren
+            group: Doorbell
+            channel: Doorbell
+            importance: high
+            vibrationPattern: 100, 200, 50, 200, 100, 200, 50, 200
+    default: []
+  - service: sonos.snapshot
+    data: {}
+    entity_id: media_player.stue, media_player.sovevaerelse_2
+  - service: media_player.volume_set
+    data:
+      volume_level: 0.4
+    entity_id: media_player.stue, media_player.sovevaerelse_2
+  - service: media_player.play_media
+    data:
+      media_content_id: https://home.trab.dk/local/dingdong.mp3
+      media_content_type: music
+    entity_id: media_player.stue, media_player.sovevaerelse_2
+  - delay: 00:00:02
+  - service: sonos.restore
+    data: {}
+    entity_id: media_player.stue, media_player.sovevaerelse_2
+  - delay: 00:00:05
+  mode: single
+- id: '1608633503593'
+  alias: Light - Kitchen - Motion
+  description: ''
+  trigger:
+  - type: motion
+    platform: device
+    device_id: 428aa5df06eb11eb9eb8df222c7bc012
+    entity_id: binary_sensor.presence_12
+    domain: binary_sensor
+  condition:
+  - type: is_illuminance
+    condition: device
+    device_id: 428aa5df06eb11eb9eb8df222c7bc012
+    entity_id: sensor.lightlevel_13
+    domain: sensor
+    below: 45
+  action:
+  - choose:
+    - conditions:
+      - condition: time
+        after: '23:00:00'
+        before: 05:00:00
+        weekday:
+        - mon
+        - tue
+        - wed
+        - thu
+      sequence:
+      - type: turn_on
+        device_id: 0d1105db04db11eba9b831c6366dda8c
+        entity_id: light.kitchen
+        domain: light
+    - conditions:
+      - condition: time
+        weekday:
+        - fri
+        after: '23:59:59'
+        before: 05:00:00
+      sequence:
+      - type: turn_on
+        device_id: 0d1105db04db11eba9b831c6366dda8c
+        entity_id: light.kitchen
+        domain: light
+        brightness_pct: 20
+    - conditions:
+      - condition: time
+        after: '23:59:59'
+        before: 07:00:00
+        weekday:
+        - sat
+      sequence:
+      - type: turn_on
+        device_id: 0d1105db04db11eba9b831c6366dda8c
+        entity_id: light.kitchen
+        domain: light
+        brightness_pct: 20
+      - wait_for_trigger:
+        - type: no_motion
+          platform: device
+          device_id: 428aa5df06eb11eb9eb8df222c7bc012
+          entity_id: binary_sensor.presence_12
+          domain: binary_sensor
+          for:
+            hours: 0
+            minutes: 3
+            seconds: 0
+    - conditions:
+      - condition: time
+        after: '23:00:00'
+        before: 07:00:00
+        weekday:
+        - sun
+      sequence:
+      - type: turn_on
+        device_id: 0d1105db04db11eba9b831c6366dda8c
+        entity_id: light.kitchen
+        domain: light
+        brightness_pct: 20
+    default:
+    - type: turn_on
+      device_id: 0d1105db04db11eba9b831c6366dda8c
+      entity_id: light.kitchen
+      domain: light
+      brightness_pct: 100
+    - wait_for_trigger:
+      - type: no_motion
+        platform: device
+        device_id: 428aa5df06eb11eb9eb8df222c7bc012
+        entity_id: binary_sensor.presence_12
+        domain: binary_sensor
+        for:
+          hours: 0
+          minutes: 13
+          seconds: 0
+  - type: turn_off
+    device_id: 0d1105db04db11eba9b831c6366dda8c
+    entity_id: light.kitchen
+    domain: light
+  mode: restart
+- id: '1609103747427'
+  alias: Auto - Turn Off - Core A8 3D printer
+  description: Slukker for 3D printeren 5 minutter efter printjob er sluttet
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.core_a8_printing
+    from: 'on'
+    to: 'off'
+    for: 00:05:00
+  condition: []
+  action:
+  - service: switch.turn_off
+    data: {}
+    entity_id: switch.core_a8_power
+  mode: single
+- id: '1610442793326'
+  alias: Alert - Main UPS - below 50% battery
+  description: ''
+  trigger:
+  - type: battery_level
+    platform: device
+    device_id: f0759c04592072c41ff87ef39de80a43
+    entity_id: sensor.main_ups_battery_charge
+    domain: sensor
+    below: 50
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+  condition: []
+  action:
+  - service: notify.mobile_app_mt_samsung_a42
+    data:
+      message: Main UPS har nu under 50% strøm tilbage!
+      data:
+        subject: Main UPS batteri state
+        group: UPS
+        channel: UPS
+        importance: high
+        vibrationPattern: 100, 200, 50, 200, 100, 200, 50, 200
+  mode: single
+- id: '1610443053399'
+  alias: Alert - Main UPS - Power off
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: sensor.main_ups_status
+    attribute: state
+    from: Online Battery Charging
+    for: 00:01:00
+  condition: []
+  action:
+  - service: notify.mobile_app_mt_samsung_a42
+    data:
+      message: Strømmen til Main UPS gik {{ now().strftime("%H:%M %d-%m-%Y") }}
+      data:
+        subject: Main UPS forsynings problemer
+        group: UPS
+        channel: UPS
+        importance: high
+        vibrationPattern: 100, 200, 50, 200, 100, 200, 50, 200
+  mode: single
+- id: '1610443303613'
+  alias: Alert - Main UPS - Power on
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: sensor.main_ups_status
+    attribute: state
+    to: Online Battery Charging
+    for: 00:05:00
+  condition: []
+  action:
+  - service: notify.mobile_app_mt_samsung_a42
+    data:
+      message: Strømmen til Main UPS kom tilbage {{ now().strftime("%H:%M %d-%m-%Y")
+        }}
+      data:
+        subject: Main UPS forsynings problemer
+        group: UPS
+        channel: UPS
+        importance: low
+  mode: single
+- id: '1611133637936'
+  alias: Light - Dart - Turn on
+  description: ''
+  trigger:
+  - type: opened
+    platform: device
+    device_id: 004578eeafa9e3fdd0039464bd17671f
+    entity_id: binary_sensor.dartskab
+    domain: binary_sensor
+  condition: []
+  action:
+  - service: light.turn_on
+    data:
+      brightness_pct: 100
+    entity_id: light.dartskab
+  mode: single
+- id: '1611133656102'
+  alias: Light - Dart - Turn off
+  description: ''
+  trigger:
+  - type: not_opened
+    platform: device
+    device_id: 004578eeafa9e3fdd0039464bd17671f
+    entity_id: binary_sensor.dartskab
+    domain: binary_sensor
+  condition: []
+  action:
+  - service: light.turn_off
+    data: {}
+    entity_id: light.dartskab
+  mode: single
+- id: '1611135152192'
+  alias: Auto - Standby - Off
+  description: Forsøg at minimere standby forbrug
+  trigger:
+  - platform: time
+    at: 01:00:00
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - type: is_power
+        condition: device
+        device_id: 0d38e72afcf2f15fd920c0edcaa4b47d
+        entity_id: sensor.kaffemaskine_electric_w
+        domain: sensor
+        below: 2.5
+      sequence:
+      - service: switch.turn_off
+        data: {}
+        entity_id: switch.kaffemaskine_switch
+    default: []
+  mode: single
+- id: '1611136427034'
+  alias: Auto - Standby - On
+  description: Forsøg at minimere standby forbrug
+  trigger:
+  - platform: time
+    at: 05:00:00
+  condition: []
+  action:
+  - service: switch.turn_on
+    data: {}
+    entity_id: switch.kaffemaskine_switch
+  mode: single
+- id: '1611947669450'
+  alias: Auto - Turn Off - GEEETech i3 After Shutdown
+  description: ''
+  trigger:
+  - platform: webhook
+    webhook_id: f559ca41eaf949bfb6a769af5ccebc47
+  condition: []
+  action:
+  - delay: 00:00:10
+  - service: switch.turn_off
+    data: {}
+    entity_id: switch.geeetech_i3_pi
+  mode: restart
+- id: '1612030066806'
+  alias: Auto - Turn On - GEEETech i3 3D Printer
+  description: ''
+  trigger:
+  - platform: webhook
+    webhook_id: ac3e91a9e00345c083575e371a93beaa
+  condition: []
+  action:
+  - type: turn_on
+    device_id: 6e4b89a5b6c1effbea4af11f69ee3aed
+    entity_id: switch.geeetech_i3_pi
+    domain: switch
+  mode: single
+- id: '1612350036408'
+  alias: Auto - Outside Lights - Dusk - Auto On
+  description: ''
+  trigger:
+  - platform: sun
+    event: sunset
+  condition:
+  - condition: state
+    entity_id: group.any_home
+    state: home
+  action:
+  - type: turn_on
+    device_id: f9692b510dd3de15c7384c1c23afd976
+    entity_id: light.outside
+    domain: light
+    brightness_pct: 10
+  mode: single
+- id: '1612426582410'
+  alias: Auto - Outside Lights - Morning - On
+  description: ''
+  trigger:
+  - platform: time
+    at: 05:00:00
+  condition:
+  - condition: state
+    entity_id: group.any_home
+    state: home
+  action:
+  - type: turn_on
+    device_id: f9692b510dd3de15c7384c1c23afd976
+    entity_id: light.outside
+    domain: light
+    brightness_pct: 10
+  mode: single
+- id: '1612426754916'
+  alias: Light - Outside - Motion
+  description: Køres kun når lyset er tændt
+  trigger:
+  - type: motion
+    platform: device
+    device_id: dbabcecdf25c0ce9cfdb7811e9ee1506
+    entity_id: binary_sensor.motion_sensor_outdoor
+    domain: binary_sensor
+  condition:
+  - condition: device
+    type: is_on
+    device_id: f9692b510dd3de15c7384c1c23afd976
+    entity_id: light.outside
+    domain: light
+  action:
+  - type: turn_on
+    device_id: f9692b510dd3de15c7384c1c23afd976
+    entity_id: light.outside
+    domain: light
+    brightness_pct: 100
+  - wait_for_trigger:
+    - type: no_motion
+      platform: device
+      device_id: dbabcecdf25c0ce9cfdb7811e9ee1506
+      entity_id: binary_sensor.motion_sensor_outdoor
+      domain: binary_sensor
+      for:
+        hours: 0
+        minutes: 3
+        seconds: 0
+  - choose:
+    - conditions:
+      - condition: device
+        type: is_on
+        device_id: f9692b510dd3de15c7384c1c23afd976
+        entity_id: light.outside
+        domain: light
+      sequence:
+      - type: turn_on
+        device_id: f9692b510dd3de15c7384c1c23afd976
+        entity_id: light.outside
+        domain: light
+        brightness_pct: 10
+    default: []
+  mode: single
+- id: '1612506618068'
+  alias: Auto - Turn off at dawn
+  description: ''
+  trigger:
+  - platform: sun
+    event: sunrise
+  condition: []
+  action:
+  - type: turn_off
+    device_id: f9692b510dd3de15c7384c1c23afd976
+    entity_id: light.outside
+    domain: light
+  mode: single
+- id: '1612785517695'
+  alias: Auto - Leaving Home
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: group.any_home
+    from: home
+    to: not_home
+    for: 00:02:00
+  condition: []
+  action:
+  - service: light.turn_off
+    data:
+      entity_id: all
+  - service: media_player.media_stop
+    data:
+      entity_id: all
+  mode: single
+- id: '1612785626004'
+  alias: Auto - Coming Home
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: group.any_home
+    from: not_home
+    to: home
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: sun.sun
+        state: below_horizon
+      sequence:
+      - service: automation.trigger
+        data: {}
+        entity_id: automation.light_dusk_outside_auto_on
+      - service: automation.trigger
+        data: {}
+        entity_id: automation.turn_on_vitrine_when_sun_goes_down
+    default: []
+  - choose:
+    - conditions:
+      - condition: time
+        after: 05:00:00
+      - condition: sun
+        before: sunrise
+        after: sunset
+      sequence:
+      - service: automation.trigger
+        data: {}
+        entity_id: automation.light_outside_morning_on
+    default: []
+  mode: single
+- id: '1612814644449'
+  alias: Alert - Smoke Detected
+  description: ''
+  trigger:
+  - type: smoke
+    platform: device
+    device_id: e322f928712824c67f5124a8f16de3ab
+    entity_id: binary_sensor.smoke_livingroom_smoke_alarm_smoke_detected
+    domain: binary_sensor
+  condition: []
+  action:
+  - service: notify.mobile_app_mt_samsung_a42
+    data:
+      message: command_ringer_mode
+      title: normal
+  - delay: 00:00:02
+  - service: notify.mobile_app_mt_samsung_a42
+    data:
+      message: '!!! RØG DETEKTERET !!!'
+      data:
+        subject: RØG DETEKTERET
+        group: SMOKE
+        channel: alarm_stream_max
+        importance: high
+        priority: high
+        ttl: 0
+  mode: single

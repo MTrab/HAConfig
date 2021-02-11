@@ -1,0 +1,33 @@
+# Configure a default setup of Home Assistant (frontend, api, etc)
+default_config:
+
+# Home Assistant setup
+homeassistant:
+  customize: !include customize.yaml
+  packages: !include_dir_merge_named configurations/packages
+
+# Frontend setup
+frontend:
+  themes: !include_dir_merge_named themes
+
+# Default includes
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+# Addons without configuration
+wake_on_lan:
+
+# Configurations
+binary_sensor: !include_dir_merge_list configurations/binary_sensor
+browser_mod: !include configurations/browser_mod.yaml
+circadian_lighting: !include configurations/circadian_lightning.yaml
+google: !include configurations/google.yaml
+group: !include_dir_merge_named configurations/groups
+home_connect: !include configurations/home_connect.yaml
+influxdb: !include configurations/influx.yaml
+media_player: !include_dir_merge_list configurations/media_player
+sensor: !include_dir_merge_list configurations/sensor
+sonos: !include configurations/sonos.yaml
+switch: !include_dir_merge_list configurations/switch
+tts: !include configurations/tts.yaml

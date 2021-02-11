@@ -1,0 +1,16 @@
+- platform: circadian_lighting
+  name: color_adjust
+  disable_brightness_adjust: true
+  initial_transition: 1
+  lights_ct:
+    - light.skrivebord
+    - light.deathstar
+    - light.sengelys
+    - light.loftlys
+    - light.spisebord
+
+- platform: circadian_lighting
+  name: brightness_adjust
+  initial_transition: 1
+  lights_ct:
+    - light.spisebord

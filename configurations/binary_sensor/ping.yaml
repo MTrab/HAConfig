@@ -1,0 +1,3 @@
+- platform: ping
+  host: 8.8.8.8
+  name: WAN connection

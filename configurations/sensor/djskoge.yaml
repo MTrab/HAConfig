@@ -1,0 +1,4 @@
+- platform: twitch
+  client_id: 7ziedc5sqopvkj3nxpwaawig0gajrn
+  channels:
+    - DJSkoge

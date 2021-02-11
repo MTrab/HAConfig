@@ -1,0 +1,24 @@
+secrets.yaml
+home-assistant.log
+home-assistant_v2.db.bak
+.uuid
+telegraf.conf
+google_calendars.yaml
+.google.token
+.google_fit.token
+.Google Fit_google_fit.token
+traccar.xml
+
+node-red/flows_cred.json
+node-red/.flows_cred.json.backup
+node-red/.sessions.json
+esphome/.common.yaml
+
+.cloud/
+.storage/
+deps/
+node-red/
+resources/
+esphome/*/
+
+.vscode

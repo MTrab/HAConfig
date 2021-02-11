@@ -1,0 +1,5 @@
+- platform: google_cloud
+  voice: da-DK-Wavenet-E
+  language: en-US
+  gender: female
+  text_type: ssml

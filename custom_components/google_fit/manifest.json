@@ -1,0 +1,7 @@
+{
+  "domain": "google_fit",
+  "name": "Google Fit",
+  "dependencies": [],
+  "codeowners": ["@vmanuel"],
+  "requirements": ["google-api-python-client==1.6.4","oauth2client==4.0.0","httplib2"]
+}

@@ -1,0 +1,18 @@
+climate.floorbcddc2149233_1_climate:
+  friendly_name: Soveværelse
+climate.floorbcddc2149233_0_climate:
+  friendly_name: Badeværelse
+climate.floorbcddc2149233_2_climate:
+  friendly_name: Gangen
+input_text.foodplanner_mon:
+  friendly_name: Mandag
+input_text.foodplanner_fri:
+  friendly_name: Fredag
+input_text.foodplanner_sat:
+  friendly_name: Lørdag
+input_text.foodplanner_sun:
+  friendly_name: Søndag
+input_text.foodplanner_thu:
+  friendly_name: Torsdag
+input_text.foodplanner_tue:
+  friendly_name: Tirsdag

@@ -1,0 +1,167 @@
+pack_octoprint_geeetech_i3:
+  octoprint:
+    host: !secret octoprint_geeetech_host
+    api_key: !secret octoprint_geeetech_api_key
+    name: GEEETech i3
+    bed: true
+    number_of_tools: 1
+    sensors:
+      monitored_conditions:
+        - "Current State"
+        - "Temperatures"
+        - "Job Percentage"
+        - "Time Elapsed"
+        - "Time Remaining"
+
+  camera:
+    - platform: mjpeg
+      name: GEEETech i3
+      still_image_url: !secret octoprint_geeetech_still
+      mjpeg_url: !secret octoprint_geeetech_stream
+
+  binary_sensor:
+    - platform: octoprint
+      monitored_conditions:
+        - Printing
+        - Printing Error
+
+  #switch:
+  #  - platform: template
+  #    switches:
+  #      geeetech_i3_power:
+  #        friendly_name: GEEETech i3 Power
+  #        value_template: >-
+  #          {% if is_state('sensor.geeetech_i3_current_state', 'unknown') %}
+  #            off
+  #          {% else %}
+  #            on
+  #          {% endif %}
+  #        turn_on:
+  #          service: rest_command.geeetech_i3_turn_on
+  #        turn_off:
+  #          service: rest_command.geeetech_i3_turn_off
+
+  rest_command:
+    geeetech_i3_turn_on:
+      url: !secret octoprint_geeetech_api_power_on
+
+    geeetech_i3_turn_off:
+      url: !secret octoprint_geeetech_api_power_off
+
+    geeetech_i3_job_command:
+      url: !secret octoprint_geeetech_api_job_command
+      payload: "{{ payload }}"
+      headers:
+        Content-Type: "application/json"
+        X-Api-Key: !secret octoprint_geeetech_api_key
+      method: POST
+
+    geeetech_i3_home:
+      url: !secret octoprint_geeetech_printhead_command
+      payload: '{"command": "home", "axes": ["x", "y", "z"]}'
+      headers:
+        Content-Type: "application/json"
+        X-Api-Key: !secret octoprint_geeetech_api_key
+      method: POST
+
+    geeetech_i3_nozzle_temp:
+      url: !secret octoprint_geeetech_tool_command
+      payload: '{"command": "target", "targets": {"tool0": {{ temp }} }}'
+      headers:
+        Content-Type: "application/json"
+        X-Api-Key: !secret octoprint_geeetech_api_key
+      method: POST
+
+    geeetech_i3_bed_temp:
+      url: !secret octoprint_geeetech_bed_command
+      payload: '{"command": "target", "target": {{ temp }} }'
+      headers:
+        Content-Type: "application/json"
+        X-Api-Key: !secret octoprint_geeetech_api_key
+      method: POST
+
+    geeetech_i3_printer_command:
+      url: !secret octoprint_geeetech_printer_command
+      payload: '{"command": "{{ cmd }}"}'
+      headers:
+        Content-Type: "application/json"
+        X-Api-Key: !secret octoprint_geeetech_api_key
+      method: POST
+
+  sensor: #fix time display
+    - platform: template
+      sensors:
+        geeetech_i3_time_elapsed_format:
+          friendly_name: "Printing Time Elapsed"
+          value_template: >-
+            {% set etime = states.sensor.geeetech_i3_time_elapsed.state | int %}
+            {% set seconds = etime % 60 %}
+            {% set minutes = ((etime % 3600) / 60) | int %}
+            {% set hours = ((etime % 86400) / 3600) | int %}
+            {% set days = (etime / 86400) | int %}
+            {%- if days > 0 -%}
+              {%- if days == 1 -%}
+                1 dag
+              {%- else -%}
+                {{ days }} dage
+              {%- endif -%}
+              {{ ', ' }}
+            {%- endif -%}
+            {%- if hours > 0 -%}
+              {%- if hours == 1 -%}
+                1 time
+              {%- else -%}
+                {{ hours }} timer
+              {%- endif -%}
+              {{ ', ' }}
+            {%- endif -%}
+            {%- if minutes > 0 -%}
+              {%- if minutes == 1 -%}
+                1 minut
+              {%- else -%}
+                {{ minutes }} minutter
+              {%- endif -%}
+            {%- endif -%}
+        geeetech_i3_time_remaining_format:
+          friendly_name: "Printing Time Remaining"
+          value_template: >-
+            {% set rtime = states.sensor.geeetech_i3_time_remaining.state | int %}
+            {% set seconds = rtime % 60 %}
+            {% set minutes = ((rtime % 3600) / 60) | int %}
+            {% set hours = ((rtime % 86400) / 3600) | int %}
+            {% set days = (rtime / 86400) | int %}
+            {%- if days > 0 -%}
+              {%- if days == 1 -%}
+                1 dag
+              {%- else -%}
+                {{ days }} dage
+              {%- endif -%}
+              {{ ', ' }}
+            {%- endif -%}
+            {%- if hours > 0 -%}
+              {%- if hours == 1 -%}
+                1 time
+              {%- else -%}
+                {{ hours }} timer
+              {%- endif -%}
+              {{ ', ' }}
+            {%- endif -%}
+            {%- if minutes > 0 -%}
+              {%- if minutes == 1 -%}
+                1 minut
+              {%- else -%}
+                {{ minutes }} minutter
+              {%- endif -%}
+            {%- endif -%}
+    - platform: rest
+      resource: !secret octoprint_geeetech_api_job_command
+      name: "GEEETech i3 STL file"
+      value_template: "{{ value_json.job.file.name }}"
+      headers:
+        X-Api-Key: !secret octoprint_geeetech_api_key
+    - platform: rest
+      resource: !secret octoprint_geeetech_api_job_command
+      name: "GEEETech i3 STL Display"
+      value_template: "{{value_json.job.file.display}}"
+      headers:
+        X-Api-Key: !secret octoprint_geeetech_api_key

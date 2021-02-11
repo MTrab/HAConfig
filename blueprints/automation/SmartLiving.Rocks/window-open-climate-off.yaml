@@ -1,0 +1,35 @@
+blueprint:
+  name: Window open, climate off
+  description: An automation that turns off your climate device for exmple a heater
+    or an air conditioning if a window sensor is open. It waits until the window is
+    closed again in order to turn the climate entity on again.
+  domain: automation
+  input:
+    window_entity:
+      name: Window Sensor
+      description: The window sensor that controls the climate entity.
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: window
+    climate_target:
+      name: Climate Device
+      description: The climate entity that is controlled by the window sensor.
+      selector:
+        entity:
+          domain: climate
+  source_url: https://community.home-assistant.io/t/window-open-climate-off/257293
+trigger:
+- platform: state
+  entity_id: !input 'window_entity'
+  to: 'on'
+action:
+- service: climate.turn_off
+  entity_id: !input 'climate_target'
+- wait_for_trigger:
+  - platform: state
+    entity_id: !input 'window_entity'
+    to: 'off'
+  continue_on_timeout: false
+- service: climate.turn_on
+  entity_id: !input 'climate_target'

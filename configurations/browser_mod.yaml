@@ -1,0 +1,8 @@
+prefix: "browser_"
+devices:
+  0bb8626d-2a894fe7:
+    name: mt_pc
+    disable:
+      - light
+disable:
+  - all

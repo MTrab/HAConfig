@@ -1,0 +1,94 @@
+- platform: rest
+  resource: http://skanderborg.netdialog.renosyd.dk/service/Restservice.svc/json/commonapp1/address/123844/containers
+  username: !secret renosyd_username
+  password: !secret renosyd_password
+  authentication: basic
+  headers:
+    Content-Type: application/json
+  scan_interval: 360
+  name: renovation_restaffald
+  device_class: timestamp
+  value_template: '{{ strptime(value_json[6].NextCollectionDate, "%d-%m-%Y") }}'
+
+- platform: rest
+  resource: http://skanderborg.netdialog.renosyd.dk/service/Restservice.svc/json/commonapp1/address/123844/containers
+  username: !secret renosyd_username
+  password: !secret renosyd_password
+  authentication: basic
+  headers:
+    Content-Type: application/json
+  scan_interval: 360
+  name: renovation_emballage
+  device_class: timestamp
+  value_template: '{{ strptime(value_json[1].NextCollectionDate, "%d-%m-%Y") }}'
+
+- platform: rest
+  resource: http://skanderborg.netdialog.renosyd.dk/service/Restservice.svc/json/commonapp1/address/123844/containers
+  username: !secret renosyd_username
+  password: !secret renosyd_password
+  authentication: basic
+  headers:
+    Content-Type: application/json
+  scan_interval: 360
+  name: renovation_pappapir
+  device_class: timestamp
+  value_template: '{{ strptime(value_json[5].NextCollectionDate, "%d-%m-%Y") }}'
+
+- platform: template
+  sensors:
+    renovation_restaffald_formatted:
+      friendly_name: Restaffald
+      value_template: >-
+        {% set date = states.sensor.renovation_restaffald.state %}
+        {% set strDate = as_timestamp(date) | timestamp_custom("%d/%m-%Y", true) %}
+
+        {% set weekdays = ["Mandag", "Tisdag", "Onsdag", "Torsdag", "Fredag", "Lørdag", "Søndag"] %}
+        {% set weekdaynumber = strptime(strDate, "%d/%m-%Y").weekday() | int %}
+        {% set weekday = weekdays[weekdaynumber] %}
+
+        {% set days = (((as_timestamp(date))-as_timestamp(now())) | int /60/1440) | round(0, "ceil") %}
+        {% if days == 0 %}
+          Tømmes idag
+        {% elif days == 1 %}
+          Tømmes imorgen
+        {% else%}
+          Tømmes om {{ days }} dage
+        {% endif %}
+
+    renovation_emballage_formatted:
+      friendly_name: Emballage
+      value_template: >-
+        {% set date = states.sensor.renovation_emballage.state %}
+        {% set strDate = as_timestamp(date) | timestamp_custom("%d/%m-%Y", true) %}
+
+        {% set weekdays = ["Mandag", "Tisdag", "Onsdag", "Torsdag", "Fredag", "Lørdag", "Søndag"] %}
+        {% set weekdaynumber = strptime(strDate, "%d/%m-%Y").weekday() | int %}
+        {% set weekday = weekdays[weekdaynumber] %}
+
+        {% set days = (((as_timestamp(date))-as_timestamp(now())) | int /60/1440) | round(0, "ceil") %}
+        {% if days == 0 %}
+          Tømmes idag
+        {% elif days == 1 %}
+          Tømmes imorgen
+        {% else%}
+          Tømmes om {{ days }} dage
+        {% endif %}
+
+    renovation_pappapir_formatted:
+      friendly_name: Pap og papir
+      value_template: >-
+        {% set date = states.sensor.renovation_pappapir.state %}
+        {% set strDate = as_timestamp(date) | timestamp_custom("%d/%m-%Y", true) %}
+
+        {% set weekdays = ["Mandag", "Tisdag", "Onsdag", "Torsdag", "Fredag", "Lørdag", "Søndag"] %}
+        {% set weekdaynumber = strptime(strDate, "%d/%m-%Y").weekday() | int %}
+        {% set weekday = weekdays[weekdaynumber] %}
+
+        {% set days = (((as_timestamp(date))-as_timestamp(now())) | int /60/1440) | round(0, "ceil") %}
+        {% if days == 0 %}
+          Tømmes idag
+        {% elif days == 1 %}
+          Tømmes imorgen
+        {% else%}
+          Tømmes om {{ days }} dage
+        {% endif %}

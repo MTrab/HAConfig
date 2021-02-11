@@ -1,0 +1,43 @@
+dmi_tts:
+  sensor:
+    - platform: rest
+      name: DMI TTS
+      # resource: "https://www.parsehub.com/api/v2/projects/<PROJECT_TOKEN>/last_ready_run/data?api_key=<API_KEY>"
+      resource: !secret DMI_TTS_URL
+      value_template: "{{ value_json.timestamp }}"
+      json_attributes:
+        - landsudsigt
+        - nordjylland
+        - midt_vestsjaelland
+        - ostjylland
+        - syd_sonderjylland
+        - fyn
+        - kobenhavn_nordsjaelland
+        - vest_sydsjaelland_lolland_falster
+        - bornholm
+
+  shell_command:
+    dmi_tts_run_scrape: "curl -X POST -d api_key={{ api_key }} https://www.parsehub.com/api/v2/projects/{{ project_token }}/run"
+
+  automation:
+    - id: 7416545a41eb4e31a87bbf6e1bc98ecc
+      alias: "DMI TTS Scrape"
+      description: "Scrape dagens vejrudsigter, vent på data er klar"
+      initial_state: true
+      mode: single
+      trigger:
+        - platform: time_pattern
+          minutes: 40
+        - platform: webhook
+          webhook_id: dmi_import
+      action:
+        - choose:
+            - conditions: "{{ trigger.platform == 'webhook' }}"
+              sequence:
+                - service: homeassistant.update_entity
+                  entity_id: sensor.dmi_tts
+          default:
+            - service: shell_command.dmi_tts_run_scrape
+              data:
+                api_key: !secret PARSEHUB_API_KEY
+                project_token: !secret DMI_TTS_TOKEN

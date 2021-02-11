@@ -1,0 +1,14 @@
+- platform: wake_on_lan
+  mac: 1c:69:7a:61:2c:5a
+  host: 192.168.1.141
+  name: "VMWare1"
+
+- platform: wake_on_lan
+  mac: b0:0c:d1:54:4b:e6
+  host: 192.168.1.142
+  name: "VMWare2"
+
+- platform: wake_on_lan
+  mac: 00:23:24:66:7c:b0
+  host: 192.168.1.143
+  name: "VMWare3"

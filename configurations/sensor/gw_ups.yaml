@@ -1,0 +1,33 @@
+- platform: mqtt
+  name: "GW-UPS Load"
+  state_topic: "ups/gw-ups/gw-ups/status"
+  value_template: "{{ value_json.load }}"
+  icon: mdi:gauge
+  unit_of_measurement: '%'
+
+- platform: mqtt
+  name: "GW-UPS Charge"
+  state_topic: "ups/gw-ups/gw-ups/battery"
+  value_template: "{{ value_json.charge }}"
+  device_class: battery
+  unit_of_measurement: '%'
+
+- platform: mqtt
+  name: "GW-UPS Runtime"
+  state_topic: "ups/gw-ups/gw-ups/battery"
+  value_template: "{{ value_json.runtime }}"
+  icon: mdi:timer-outline
+  unit_of_measurement: 's'
+
+- platform: mqtt
+  name: "GW-UPS Voltage"
+  state_topic: "ups/gw-ups/gw-ups/battery"
+  value_template: "{{ value_json.voltage }}"
+  device_class: voltage
+  unit_of_measurement: 'V'
+
+- platform: mqtt
+  name: "GW-UPS Online"
+  state_topic: "ups/gw-ups/state"
+  value_template: "{{ value_json.online }}"
+  icon: mdi:information-outline

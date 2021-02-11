@@ -1,0 +1,2 @@
+  client_id: !secret hc_id
+  client_secret: !secret hc_secret
