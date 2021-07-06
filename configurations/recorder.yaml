@@ -1,0 +1,11 @@
+purge_keep_days: 5
+db_url: !secret MARIADB_URL
+exclude:
+  domains:
+    - automation
+    - script
+    - updater
+  entities:
+    - sun.sun
+  event_types:
+    - call_service

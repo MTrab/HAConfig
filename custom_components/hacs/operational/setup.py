@@ -3,12 +3,18 @@ from datetime import datetime
 from aiogithubapi import AIOGitHubAPIException, GitHub
 from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
 from homeassistant.const import __version__ as HAVERSION
+from homeassistant.core import CoreState
 from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers.event import async_call_later
 
-from custom_components.hacs.const import DOMAIN, INTEGRATION_VERSION, STARTUP
-from custom_components.hacs.enums import HacsDisabledReason, HacsStage
+from custom_components.hacs.const import (
+    DOMAIN,
+    HACS_GITHUB_API_HEADERS,
+    INTEGRATION_VERSION,
+    STARTUP,
+)
+from custom_components.hacs.enums import HacsDisabledReason, HacsStage, LovelaceMode
 from custom_components.hacs.hacsbase.configuration import Configuration
 from custom_components.hacs.hacsbase.data import HacsData
 from custom_components.hacs.helpers.functions.constrains import check_constrains
@@ -121,7 +127,7 @@ async def async_hacs_startup():
 
     try:
         lovelace_info = await system_health_info(hacs.hass)
-    except (TypeError, HomeAssistantError):
+    except (TypeError, KeyError, HomeAssistantError):
         # If this happens, the users YAML is not valid, we assume YAML mode
         lovelace_info = {"mode": "yaml"}
     hacs.log.debug(f"Configuration type: {hacs.configuration.config_type}")
@@ -129,6 +135,9 @@ async def async_hacs_startup():
     hacs.log.info(STARTUP)
     hacs.core.config_path = hacs.hass.config.path()
     hacs.system.ha_version = HAVERSION
+
+    hacs.system.lovelace_mode = lovelace_info.get("mode", "yaml")
+    hacs.core.lovelace_mode = LovelaceMode(lovelace_info.get("mode", "yaml"))
 
     # Setup websocket API
     await async_setup_hacs_websockt_api()
@@ -139,10 +148,11 @@ async def async_hacs_startup():
     # Clear old storage files
     await async_clear_storage()
 
-    hacs.system.lovelace_mode = lovelace_info.get("mode", "yaml")
     hacs.enable()
     hacs.github = GitHub(
-        hacs.configuration.token, async_create_clientsession(hacs.hass)
+        hacs.configuration.token,
+        async_create_clientsession(hacs.hass),
+        headers=HACS_GITHUB_API_HEADERS,
     )
     hacs.data = HacsData()
 
@@ -157,7 +167,7 @@ async def async_hacs_startup():
     else:
         reset = datetime.fromtimestamp(int(hacs.github.client.ratelimits.reset))
         hacs.log.error(
-            "HACS is ratelimited, HACS will resume setup when the limit is cleared (%s:%s:%s)",
+            "HACS is ratelimited, HACS will resume setup when the limit is cleared (%02d:%02d:%02d)",
             reset.hour,
             reset.minute,
             reset.second,
@@ -192,15 +202,10 @@ async def async_hacs_startup():
         return False
 
     # Setup startup tasks
-    if hacs.status.new or hacs.configuration.config_type == "flow":
+    if hacs.hass.state == CoreState.running:
         async_call_later(hacs.hass, 5, hacs.startup_tasks)
     else:
-        if hacs.hass.state == "RUNNING":
-            async_call_later(hacs.hass, 5, hacs.startup_tasks)
-        else:
-            hacs.hass.bus.async_listen_once(
-                EVENT_HOMEASSISTANT_STARTED, hacs.startup_tasks
-            )
+        hacs.hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, hacs.startup_tasks)
 
     # Set up sensor
     await async_add_sensor()

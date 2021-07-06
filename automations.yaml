@@ -8,17 +8,8 @@
     to: below_horizon
   condition:
   - condition: state
-    entity_id: input_boolean.away_mode
-    state: 'off'
-  - condition: state
     entity_id: group.any_home
     state: home
-  - condition: time
-    before: 02:00:00
-    after: '12:00:00'
-  - condition: sun
-    after: sunset
-    before: sunrise
   action:
   - type: turn_on
     device_id: f2338eee06de11eba65eb3aa68dad3d5
@@ -122,27 +113,21 @@
   trigger:
   - platform: state
     to: home
-    from: not_home
     entity_id: device_tracker.kia_niro
   condition:
-  - condition: device
-    type: is_off
-    device_id: 0d1105db04db11eba9b831c6366dda8c
-    entity_id: light.kitchen
-    domain: light
   - condition: state
     entity_id: sun.sun
     state: below_horizon
   action:
   - type: turn_on
-    device_id: 0d1105db04db11eba9b831c6366dda8c
-    entity_id: light.kitchen
-    domain: light
-    brightness_pct: 100
-  - type: turn_on
     device_id: f2338eee06de11eba65eb3aa68dad3d5
     entity_id: switch.vitrine
     domain: switch
+  - type: turn_on
+    device_id: f9692b510dd3de15c7384c1c23afd976
+    entity_id: light.outside
+    domain: light
+    brightness_pct: 100
   mode: single
 - id: '1604828109538'
   alias: Light - Diningroom - Table On
@@ -345,7 +330,7 @@
     entity_id: sensor.djskoge
     from: offline
     to: streaming
-    for: 00:02:00
+    for: 00:01:00
   condition:
   - condition: time
     after: '10:00:00'
@@ -406,10 +391,11 @@
     entity_id: media_player.stue, media_player.sovevaerelse_2
   - service: media_player.play_media
     data:
-      media_content_id: https://home.trab.dk/local/dingdong.mp3
+      media_content_id: https://home.trab.dk/local/jetsons.mp3
       media_content_type: music
-    entity_id: media_player.stue, media_player.sovevaerelse_2
-  - delay: 00:00:02
+    target:
+      entity_id: media_player.stue, media_player.sovevaerelse_2
+  - delay: 00:00:05
   - service: sonos.restore
     data: {}
     entity_id: media_player.stue, media_player.sovevaerelse_2
@@ -422,13 +408,13 @@
   - type: motion
     platform: device
     device_id: 428aa5df06eb11eb9eb8df222c7bc012
-    entity_id: binary_sensor.presence_12
+    entity_id: binary_sensor.motion_sensor_kitchen
     domain: binary_sensor
   condition:
   - type: is_illuminance
     condition: device
     device_id: 428aa5df06eb11eb9eb8df222c7bc012
-    entity_id: sensor.lightlevel_13
+    entity_id: sensor.motion_sensor_kitchen
     domain: sensor
     below: 45
   action:
@@ -503,14 +489,15 @@
       - type: no_motion
         platform: device
         device_id: 428aa5df06eb11eb9eb8df222c7bc012
-        entity_id: binary_sensor.presence_12
+        entity_id: binary_sensor.motion_sensor_kitchen
         domain: binary_sensor
         for:
           hours: 0
           minutes: 13
           seconds: 0
+          milliseconds: 0
   - type: turn_off
-    device_id: 0d1105db04db11eba9b831c6366dda8c
+    device_id: da89b94b1e892760a93f1ae3dc80367c
     entity_id: light.kitchen
     domain: light
   mode: restart
@@ -661,6 +648,10 @@
   - service: switch.turn_on
     data: {}
     entity_id: switch.kaffemaskine_switch
+  - type: turn_on
+    device_id: 9f58561065cf2d2e3cfa2f1c1fcee848
+    entity_id: switch.pc_monitors
+    domain: switch
   mode: single
 - id: '1611947669450'
   alias: Auto - Turn Off - GEEETech i3 After Shutdown
@@ -834,6 +825,10 @@
         data: {}
         entity_id: automation.light_outside_morning_on
     default: []
+  - type: turn_on
+    device_id: 9f58561065cf2d2e3cfa2f1c1fcee848
+    entity_id: switch.pc_monitors
+    domain: switch
   mode: single
 - id: '1612814644449'
   alias: Alert - Smoke Detected
@@ -862,3 +857,220 @@
         priority: high
         ttl: 0
   mode: single
+- id: '1614613529953'
+  alias: Auto - Update foodplanner
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: input_text.foodplanner_mon
+  - platform: state
+    entity_id: input_text.foodplanner_tue
+  - platform: state
+    entity_id: input_text.foodplanner_wed
+  - platform: state
+    entity_id: input_text.foodplanner_thu
+  - platform: state
+    entity_id: input_text.foodplanner_fri
+  - platform: state
+    entity_id: input_text.foodplanner_sat
+  - platform: state
+    entity_id: input_text.foodplanner_sun
+  condition: []
+  action:
+  - delay: 00:00:05
+  - service: mqtt.publish
+    data:
+      payload: "{\n  \"monday\": \"{{ states('input_text.foodplanner_mon') }}\",\n\
+        \  \"tuesday\": \"{{ states('input_text.foodplanner_tue') }}\",\n  \"wednesday\"\
+        : \"{{ states('input_text.foodplanner_wed') }}\",\n  \"thursday\": \"{{ states('input_text.foodplanner_thu')\
+        \ }}\",\n  \"friday\": \"{{ states('input_text.foodplanner_fri') }}\",\n \
+        \ \"saturday\": \"{{ states('input_text.foodplanner_sat') }}\",\n  \"sunday\"\
+        : \"{{ states('input_text.foodplanner_sun') }}\"\n}  "
+      topic: esphome/foodplanner/plan
+      retain: true
+  mode: restart
+  max: 10
+- id: '1615284560741'
+  alias: Auto - Toilet - Humidity Exhaust
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.toilet_hygrostat
+    from: 'off'
+    to: 'on'
+  condition: []
+  action:
+  - service: switch.turn_on
+    target:
+      entity_id: switch.toilet_fan
+  - wait_for_trigger:
+    - platform: state
+      entity_id: binary_sensor.toilet_hygrostat
+      from: 'on'
+      to: 'off'
+  - service: switch.turn_off
+    target:
+      entity_id: switch.toilet_fan
+  mode: single
+- id: '1615289935324'
+  alias: Light - Hall - Motion
+  description: ''
+  trigger:
+  - type: motion
+    platform: device
+    device_id: eefb5fea06ec11eba7df65196ef7855b
+    entity_id: binary_sensor.motion_sensor_hall
+    domain: binary_sensor
+  condition:
+  - type: is_illuminance
+    condition: device
+    device_id: eefb5fea06ec11eba7df65196ef7855b
+    entity_id: sensor.motion_sensor_hall
+    domain: sensor
+    below: 130
+  action:
+  - type: turn_on
+    device_id: aa1e532da567f3e46f9253fc839e7ec2
+    entity_id: light.gang_loftlys
+    domain: light
+  - wait_for_trigger:
+    - type: no_motion
+      platform: device
+      device_id: eefb5fea06ec11eba7df65196ef7855b
+      entity_id: binary_sensor.motion_sensor_hall
+      domain: binary_sensor
+      for:
+        hours: 0
+        minutes: 1
+        seconds: 0
+        milliseconds: 0
+  - type: turn_off
+    device_id: aa1e532da567f3e46f9253fc839e7ec2
+    entity_id: light.gang_loftlys
+    domain: light
+  mode: restart
+- id: '1615313702784'
+  alias: Auto - Hyperion - Force On
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: media_player.android_tv
+    from: unknown
+  condition: []
+  action:
+  - service: homeassistant.turn_on
+    target:
+      entity_id: light.hyperion
+  mode: single
+- id: '1616055451211'
+  alias: Light - Bathroom - Motion
+  description: ''
+  trigger:
+  - type: motion
+    platform: device
+    device_id: bbf26e5345851c3da0c0bcaf344ddabc
+    entity_id: binary_sensor.motion_bathroom
+    domain: binary_sensor
+  condition: []
+  action:
+  - service: switch.turn_on
+    target:
+      entity_id: switch.toilet
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: switch.toilet_fan
+        state: 'on'
+      sequence:
+      - wait_for_trigger:
+        - type: no_motion
+          platform: device
+          device_id: bbf26e5345851c3da0c0bcaf344ddabc
+          entity_id: binary_sensor.motion_bathroom
+          domain: binary_sensor
+          for:
+            hours: 0
+            minutes: 30
+            seconds: 0
+            milliseconds: 0
+    - conditions:
+      - condition: state
+        entity_id: switch.toilet_fan
+        state: 'off'
+      sequence:
+      - wait_for_trigger:
+        - type: no_motion
+          platform: device
+          device_id: bbf26e5345851c3da0c0bcaf344ddabc
+          entity_id: binary_sensor.motion_bathroom
+          domain: binary_sensor
+          for:
+            hours: 0
+            minutes: 5
+            seconds: 0
+            milliseconds: 0
+    default: []
+  - service: switch.turn_off
+    target:
+      entity_id: switch.toilet
+  mode: restart
+- id: '1618467628118'
+  alias: 3DPrint - Send RESTART to GEEETech on power on
+  description: ''
+  trigger:
+  - platform: device
+    type: turned_on
+    device_id: 908e68fa05b94f07877425dd285e76c0
+    entity_id: switch.16280060c82b9613b3c5_3
+    domain: switch
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  condition: []
+  action:
+  - service: rest_command.geeetech_i3_printer_command
+    data:
+      cmd: RESTART
+  mode: single
+- id: '1618482509848'
+  alias: Auto - Heating - Turn off heat in bedroom
+  description: ''
+  trigger:
+  - type: opened
+    platform: device
+    device_id: 3ebdecb53313643d823492add2a5f9d8
+    entity_id: binary_sensor.bedroom_middle_window
+    domain: binary_sensor
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  condition: []
+  action:
+  - service: climate.turn_off
+    target:
+      entity_id: climate.floorbcddc2149233_1_climate
+  mode: restart
+- id: '1618482575007'
+  alias: Auto - Heating - Turn on heat in bedroom
+  description: ''
+  trigger:
+  - type: not_opened
+    platform: device
+    device_id: 3ebdecb53313643d823492add2a5f9d8
+    entity_id: binary_sensor.bedroom_middle_window
+    domain: binary_sensor
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  condition: []
+  action:
+  - service: climate.turn_on
+    target:
+      entity_id: climate.floorbcddc2149233_1_climate
+  mode: restart

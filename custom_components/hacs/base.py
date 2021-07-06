@@ -1,6 +1,6 @@
 """Base HACS class."""
 import logging
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 import pathlib
 
 import attr
@@ -10,9 +10,13 @@ from homeassistant.core import HomeAssistant
 
 from .enums import HacsDisabledReason, HacsStage
 from .helpers.functions.logger import getLogger
+from .hacsbase.configuration import Configuration
 from .models.core import HacsCore
 from .models.frontend import HacsFrontend
 from .models.system import HacsSystem
+
+if TYPE_CHECKING:
+    from .helpers.classes.repository import HacsRepository
 
 
 class HacsCommon:
@@ -41,6 +45,7 @@ class HacsBaseAttributes:
     _default: Optional[AIOGitHubAPIRepository]
     _github: Optional[AIOGitHubAPI]
     _hass: Optional[HomeAssistant]
+    _configuration: Optional[Configuration]
     _repository: Optional[AIOGitHubAPIRepository]
     _stage: HacsStage = HacsStage.SETUP
     _common: Optional[HacsCommon]
@@ -51,7 +56,7 @@ class HacsBaseAttributes:
     frontend: HacsFrontend = attr.ib(HacsFrontend)
     log: logging.Logger = getLogger()
     system: HacsSystem = attr.ib(HacsSystem)
-    repositories: List = []
+    repositories: List["HacsRepository"] = []
 
 
 @attr.s
@@ -107,6 +112,16 @@ class HacsBase(HacsBaseAttributes):
     def hass(self, value: HomeAssistant) -> None:
         """Set the value for the default property."""
         self._hass = value
+
+    @property
+    def configuration(self) -> Optional[Configuration]:
+        """Returns a Configuration object."""
+        return self._configuration
+
+    @configuration.setter
+    def configuration(self, value: Configuration) -> None:
+        """Set the value for the default property."""
+        self._configuration = value
 
     @property
     def integration_dir(self) -> pathlib.Path:

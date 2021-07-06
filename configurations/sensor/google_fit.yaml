@@ -1,4 +1,4 @@
-- platform: google_fit
-  name: Google Fit
-  client_id: !secret google_client_id
-  client_secret: !secret google_client_secret
+#- platform: google_fit
+#  name: Google Fit
+#  client_id: !secret google_client_id
+#  client_secret: !secret google_client_secret

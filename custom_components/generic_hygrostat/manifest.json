@@ -1,0 +1,9 @@
+{
+  "domain": "generic_hygrostat",
+  "name": "Generic Hygrostat",
+  "documentation": "https://github.com/basschipper/homeassistant-generic-hygrostat",
+  "dependencies": [],
+  "codeowners": ["@basschipper"],
+  "requirements": [],
+  "version": "0.5.0"
+}

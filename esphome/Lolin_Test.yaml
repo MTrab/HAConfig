@@ -1,0 +1,196 @@
+esphome:
+  name: lolintest
+  platform: ESP8266
+  board: d1_mini
+
+wifi:
+  ssid: "Trab"
+  password: "Trab!Hotelvej18"
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Lolin Test Fallback Hotspot"
+    password: "hGK7orjlHnLm"
+
+captive_portal:
+
+debug:
+
+# Logger must be at least debug (default)
+logger:
+  level: debug
+  
+# Enable Home Assistant API
+api:
+
+ota:
+
+i2c:
+  sda: D1
+  scl: D2
+
+globals:
+  - id: display_page
+    type: int
+    restore_value: no
+    initial_value: "0"
+  - id: max_page
+    type: int
+    restore_value: no
+    initial_value: "4"
+
+display:
+  - platform: ssd1306_i2c
+    id: my_display
+    update_interval: 1s
+    model: "SSD1306 128x64"
+    reset_pin: D0
+    address: 0x3C
+    lambda: |-
+      if (id(display_page) == 0) {
+        it.print(0, 10, id(my_font_large), "Loading ..");
+      }
+      
+      if (id(display_page) == 1) {
+        it.print(64, 0, id(my_font_small), TextAlign::TOP_CENTER, "Temperatur ude");
+        it.line(0, 15, 128, 15);
+        it.print(0, 25, id(icon_font), "\U000F050F");
+        it.printf(40, 20, id(my_font_large), "%.1f°", id(outside).state);
+      }
+
+      if (id(display_page) == 2) {
+        it.print(64, 0, id(my_font_small), TextAlign::TOP_CENTER, "Klokken er");
+        it.line(0, 15, 128, 15);
+        it.print(0, 25, id(icon_font), "\U000F0150");
+        it.strftime(40, 20, id(my_font_large), "%H:%M", id(esptime).now());
+      }
+      
+      if (id(display_page) == 3) {
+        it.print(64, 0, id(my_font_small), TextAlign::TOP_CENTER, "Core A8 status");
+        it.line(0, 15, 128, 15);
+        it.print(0, 18, id(icon_font_small), "\U000F15AB");
+        if (id(core_a8_status).state != "Printing") {
+          it.print(25, 15, id(my_font_medium), "Ledig");
+        } else {
+          it.print(25, 15, id(my_font_medium), "Printer");
+        }
+        if (id(core_a8_status).state == "Printing") {
+          it.print(0, 33, id(icon_font_small), "\U000F1278");
+          it.printf(25, 30, id(my_font_medium), "%.0f", id(core_a8_progress).state);
+          it.print(0, 48, id(icon_font_small), "\U000F0150");
+          it.print(25, 45, id(my_font_medium), id(core_a8_remaining).state.c_str());
+        }
+      }
+
+      if (id(display_page) == 4) {
+        it.print(64, 0, id(my_font_small), TextAlign::TOP_CENTER, "GEEETech i3 status");
+        it.line(0, 15, 128, 15);
+        it.print(0, 18, id(icon_font_small), "\U000F15AB");
+        if (id(geeetech_status).state != "Printing") {
+          it.print(25, 15, id(my_font_medium), "Ledig");
+        } else {
+          it.print(25, 15, id(my_font_medium), "Printer");
+        }
+        if (id(geeetech_status).state == "Printing") {
+          it.print(0, 33, id(icon_font_small), "\U000F1278");
+          it.printf(25, 30, id(my_font_medium), "%.0f", id(geeetech_progress).state);
+          it.print(0, 48, id(icon_font_small), "\U000F0150");
+          it.print(25, 45, id(my_font_medium), id(geeetech_remaining).state.c_str());
+        }
+      }
+
+
+interval:
+  - interval: 5s
+    then:
+      - lambda: |-
+          if (!id(outside).has_state()) {
+            id(display_page) = 0;
+          } else {
+            id(display_page)++;
+          }
+
+          if (id(display_page) == 3 && (!id(a8_power).state || id(core_a8_status).state == "unavailable" || id(core_a8_status).state.find("Offline") != std::string::npos)) {
+            id(display_page)++;
+          }          
+
+          if (id(display_page) == 4 && (!id(geeetech_power).state || id(geeetech_status).state == "unavailable")) {
+            id(display_page)++;
+          }          
+
+          if (id(display_page) > id(max_page)) {
+           id(display_page) = 1;
+          }
+      
+font:
+  - file: "fonts/Comic Sans MS.ttf"
+    id: my_font_small
+    size: 12
+  - file: "fonts/Comic Sans MS.ttf"
+    id: my_font_medium
+    size: 16
+  - file: "fonts/Comic Sans MS.ttf"
+    id: my_font_large
+    size: 30
+  - file: "fonts/materialdesignicons-webfont.ttf"
+    id: icon_font
+    size: 35
+    glyphs:
+      - "\U000F050F" #mdi-thermometer
+      - "\U000F0150" #mdi-clock-outline
+  - file: "fonts/materialdesignicons-webfont.ttf"
+    id: icon_font_small
+    size: 18
+    glyphs:
+      - "\U000F050F" #mdi-thermometer
+      - "\U000F0150" #mdi-clock-outline
+      - "\U000F15AB" #mdi-list-status
+      - "\U000F1278" #mdi-percent-outline
+    
+sensor:
+  - platform: homeassistant
+    id: outside
+    entity_id: sensor.outside_temperature
+    internal: true
+  - platform: homeassistant
+    id: core_a8_progress
+    entity_id: sensor.core_a8_print_progress
+    accuracy_decimals: 0
+    internal: true
+  - platform: homeassistant
+    id: geeetech_progress
+    entity_id: sensor.geeetech_i3_print_progress
+    accuracy_decimals: 0
+    internal: true
+
+text_sensor:
+  - platform: homeassistant
+    id: core_a8_remaining
+    entity_id: sensor.core_a8_print_time_left
+    internal: true
+  - platform: homeassistant
+    id: core_a8_status
+    entity_id: sensor.core_a8_print_status
+    internal: true
+  - platform: homeassistant
+    id: geeetech_remaining
+    entity_id: sensor.geeetech_i3_print_time_left
+    internal: true
+  - platform: homeassistant
+    id: geeetech_status
+    entity_id: sensor.geeetech_i3_print_status
+    internal: true
+    
+binary_sensor:
+  - platform: homeassistant
+    id: a8_power
+    entity_id: switch.core_a8_power
+    internal: true
+  - platform: homeassistant
+    id: geeetech_power
+    entity_id: switch.geeetech_i3_pi
+    internal: true
+    
+time:
+  - platform: homeassistant
+    id: esptime

@@ -1,0 +1,2 @@
+- email: !secret landroid_email
+  password: !secret landroid_pass

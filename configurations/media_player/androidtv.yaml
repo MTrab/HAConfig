@@ -1,0 +1,21 @@
+  # Use the Python ADB implementation with a user-provided key to setup an
+  # Android TV device. Provide some app names and don't display other apps
+  # in the sources menu. Override the default turn on/off commands, and
+  # provide custom state detection rules.
+  - platform: androidtv
+    name: Android TV
+    device_class: androidtv
+    host: 192.168.1.197
+    exclude_unnamed_apps: false
+    state_detection_rules:
+      'com.amazon.tv.launcher':
+        - 'standby'
+      'com.netflix.ninja':
+        - 'media_session_state'
+      'com.plexapp.android':
+        - 'paused':
+            'media_session_state': 3  # this indentation is important!
+            'wake_lock_size': 1       # this indentation is important!
+        - 'playing':
+            'media_session_state': 3  # this indentation is important!
+        - 'standby'

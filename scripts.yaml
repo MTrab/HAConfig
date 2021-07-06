@@ -4,8 +4,8 @@ bedroom_enable_sleep_timer:
   - service: media_player.volume_set
     data:
       volume_level: 0.05
+    target:
       entity_id: media_player.sovevaerelse_2
-    entity_id: media_player.sovevaerelse_2
   - service: media_player.play_media
     data:
       media_content_id: http://live-icy.dr.dk/A/A14H.mp3.m3u
@@ -13,8 +13,9 @@ bedroom_enable_sleep_timer:
     entity_id: media_player.sovevaerelse_2
   - service: sonos.set_sleep_timer
     data:
-      sleep_time: 3600
-    entity_id: media_player.sovevaerelse_2
+      sleep_time: 7200
+      entity_id: media_player.sovevaerelse_2
+  - service: script.godnat_tts
   mode: single
 dimmer_brighten_light:
   alias: Dimmer - Brighten Light
@@ -27,7 +28,7 @@ dimmer_brighten_light:
       sequence:
       - service: light.turn_on
         data_template:
-          brightness_step: 20
+          brightness_step: 30
           transition: 1
           entity_id: '{{ entity }}'
       - delay: 00:00:01
@@ -44,7 +45,7 @@ dimmer_dim_light:
       sequence:
       - service: light.turn_on
         data_template:
-          brightness_step: -20
+          brightness_step: -30
           transition: 1
           entity_id: '{{ entity }}'
       - delay:
@@ -59,15 +60,13 @@ godnat_tts:
         entity_id: person.pia
         state: home
       sequence:
-      - service: media_player.play_media
+      - service: tts.cloud_say
         data:
-          media_content_id: https://home.trab.dk/local/godnat_morten_pia.mp3
-          media_content_type: music
-        entity_id: media_player.sovevaerelse
+          message: Godnat Morten og godnat Pia, kan i sove godt
+          entity_id: media_player.sovevaerelse
     default:
-    - service: media_player.play_media
+    - service: tts.cloud_say
       data:
-        media_content_id: https://home.trab.dk/local/godnat_morten.mp3
-        media_content_type: music
-      entity_id: media_player.sovevaerelse
+        entity_id: media_player.sovevaerelse
+        message: Godnat Morten, kan du sove godt
   mode: single

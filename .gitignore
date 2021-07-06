@@ -1,6 +1,7 @@
 secrets.yaml
 home-assistant.log
 home-assistant_v2.db.bak
+home-assistant_v2.db
 .uuid
 telegraf.conf
 google_calendars.yaml
@@ -16,6 +17,7 @@ esphome/.common.yaml
 
 .cloud/
 .storage/
+.androidkeys/
 deps/
 node-red/
 resources/

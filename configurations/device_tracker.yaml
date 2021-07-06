@@ -1,0 +1,5 @@
+- platform: traccar
+  host: localhost
+  port: 18682
+  username: !secret traccar_email
+  password: !secret traccar_pass

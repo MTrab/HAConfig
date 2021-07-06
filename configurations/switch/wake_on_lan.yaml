@@ -12,3 +12,13 @@
   mac: 00:23:24:66:7c:b0
   host: 192.168.1.143
   name: "VMWare3"
+
+- platform: wake_on_lan
+  mac: !secret blackchart-pc-mac
+  host: !secret blackchart-pc-host
+  name: PC
+  turn_off:
+    service: hassio.addon_stdin
+    data:
+      addon: core_rpc_shutdown
+      input: blackchart-pc

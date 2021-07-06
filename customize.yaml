@@ -16,3 +16,11 @@ input_text.foodplanner_thu:
   friendly_name: Torsdag
 input_text.foodplanner_tue:
   friendly_name: Tirsdag
+sensor.battery:
+  friendly_name: Madplan Batteri
+  device_class: battery
+  unit_of_measurement: '%'
+binary_sensor.foodplanner_online:
+  friendly_name: Madplan Online
+switch.foodplan_stay_awake:
+  friendly_name: Hold madplan vågen
