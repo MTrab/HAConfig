@@ -6,7 +6,7 @@ import time
 
 import voluptuous as vol
 
-from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
+from homeassistant.const import CONF_EMAIL, CONF_PASSWORD, CONF_TYPE
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.discovery import load_platform
 from homeassistant.helpers.dispatcher import dispatcher_send
@@ -33,6 +33,7 @@ CONFIG_SCHEMA = vol.Schema(
                     {
                         vol.Required(CONF_EMAIL): cv.string,
                         vol.Required(CONF_PASSWORD): cv.string,
+                        vol.Optional(CONF_TYPE): cv.string,
                     }
                 )
             ],
@@ -46,8 +47,6 @@ SERVICE_PAUSE = "pause"
 SERVICE_HOME = "home"
 SERVICE_CONFIG = "config"
 SERVICE_BORDER = "border"
-SERVICE_ENABLE = "enable"
-SERVICE_DISABLE = "disable"
 
 
 API_WORX_SENSORS = {
@@ -110,9 +109,10 @@ async def async_setup(hass, config):
     for cloud in config[DOMAIN]:
         cloud_email = cloud[CONF_EMAIL]
         cloud_password = cloud[CONF_PASSWORD]
+        cloud_type = cloud.get(CONF_TYPE, 'worx')
 
         master = pyworxcloud.WorxCloud()
-        auth = await master.initialize(cloud_email, cloud_password)
+        auth = await master.initialize(cloud_email, cloud_password, cloud_type)
 
         if not auth:
             _LOGGER.warning("Error in authentication!")
@@ -124,7 +124,7 @@ async def async_setup(hass, config):
             client.append(dev)
             _LOGGER.debug("Connecting to device ID %s (%s)", device, cloud_email)
             client[dev] = pyworxcloud.WorxCloud()
-            await client[dev].initialize(cloud_email, cloud_password)
+            await client[dev].initialize(cloud_email, cloud_password, cloud_type)
             await hass.async_add_executor_job(client[dev].connect, device, False)
 
             api = WorxLandroidAPI(hass, dev, client[dev], config)
@@ -175,34 +175,6 @@ async def async_setup(hass, config):
             client[0].stop()
 
     hass.services.async_register(DOMAIN, SERVICE_HOME, handle_home)
-
-    async def handle_enable(call):
-        """Handle enable schedule service call."""
-        if "id" in call.data:
-            ID = int(call.data["id"])
-
-            for cli in client:
-                attrs = vars(cli)
-                if attrs["id"] == ID:
-                    cli.enableSchedule()
-        else:
-            client[0].enableSchedule()
-
-    hass.services.async_register(DOMAIN, SERVICE_ENABLE, handle_enable)
-
-    async def handle_disable(call):
-        """Handle disable schedule service call."""
-        if "id" in call.data:
-            ID = int(call.data["id"])
-
-            for cli in client:
-                attrs = vars(cli)
-                if attrs["id"] == ID:
-                    cli.disableSchedule()
-        else:
-            client[0].disableSchedule()
-
-    hass.services.async_register(DOMAIN, SERVICE_DISABLE, handle_disable)
 
     async def handle_config(call):
         """Handle config service call."""

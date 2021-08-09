@@ -14,6 +14,7 @@ node-red/flows_cred.json
 node-red/.flows_cred.json.backup
 node-red/.sessions.json
 esphome/.common.yaml
+esphome/secrets.yaml
 
 .cloud/
 .storage/

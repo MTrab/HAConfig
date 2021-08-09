@@ -11,8 +11,8 @@ esphome:
       - component.update: foodplan
 
 wifi:
-  ssid: "IoT"
-  password: "Trab!IoT"
+  ssid: !secret esp_ssid
+  password: !secret esp_wpa
   fast_connect: true
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
@@ -105,7 +105,7 @@ mqtt:
 
 deep_sleep:
   id: sleeper
-  sleep_duration: 2h
+  sleep_duration: 6h
   run_duration: 3min
   
 globals:
