@@ -1,7 +1,7 @@
 esphome:
   name: wavin
   platform: ESP8266
-  board: d1_mini
+  board: nodemcu
 
 external_components:
   - source: github://heinekmadsen/esphome_components
@@ -13,11 +13,15 @@ wifi:
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: "Wawin Fallback Hotspot"
+    ssid: "Wavin Fallback Hotspot"
     password: "hGK7orjlHnLm"
 
 captive_portal:
-  
+
+# Enable logging
+logger:
+  baud_rate: 0
+
 # Enable Home Assistant API
 api:
 
@@ -40,28 +44,28 @@ wavinAhc9000:
 climate:
   - platform: wavinAhc9000
     channel: 1
-    name: "Floor room 1"
+    name: "Toilet"
     visual:
       temperature_step: 0.5 °C
     battery_level:
-      name: "Battery room 1"
+      name: "Toilet Battery"
     current_temp:
-      name: "Current temp room 1"
+      name: "Toilet Temperature"
   - platform: wavinAhc9000
-    channel: 1
-    name: "Floor room 2"
+    channel: 2
+    name: "Bedroom"
     visual:
       temperature_step: 0.5 °C
     battery_level:
-      name: "Battery room 2"
+      name: "Bedroom Battery"
     current_temp:
-      name: "Current temp room 2"
+      name: "Bedroom Temperature"
   - platform: wavinAhc9000
-    channel: 1
-    name: "Floor room 3"
+    channel: 3
+    name: "Hall"
     visual:
       temperature_step: 0.5 °C
     battery_level:
-      name: "Battery room 3"
+      name: "Hall Battery"
     current_temp:
-      name: "Current temp room 3"
+      name: "Hall Temperature"

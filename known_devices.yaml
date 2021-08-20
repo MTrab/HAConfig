@@ -5,3 +5,10 @@ kia_niro:
   icon:
   picture:
   track: true
+
+honda_nc750x:
+  name: honda_nc750x
+  mac:
+  icon:
+  picture:
+  track: true

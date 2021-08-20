@@ -532,57 +532,27 @@
       seconds: 0
   condition: []
   action:
-  - service: notify.mobile_app_mt_samsung_a42
+  - service: notify.mobile_app_mtopnord2
     data:
-      message: Main UPS har nu under 50% strøm tilbage!
-      data:
-        subject: Main UPS batteri state
-        group: UPS
-        channel: UPS
-        importance: high
-        vibrationPattern: 100, 200, 50, 200, 100, 200, 50, 200
+      message: Main UPS batteri under 50%
   mode: single
 - id: '1610443053399'
-  alias: Alert - Main UPS - Power off
+  alias: Alert - UPS State Change
   description: ''
   trigger:
-  - platform: state
-    entity_id: sensor.main_ups_status
-    attribute: state
-    from: Online Battery Charging
-    for: 00:01:00
+  - platform: event
+    event_type: nut.ups_event
   condition: []
   action:
-  - service: notify.mobile_app_mt_samsung_a42
-    data:
-      message: Strømmen til Main UPS gik {{ now().strftime("%H:%M %d-%m-%Y") }}
+  - service: notify.mobile_app_mtopnord2
+    data_template:
+      title: UPS skiftede status
+      message: '{{ trigger.event.data.notify_msg }}'
       data:
-        subject: Main UPS forsynings problemer
+        subject: UPS skiftede status
         group: UPS
         channel: UPS
         importance: high
-        vibrationPattern: 100, 200, 50, 200, 100, 200, 50, 200
-  mode: single
-- id: '1610443303613'
-  alias: Alert - Main UPS - Power on
-  description: ''
-  trigger:
-  - platform: state
-    entity_id: sensor.main_ups_status
-    attribute: state
-    to: Online Battery Charging
-    for: 00:05:00
-  condition: []
-  action:
-  - service: notify.mobile_app_mt_samsung_a42
-    data:
-      message: Strømmen til Main UPS kom tilbage {{ now().strftime("%H:%M %d-%m-%Y")
-        }}
-      data:
-        subject: Main UPS forsynings problemer
-        group: UPS
-        channel: UPS
-        importance: low
   mode: single
 - id: '1611133637936'
   alias: Light - Dart - Turn on
@@ -653,19 +623,6 @@
     entity_id: switch.pc_monitors
     domain: switch
   mode: single
-- id: '1611947669450'
-  alias: Auto - Turn Off - GEEETech i3 After Shutdown
-  description: ''
-  trigger:
-  - platform: webhook
-    webhook_id: f559ca41eaf949bfb6a769af5ccebc47
-  condition: []
-  action:
-  - delay: 00:00:10
-  - service: switch.turn_off
-    data: {}
-    entity_id: switch.geeetech_i3_pi
-  mode: restart
 - id: '1612030066806'
   alias: Auto - Turn On - GEEETech i3 3D Printer
   description: ''
@@ -949,19 +906,6 @@
     entity_id: light.gang_loftlys
     domain: light
   mode: restart
-- id: '1615313702784'
-  alias: Auto - Hyperion - Force On
-  description: ''
-  trigger:
-  - platform: state
-    entity_id: media_player.android_tv
-    from: unknown
-  condition: []
-  action:
-  - service: homeassistant.turn_on
-    target:
-      entity_id: light.hyperion
-  mode: single
 - id: '1616055451211'
   alias: Light - Bathroom - Motion
   description: ''
@@ -1014,26 +958,6 @@
     target:
       entity_id: switch.toilet
   mode: restart
-- id: '1618467628118'
-  alias: 3DPrint - Send RESTART to GEEETech on power on
-  description: ''
-  trigger:
-  - platform: device
-    type: turned_on
-    device_id: 908e68fa05b94f07877425dd285e76c0
-    entity_id: switch.16280060c82b9613b3c5_3
-    domain: switch
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 5
-      milliseconds: 0
-  condition: []
-  action:
-  - service: rest_command.geeetech_i3_printer_command
-    data:
-      cmd: RESTART
-  mode: single
 - id: '1618482509848'
   alias: Auto - Heating - Turn off heat in bedroom
   description: ''
@@ -1074,3 +998,24 @@
     target:
       entity_id: climate.floorbcddc2149233_1_climate
   mode: restart
+- id: '1629485297130'
+  alias: Alert - Gateway UPS - below 50% battery
+  description: ''
+  trigger:
+  - type: value
+    platform: device
+    device_id: 3bf52cb950d8b0416e8df4ddcc1672a0
+    entity_id: sensor.gwups_load
+    domain: sensor
+    below: 50
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+      milliseconds: 0
+  condition: []
+  action:
+  - service: notify.mobile_app_mtopnord2
+    data:
+      message: Gateway UPS batteri under 50%
+  mode: single
