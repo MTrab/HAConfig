@@ -2,9 +2,11 @@ esphome:
   name: wavin
   platform: ESP8266
   board: nodemcu
+  includes:
+    - custom_components/wavinAhc9000/wavinAhc9000.h
 
-external_components:
-  - source: github://heinekmadsen/esphome_components
+#external_components:
+#  - source: github://heinekmadsen/esphome_components
 
 wifi:
   ssid: !secret esp_ssid

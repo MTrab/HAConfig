@@ -433,6 +433,7 @@
         device_id: 0d1105db04db11eba9b831c6366dda8c
         entity_id: light.kitchen
         domain: light
+        brightness_pct: 20
     - conditions:
       - condition: time
         weekday:
@@ -544,15 +545,28 @@
     event_type: nut.ups_event
   condition: []
   action:
-  - service: notify.mobile_app_mtopnord2
-    data_template:
-      title: UPS skiftede status
-      message: '{{ trigger.event.data.notify_msg }}'
-      data:
-        subject: UPS skiftede status
-        group: UPS
-        channel: UPS
-        importance: high
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.event.data.notify_type == ''COMMBAD'' }}'
+      sequence:
+      - service: hassio.addon_restart
+        data:
+          addon: a0d7b954_nut
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.event.data.notify_type != ''COMMBAD'' }}'
+      sequence:
+      - service: notify.mobile_app_mtopnord2
+        data_template:
+          title: UPS skiftede status
+          message: '{{ trigger.event.data.notify_msg }}'
+          data:
+            subject: UPS skiftede status
+            group: UPS
+            channel: UPS
+            importance: high
+    default: []
   mode: single
 - id: '1611133637936'
   alias: Light - Dart - Turn on
@@ -1018,4 +1032,28 @@
   - service: notify.mobile_app_mtopnord2
     data:
       message: Gateway UPS batteri under 50%
+  mode: single
+- id: '1631103222650'
+  alias: TTS - Døren er åben
+  description: ''
+  trigger:
+  - platform: time
+    at: '21:00:00'
+  condition:
+  - type: is_open
+    condition: device
+    device_id: 22fbec51c6ceb7c4a5bad76c3ce22273
+    entity_id: binary_sensor.maindoor
+    domain: binary_sensor
+  action:
+  - service: media_player.volume_mute
+    data:
+      is_volume_muted: false
+    target:
+      entity_id: media_player.stue
+  - service: tts.cloud_say
+    data:
+      cache: true
+      entity_id: media_player.stue
+      message: Døren er åben - måske den skulle lukkes
   mode: single

@@ -1,5 +1,5 @@
 secrets.yaml
-home-assistant.log
+home-assistant.log*
 home-assistant_v2.db.bak
 home-assistant_v2.db
 .uuid
@@ -23,5 +23,7 @@ deps/
 node-red/
 resources/
 esphome/*/
+__pycache__/
+tts/
 
 .vscode
