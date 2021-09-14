@@ -59,7 +59,7 @@
   action:
   - type: toggle
     device_id: a0d3944505a411eb9a90dbc131472481
-    entity_id: light.deathstar
+    entity_id: light.dodsstjernen
     domain: light
   mode: single
 - id: '1602158073953'
@@ -372,7 +372,7 @@
       - condition: template
         value_template: '{{ states(''person.morten_trab'') != ''home'' }}'
       sequence:
-      - service: notify.mobile_app_mt_samsung_a42
+      - service: notify.mobile_app_mtopnord2
         data:
           message: Det ringede på døren {{ now().strftime("%H:%M %d-%m-%Y") }}
           data:
@@ -391,7 +391,7 @@
     entity_id: media_player.stue, media_player.sovevaerelse_2
   - service: media_player.play_media
     data:
-      media_content_id: https://home.trab.dk/local/jetsons.mp3
+      media_content_id: https://home.trab.dk/local/doorbell/jetsons.mp3
       media_content_type: music
     target:
       entity_id: media_player.stue, media_player.sovevaerelse_2

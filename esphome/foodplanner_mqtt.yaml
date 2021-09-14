@@ -50,10 +50,6 @@ mqtt:
           - globals.set:
               value: '1'
               id: stayawake
-#          - if:
-#              condition:
-#                binary_sensor.is_on: loaded
-#              then:
           - component.update: foodplan
           - deep_sleep.prevent: sleeper
       - topic: esphome/foodplanner/stayawake
@@ -63,15 +59,9 @@ mqtt:
           - globals.set:
               value: '0'
               id: stayawake
-#          - if:
-#              condition:
-#                binary_sensor.is_on: loaded
-#              then:
-#                - component.update: foodplan
           - wait_until:
               binary_sensor.is_on: loaded
           - component.update: foodplan
-#          - delay: 5s
           - deep_sleep.enter: sleeper
   on_json_message:
       - topic: esphome/foodplanner/plan
@@ -243,27 +233,31 @@ display:
       it.print(0, 160, id(font_day), "Fredag:");
       it.line(0, 200, 400, 200);
       if (time.day_of_week == 6) {
-        it.line(0, 201, 400, 201);
-        it.line(0, 202, 400, 202);
-        it.line(0, 203, 400, 203);
-        it.line(0, 204, 400, 204);
-      }        
-      it.print(0, 200, id(font_day), "Lørdag:");
+        it.filled_rectangle(0, 160, 400, 40);
+        it.print(0, 160, id(font_day), active, "Fredag:");
+        it.print(130, 170, id(font_food), active, id(friday).state.c_str()); // Fredag
+      } else {
+        it.print(0, 160, id(font_day), "Fredag:");
+        it.print(130, 170, id(font_food), id(friday).state.c_str()); // Fredag
+      }
       it.line(0, 240, 400, 240);
       if (time.day_of_week == 7) {
-        it.line(0, 241, 400, 241);
-        it.line(0, 242, 400, 242);
-        it.line(0, 243, 400, 243);
-        it.line(0, 244, 400, 244);
-      }        
-      it.print(0, 240, id(font_day), "Søndag:");
+        it.filled_rectangle(0, 200, 400, 40);
+        it.print(0, 200, id(font_day), active, "Lørdag:");
+        it.print(130, 210, id(font_food), active, id(saturday).state.c_str()); // Lørdag
+      } else {
+        it.print(0, 200, id(font_day), "Lørdag:");
+        it.print(130, 210, id(font_food), id(saturday).state.c_str()); // Lørdag
+      }
       it.line(0, 280, 400, 280);
       if (time.day_of_week == 1) {
-        it.line(0, 281, 400, 281);
-        it.line(0, 282, 400, 282);
-        it.line(0, 283, 400, 283);
-        it.line(0, 284, 400, 284);
-      }        
+        it.filled_rectangle(0, 240, 400, 40);
+        it.print(0, 240, id(font_day), active, "Søndag:");
+        it.print(130, 250, id(font_food), active, id(sunday).state.c_str()); // Søndag
+      } else {
+        it.print(0, 240, id(font_day), "Søndag:");
+        it.print(130, 250, id(font_food), id(sunday).state.c_str()); // Søndag
+      }
       
       // Print state
       if (id(rssi) > -67) { 
@@ -278,9 +272,8 @@ display:
         it.print(0, 285, id(font_icon), "\U000F092F"); //Wifi
       }
       
-      it.printf(20, 280, id(font_status), "Battery: %.2f", batt);
-      it.print(140, 280, id(font_status), "Last update:");
-      it.strftime(230, 280, id(font_status), "%H:%M %d-%m-%Y", time);
+      it.print(90, 280, id(font_status), "Last update:");
+      it.strftime(180, 280, id(font_status), "%H:%M %d-%m-%Y", time);
       if (id(stayawake) == 1) {
         it.print(360, 285, id(font_icon), "\U000F04B3"); //Stay awake
       } else {
@@ -293,10 +286,11 @@ display:
       it.print(130, 50, id(font_food), id(tuesday).state.c_str()); // Tirsdag
       it.print(130, 90, id(font_food), id(wednesday).state.c_str()); // Onsdag
       it.print(130, 130, id(font_food), id(thursday).state.c_str()); // orsdag
-      it.print(130, 170, id(font_food), id(friday).state.c_str()); // Fredag
-      it.print(130, 210, id(font_food), id(saturday).state.c_str()); // Lørdag
-      it.print(130, 250, id(font_food), id(sunday).state.c_str()); // Søndag
 
+color:
+  - id: active
+    white: 0%
+    
 sensor:
   - platform: wifi_signal
     id: wifi_sig

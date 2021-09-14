@@ -1,0 +1,6 @@
+# - platform: netatmo
+#   areas:
+#     - lat_ne: 56.070455
+#       lon_ne: 10.002871
+#       lat_sw: 56.053300
+#       lon_sw: 9.969196
