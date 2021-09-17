@@ -13,8 +13,6 @@ traccar.xml
 node-red/flows_cred.json
 node-red/.flows_cred.json.backup
 node-red/.sessions.json
-esphome/.common.yaml
-esphome/secrets.yaml
 
 .cloud/
 .storage/
@@ -22,7 +20,6 @@ esphome/secrets.yaml
 deps/
 node-red/
 resources/
-esphome/*/
 __pycache__/
 tts/
 

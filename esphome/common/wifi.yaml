@@ -1,0 +1,10 @@
+wifi:
+  ssid: !secret esp_ssid
+  password: !secret esp_wpa
+  fast_connect: true
+
+  ap:
+    ssid: ${node_name}_failsafe
+    password: "hGK7orjlHnLm"
+
+captive_portal:

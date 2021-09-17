@@ -9,3 +9,5 @@
 **/platformio.ini
 /secrets.yaml
 /esphome/secrets.yaml
+/esphome/.common.yaml
+/esphome/common/secrets.yaml

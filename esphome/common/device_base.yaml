@@ -1,0 +1,26 @@
+esphome:
+  name: ${node_name}
+  platform: ${platform}
+  board: ${board}
+  build_path: ./build/${node_name}
+
+# Enable logging
+logger:
+  level: ${log_level}
+
+api:
+  reboot_timeout: 1h
+
+ota:
+
+text_sensor:
+  - <<: !include text_sensor/uptime.yaml
+
+sensor:
+  - <<: !include sensor/uptime.yaml
+  - <<: !include sensor/wifi_signal.yaml
+binary_sensor:
+  - <<: !include binary_sensor/connection_status.yaml
+
+switch:
+  - <<: !include switch/restart.yaml

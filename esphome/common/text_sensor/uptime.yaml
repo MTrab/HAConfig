@@ -1,0 +1,4 @@
+- platform: template
+  name: Uptime Human Readable
+  id: uptime_human
+  icon: mdi:clock-start
