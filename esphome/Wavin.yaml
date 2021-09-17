@@ -1,33 +1,21 @@
-esphome:
-  name: wavin
-  platform: ESP8266
+substitutions:
+  node_name: wavin
+  device_verbose_name: "Wavin"
   board: nodemcu
+  platform: ESP8266
+  log_level: DEBUG
+
+packages:
+  wifi: !include common/wifi.yaml
+  device_base: !include common/device_base.yaml
+
+esphome:
   includes:
     - custom_components/wavinAhc9000/wavinAhc9000.h
 
-#external_components:
-#  - source: github://heinekmadsen/esphome_components
-
-wifi:
-  ssid: !secret esp_ssid
-  password: !secret esp_wpa
-  fast_connect: true
-
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
-  ap:
-    ssid: "Wavin Fallback Hotspot"
-    password: "hGK7orjlHnLm"
-
-captive_portal:
-
-# Enable logging
+# Disable logger
 logger:
   baud_rate: 0
-
-# Enable Home Assistant API
-api:
-
-ota:
 
 uart:
   rx_pin: GPIO13

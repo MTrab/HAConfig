@@ -15,7 +15,6 @@ bedroom_enable_sleep_timer:
     data:
       sleep_time: 7200
       entity_id: media_player.sovevaerelse_2
-  - service: script.godnat_tts
   mode: single
 dimmer_brighten_light:
   alias: Dimmer - Brighten Light

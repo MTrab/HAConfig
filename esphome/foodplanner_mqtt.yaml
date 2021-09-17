@@ -1,7 +1,15 @@
-esphome:
-  name: foodplanner
-  platform: ESP8266
+substitutions:
+  node_name: foodplanner
+  device_verbose_name: "Foodplanner"
   board: nodemcuv2
+  platform: ESP8266
+  log_level: DEBUG
+
+packages:
+  wifi: !include common/wifi.yaml
+  device_base: !include common/device_base.yaml
+
+esphome:
   on_boot:
     then:
       - wait_until:
@@ -10,26 +18,6 @@ esphome:
       - lambda: 'id(loaded).publish_state(true);'
       - component.update: foodplan
 
-wifi:
-  ssid: !secret esp_ssid
-  password: !secret esp_wpa
-  fast_connect: true
-
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
-  ap:
-    ssid: "Foodplanner Fallback Hotspot"
-    password: "RZxm02vK2dQe"
-
-captive_portal:
-
-# Enable logging
-logger:
-
-ota:
-
-web_server:
-  port: 80
-  
 mqtt:
   broker: 10.254.254.9
   username: esphome
@@ -198,39 +186,42 @@ display:
       }      
 
       // Print days
-      it.print(0, 0, id(font_day), "Mandag:");
       it.line(0, 40, 400, 40);
       if (time.day_of_week == 2) {
-        it.line(0, 41, 400, 41);
-        it.line(0, 42, 400, 42);
-        it.line(0, 43, 400, 43);
-        it.line(0, 44, 400, 44);
+        it.filled_rectangle(0, 0, 400, 40);
+        it.print(0, 0, id(font_day), active, "Mandag:");
+        it.print(130, 10, id(font_food), active, id(monday).state.c_str()); // Mandag
+      } else {
+        it.print(0, 0, id(font_day), "Mandag:");
+        it.print(130, 10, id(font_food), id(monday).state.c_str()); // Mandag
       }        
-      it.print(0, 40, id(font_day), "Tirsdag:");
       it.line(0, 80, 400, 80);
       if (time.day_of_week == 3) {
-        it.line(0, 81, 400, 81);
-        it.line(0, 82, 400, 82);
-        it.line(0, 83, 400, 83);
-        it.line(0, 84, 400, 84);
+        it.filled_rectangle(0, 40, 400, 40);
+        it.print(0, 40, id(font_day), active, "Tirsdag:");
+        it.print(130, 50, id(font_food), active, id(tuesday).state.c_str()); // Tirsdag
+      } else {
+        it.print(0, 40, id(font_day), "Tirsdag:");
+        it.print(130, 50, id(font_food), id(tuesday).state.c_str()); // Tirsdag
       }        
-      it.print(0, 80, id(font_day), "Onsdag:");
       it.line(0, 120, 400, 120);
       if (time.day_of_week == 4) {
-        it.line(0, 121, 400, 121);
-        it.line(0, 122, 400, 122);
-        it.line(0, 123, 400, 123);
-        it.line(0, 124, 400, 124);
+        it.filled_rectangle(0, 80, 400, 40);
+        it.print(0, 80, id(font_day), active, "Onsdag:");
+        it.print(130, 90, id(font_food), active, id(wednesday).state.c_str()); // Onsdag
+      } else {
+        it.print(0, 80, id(font_day), "Onsdag:");
+        it.print(130, 90, id(font_food), id(wednesday).state.c_str()); // Onsdag
       }        
-      it.print(0, 120, id(font_day), "Torsdag:");
       it.line(0, 160, 400, 160);
       if (time.day_of_week == 5) {
-        it.line(0, 161, 400, 161);
-        it.line(0, 162, 400, 162);
-        it.line(0, 163, 400, 163);
-        it.line(0, 164, 400, 164);
-      }        
-      it.print(0, 160, id(font_day), "Fredag:");
+        it.filled_rectangle(0, 120, 400, 40);
+        it.print(0, 120, id(font_day), active, "Torsdag:");
+        it.print(130, 130, id(font_food), active, id(thursday).state.c_str()); // Torsdag
+      } else {
+        it.print(0, 120, id(font_day), "Torsdag:");
+        it.print(130, 130, id(font_food), id(thursday).state.c_str()); // Torsdag
+      }
       it.line(0, 200, 400, 200);
       if (time.day_of_week == 6) {
         it.filled_rectangle(0, 160, 400, 40);
@@ -279,13 +270,6 @@ display:
       } else {
         it.print(360, 285, id(font_icon), "\U000F04B2"); //Sleep
       }
-
-      
-      // Print content
-      it.print(130, 10, id(font_food), id(monday).state.c_str()); // Mandag
-      it.print(130, 50, id(font_food), id(tuesday).state.c_str()); // Tirsdag
-      it.print(130, 90, id(font_food), id(wednesday).state.c_str()); // Onsdag
-      it.print(130, 130, id(font_food), id(thursday).state.c_str()); // orsdag
 
 color:
   - id: active
