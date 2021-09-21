@@ -934,39 +934,20 @@
   - service: switch.turn_on
     target:
       entity_id: switch.toilet
+  - wait_template: 00:05:00
   - choose:
     - conditions:
       - condition: state
         entity_id: switch.toilet_fan
         state: 'on'
       sequence:
-      - wait_for_trigger:
-        - type: no_motion
-          platform: device
-          device_id: bbf26e5345851c3da0c0bcaf344ddabc
-          entity_id: binary_sensor.motion_bathroom
-          domain: binary_sensor
-          for:
-            hours: 0
-            minutes: 30
-            seconds: 0
-            milliseconds: 0
+      - wait_template: 00:30:00
     - conditions:
       - condition: state
         entity_id: switch.toilet_fan
         state: 'off'
       sequence:
-      - wait_for_trigger:
-        - type: no_motion
-          platform: device
-          device_id: bbf26e5345851c3da0c0bcaf344ddabc
-          entity_id: binary_sensor.motion_bathroom
-          domain: binary_sensor
-          for:
-            hours: 0
-            minutes: 5
-            seconds: 0
-            milliseconds: 0
+      - wait_template: 00:00:01
     default: []
   - service: switch.turn_off
     target:
@@ -1057,3 +1038,27 @@
       entity_id: media_player.stue
       message: Døren er åben - måske den skulle lukkes
   mode: single
+- id: '1632209322025'
+  alias: Auto - Detect low battery and notify
+  description: ''
+  use_blueprint:
+    path: sbyx/low-battery-level-detection-notification-for-all-battery-sensors.yaml
+    input:
+      threshold: 25
+      time: '17:00:00'
+      exclude:
+        entity_id:
+        - sensor.mtopnord2_battery_level
+      actions:
+      - service: notify.mobile_app_mtopnord2
+        data:
+          message: 'Low battery detected on: {{sensors}}'
+- id: '1632209422267'
+  alias: Auto - Cast to Google Hub
+  description: ''
+  use_blueprint:
+    path: kind3r/cast-and-re-cast-a-lovelace-view-to-a-google-hub.yaml
+    input:
+      dashboard: lovelace
+      player: media_player.nesthub8311
+      view: lys
