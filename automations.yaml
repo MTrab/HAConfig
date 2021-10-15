@@ -29,7 +29,8 @@
   action:
   - service: light.turn_on
     data: {}
-    entity_id: light.skrivebord
+    target:
+      entity_id: light.skrivebord
   mode: single
 - id: '1602155267210'
   alias: Light - Livingroom - Switch 1 - Desktop Off
@@ -78,19 +79,32 @@
     entity_id: light.skrivebord
   mode: single
 - id: '1602228352429'
-  alias: State - Set volume on TV input
+  alias: Auto - Set TV volume
   description: ''
   trigger:
   - platform: state
     entity_id: media_player.stue
-    to: TV
     attribute: source
   condition: []
   action:
-  - service: media_player.volume_set
-    data:
-      volume_level: 0.22
-    entity_id: media_player.stue
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: media_player.stue
+        state: TV
+        attribute: source
+      sequence:
+      - service: media_player.volume_set
+        target:
+          entity_id: media_player.stue
+        data:
+          volume_level: 0.25
+    default:
+    - service: media_player.volume_set
+      target:
+        entity_id: media_player.stue
+      data:
+        volume_level: 0.12
   mode: single
 - id: '1602229830948'
   alias: State - Set volume on non-TV input
@@ -108,12 +122,15 @@
     entity_id: media_player.stue
   mode: single
 - id: '1602610466182'
-  alias: State - Turn on kitchen light when dark and coming home
+  alias: Auto - Turn on some lights when dark and coming home
   description: ''
   trigger:
   - platform: state
     to: home
+    entity_id: person.morten_trab
+  - platform: state
     entity_id: device_tracker.kia_niro
+    to: home
   condition:
   - condition: state
     entity_id: sun.sun
@@ -124,10 +141,13 @@
     entity_id: switch.vitrine
     domain: switch
   - type: turn_on
-    device_id: f9692b510dd3de15c7384c1c23afd976
+    device_id: 61cb33c506d640e6fe3c3671320ecebc
     entity_id: light.outside
     domain: light
     brightness_pct: 100
+  - service: switch.turn_on
+    target:
+      entity_id: switch.store_stearinlys
   mode: single
 - id: '1604828109538'
   alias: Light - Diningroom - Table On
@@ -317,10 +337,9 @@
     device_id: f2338eee06de11eba65eb3aa68dad3d5
     entity_id: switch.vitrine
     domain: switch
-  - type: turn_off
-    device_id: f9692b510dd3de15c7384c1c23afd976
-    entity_id: light.outside
-    domain: light
+  - service: switch.turn_off
+    target:
+      entity_id: switch.store_stearinlys
   mode: single
 - id: '1607082699961'
   alias: TTS - DJ Skoge Stremer
@@ -430,10 +449,16 @@
         - thu
       sequence:
       - type: turn_on
-        device_id: 0d1105db04db11eba9b831c6366dda8c
+        device_id: da89b94b1e892760a93f1ae3dc80367c
         entity_id: light.kitchen
         domain: light
         brightness_pct: 20
+      - wait_for_trigger:
+        - type: no_motion
+          platform: device
+          device_id: 428aa5df06eb11eb9eb8df222c7bc012
+          entity_id: binary_sensor.motion_sensor_kitchen
+          domain: binary_sensor
     - conditions:
       - condition: time
         weekday:
@@ -442,10 +467,16 @@
         before: 05:00:00
       sequence:
       - type: turn_on
-        device_id: 0d1105db04db11eba9b831c6366dda8c
+        device_id: da89b94b1e892760a93f1ae3dc80367c
         entity_id: light.kitchen
         domain: light
         brightness_pct: 20
+      - wait_for_trigger:
+        - type: no_motion
+          platform: device
+          device_id: 428aa5df06eb11eb9eb8df222c7bc012
+          entity_id: binary_sensor.motion_sensor_kitchen
+          domain: binary_sensor
     - conditions:
       - condition: time
         after: '23:59:59'
@@ -454,7 +485,7 @@
         - sat
       sequence:
       - type: turn_on
-        device_id: 0d1105db04db11eba9b831c6366dda8c
+        device_id: da89b94b1e892760a93f1ae3dc80367c
         entity_id: light.kitchen
         domain: light
         brightness_pct: 20
@@ -462,12 +493,8 @@
         - type: no_motion
           platform: device
           device_id: 428aa5df06eb11eb9eb8df222c7bc012
-          entity_id: binary_sensor.presence_12
+          entity_id: binary_sensor.motion_sensor_kitchen
           domain: binary_sensor
-          for:
-            hours: 0
-            minutes: 3
-            seconds: 0
     - conditions:
       - condition: time
         after: '23:00:00'
@@ -476,13 +503,19 @@
         - sun
       sequence:
       - type: turn_on
-        device_id: 0d1105db04db11eba9b831c6366dda8c
+        device_id: da89b94b1e892760a93f1ae3dc80367c
         entity_id: light.kitchen
         domain: light
         brightness_pct: 20
+      - wait_for_trigger:
+        - type: no_motion
+          platform: device
+          device_id: 428aa5df06eb11eb9eb8df222c7bc012
+          entity_id: binary_sensor.motion_sensor_kitchen
+          domain: binary_sensor
     default:
     - type: turn_on
-      device_id: 0d1105db04db11eba9b831c6366dda8c
+      device_id: da89b94b1e892760a93f1ae3dc80367c
       entity_id: light.kitchen
       domain: light
       brightness_pct: 100
@@ -879,6 +912,7 @@
       entity_id: binary_sensor.toilet_hygrostat
       from: 'on'
       to: 'off'
+    timeout: 03:00:00
   - service: switch.turn_off
     target:
       entity_id: switch.toilet_fan
@@ -934,20 +968,33 @@
   - service: switch.turn_on
     target:
       entity_id: switch.toilet
-  - wait_template: 00:05:00
+  - wait_for_trigger:
+    - type: no_motion
+      platform: device
+      device_id: bbf26e5345851c3da0c0bcaf344ddabc
+      entity_id: binary_sensor.motion_bathroom
+      domain: binary_sensor
+      for:
+        hours: 0
+        minutes: 5
+        seconds: 0
+        milliseconds: 0
   - choose:
     - conditions:
       - condition: state
         entity_id: switch.toilet_fan
         state: 'on'
+        for:
+          hours: 0
+          minutes: 0
+          seconds: 0
+          milliseconds: 0
       sequence:
-      - wait_template: 00:30:00
-    - conditions:
-      - condition: state
-        entity_id: switch.toilet_fan
-        state: 'off'
-      sequence:
-      - wait_template: 00:00:01
+      - delay:
+          hours: 0
+          minutes: 30
+          seconds: 0
+          milliseconds: 0
     default: []
   - service: switch.turn_off
     target:
@@ -1024,7 +1071,7 @@
   - type: is_open
     condition: device
     device_id: 22fbec51c6ceb7c4a5bad76c3ce22273
-    entity_id: binary_sensor.maindoor
+    entity_id: binary_sensor.dor
     domain: binary_sensor
   action:
   - service: media_player.volume_mute
@@ -1062,3 +1109,20 @@
       dashboard: lovelace
       player: media_player.nesthub8311
       view: lys
+- id: '1633628292945'
+  alias: Auto - Turn on candles when sun goes down
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: sun.sun
+    from: above_horizon
+    to: below_horizon
+  condition:
+  - condition: state
+    entity_id: group.any_home
+    state: home
+  action:
+  - service: switch.turn_on
+    target:
+      entity_id: switch.store_stearinlys
+  mode: single
