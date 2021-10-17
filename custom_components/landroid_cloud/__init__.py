@@ -48,6 +48,11 @@ SERVICE_PAUSE = "pause"
 SERVICE_HOME = "home"
 SERVICE_CONFIG = "config"
 SERVICE_BORDER = "border"
+SERVICE_PARTYMODE = "partymode"
+SERVICE_SETZONE = "setzone"
+SERVICE_LOCK = "lock"
+SERVICE_UNLOCK = "unlock"
+SERVICE_RESTART = "restart"
 
 
 API_WORX_SENSORS = {
@@ -56,7 +61,9 @@ API_WORX_SENSORS = {
             "battery_percent": "state",
             "battery_voltage": "battery_voltage",
             "battery_temperature": "battery_temperature",
-            "battery_charge_cycles": "charge_cycles",
+            "battery_charge_cycle": "total_charge_cycles",
+            "battery_charge_cycle_current": "current_charge_cycles",
+            "battery_charge_cycles_reset_at": "charge_cycles_reset",
             "battery_charging": "charging",
         },
         "icon": "mdi:battery",
@@ -73,7 +80,9 @@ API_WORX_SENSORS = {
         "state": {
             "id": "id",
             "status_description": "state",
-            "blade_time": "blade_time",
+            "blade_time": "total_blade_time",
+            "blade_time_current": "current_blade_time",
+            "blade_work_time_reset_at": "blade_time_reset",
             "work_time": "work_time",
             "distance": "distance",
             "status": "status_id",
@@ -90,6 +99,10 @@ API_WORX_SENSORS = {
             "serial": "serial",
             "mac": "mac",
             "schedule_mower_active": "schedule_enabled",
+            "partymode_enabled": "partymode_enabled",
+            "mowing_zone": "mowing_zone",
+            "accessories": "accessories",
+            "islocked": "locked",
         },
         "icon": None,
         "unit": None,
@@ -106,6 +119,7 @@ async def async_setup(hass, config):
 
     hass.data[LANDROID_API] = {}
     dev = 0
+    partymode = False
 
     for cloud in config[DOMAIN]:
         cloud_email = cloud[CONF_EMAIL]
@@ -133,6 +147,9 @@ async def async_setup(hass, config):
             async_track_time_interval(hass, api.async_update, SCAN_INTERVAL)
             async_track_time_interval(hass, api.async_force_update, FORCED_UPDATE)
             hass.data[LANDROID_API][dev] = api
+            _LOGGER.debug("Partymode available: %s", client[dev].partymode)
+            if not partymode and client[dev].partymode:
+                partymode = True
             dev += 1
     
     async def handle_poll(call):
@@ -147,14 +164,16 @@ async def async_setup(hass, config):
                     if error is not None:
                         _LOGGER.warning(error)
                     elif error is None:
-                        cli.getStatus()
+                        _LOGGER.debug("Poll successful - updating info")
+                        await hass.async_add_executor_job(cli.getStatus)
 
         else:
             error = client[0].tryToPoll()
             if error is not None:
                 _LOGGER.warning(error)
             elif error is None:
-                client[0].getStatus()
+                _LOGGER.debug("Poll successful - updating info")
+                await hass.async_add_executor_job(client[0].getStatus)
 
     hass.services.async_register(DOMAIN, SERVICE_POLL, handle_poll)
 
@@ -249,6 +268,78 @@ async def async_setup(hass, config):
             client[id].sendData(data)
 
     hass.services.async_register(DOMAIN, SERVICE_CONFIG, handle_config)
+
+    async def handle_partymode(call):
+        """Handle partymode service call."""
+        if "id" in call.data:
+            ID = int(call.data["id"])
+
+            for cli in client:
+                attrs = vars(cli)
+                if attrs["id"] == ID:
+                    cli.partyMode(call.data["enable"])
+        else:
+            client[0].partyMode(call.data["enable"])
+
+    if partymode:
+        hass.services.async_register(DOMAIN, SERVICE_PARTYMODE, handle_partymode)
+
+    async def handle_setzone(call):
+        """Handle setzone service call."""
+        if "id" in call.data:
+            ID = int(call.data["id"])
+
+            for cli in client:
+                attrs = vars(cli)
+                if attrs["id"] == ID:
+                    cli.setZone(call.data["zone"])
+        else:
+            client[0].setZone(call.data["zone"])
+
+    hass.services.async_register(DOMAIN, SERVICE_SETZONE, handle_setzone)
+
+    async def handle_lock(call):
+        """Handle lock service call."""
+        if "id" in call.data:
+            ID = int(call.data["id"])
+
+            for cli in client:
+                attrs = vars(cli)
+                if attrs["id"] == ID:
+                    cli.lock()
+        else:
+            client[0].lock()
+
+    hass.services.async_register(DOMAIN, SERVICE_LOCK, handle_lock)
+
+    async def handle_unlock(call):
+        """Handle unlock service call."""
+        if "id" in call.data:
+            ID = int(call.data["id"])
+
+            for cli in client:
+                attrs = vars(cli)
+                if attrs["id"] == ID:
+                    cli.unlock()
+        else:
+            client[0].unlock()
+
+    hass.services.async_register(DOMAIN, SERVICE_UNLOCK, handle_unlock)
+
+    async def handle_restart(call):
+        """Handle restart service call."""
+        if "id" in call.data:
+            ID = int(call.data["id"])
+
+            for cli in client:
+                attrs = vars(cli)
+                if attrs["id"] == ID:
+                    cli.restart()
+        else:
+            client[0].restart()
+
+    hass.services.async_register(DOMAIN, SERVICE_RESTART, handle_restart)
+
 
     return True
 
