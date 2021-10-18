@@ -1,0 +1,162 @@
+pack_speechengine:
+  script:
+
+################################################################################
+## general speech engine template                                             ##
+################################################################################
+    speech:
+      sequence:
+      - service: media_player.turn_on
+        data_template:
+          entity_id: >
+            {% if device == 'kitchen' %}
+              media_player.nesthub8311
+            {% elif device == 'livingroom' %}
+              media_player.stue
+            {% elif device == 'bedroom' %}
+              media_player.sovevaerelse_2
+            {% else %}
+              media_player.all_house
+            {% endif %}
+      - service: media_player.volume_set
+        data_template:
+          entity_id: >
+            {% if device == 'kitchen' %}
+              media_player.nesthub8311
+            {% elif device == 'livingroom' %}
+              media_player.stue
+            {% elif device == 'bedroom' %}
+              media_player.sovevaerelse_2
+            {% else %}
+              media_player.all_house
+            {% endif %}
+          volume_level: >
+            {% if device == 'kitchen' %}
+              .60
+            {% elif device == 'livingroom' %}
+              .20
+            {% elif device == 'bedroom' %}
+              .10
+            {% else %}
+              .50
+            {% endif %}
+      - service: tts.cloud_say
+        data_template:
+          entity_id: >
+            {% if device == 'kitchen' %}
+              media_player.nesthub8311
+            {% elif device == 'livingroom' %}
+              media_player.stue
+            {% elif device == 'bedroom' %}
+              media_player.sovevaerelse_2
+            {% else %}
+              media_player.all_house
+            {% endif %}
+          message: >-
+            {{ message }}
+          cache: true
+          language: da-DK
+          options:
+            gender: female
+
+################################################################################
+## Status Announcements                                                       ##
+################################################################################
+    do_speech:
+      sequence:
+        - service: script.speech
+          data:
+            device: '{{ device }}'
+            message: >-
+
+              {% macro greeting() %}
+                {% if now().strftime('%H')|int < 9%}
+                  God morgen.
+                {% elif now().strftime('%H')|int >= 9 and now().strftime('%H')|int < 12 %}
+                  God formiddag.
+                {% elif now().strftime('%H')|int >= 12 and now().strftime('%H')|int < 17 %}
+                  God eftermiddag.
+                {% else %}
+                  God aften.
+                {% endif %}
+              {% endmacro %}
+
+              {% macro confirm() %}
+                {{ [
+                  'Okay.',
+                  'Javel.',
+                  'Som du ønsker.',
+                  'Straks.',
+                  'Selvfølgeligt, som om jeg aldrig har brug for hvile.',
+                  'Jeg skulle lige til at gøre det.'
+                ] | random }}
+              {% endmacro %}
+
+              {% macro interrupt() %}
+                {{ [
+                  'Undskyld, ',
+                  'Beklager afbrydelsen, men, ',
+                  'Vil nødig forstyrre, men, ',
+                  'Må jeg lige få din opmærksomhed? '
+                ] | random }}
+              {% endmacro %}
+
+              {% macro freezing() %}
+                {{ [
+                  'Det er koldt ude, pas på du ikke falder.',
+                  'Pas på pingvinerne udenfor, det er lige deres yndlings vejr.'
+                ] | random }}
+              {% endmacro %}
+
+              {% macro djskoge() %}
+                {{ [
+                  'Så er der bassarm med Skoge.',
+                  'DJ Skoge streamer nu på Twitch.',
+                  'Op med volumen og tænd for Twitch, Skoge er online.',
+                  'Retroparty med DJ Skoge, tænd for Twitch.'
+                ] | random }}
+              {% endmacro %}
+
+              {% macro dooropen() %}
+                {{ [
+                  'Du tænker ikke det er på tide at lukke døren?',
+                  'Puha, jeg synes det bliver køligt. Kan du ikke lukke døren?',
+                  'Det trækker, jeg bliver syg. Så luk dog døren menneske!',
+                  'Har du overvejet alle de insekter der kommer ind af døren lige nu? Luk den!'
+                ] | random }}
+              {% endmacro %}
+
+              {%- macro cleanup(data) -%}
+                {%- for item in data.split("\n")  if item | trim != "" -%}
+                  {{ item | trim | replace("_", " ") }}
+                {% endfor -%}
+              {%- endmacro -%}
+
+              {%- macro mother_of_all_macros() -%}
+                {% if call_greeting == 1 %}
+                  {{ greeting() }}
+                {% endif %}
+
+                {% if call_confirmation == 1 %}
+                  {{ confirm() }}
+                {% endif %}
+
+                {% if call_interrupt == 1 %}
+                  {{ interrupt() }}
+                {% endif %}
+
+                {% if call_freezing == 1 %}
+                  {{ freezing() }}
+                {% endif %}
+
+                {% if call_djskoge == 1 %}
+                  {{ djskoge() }}
+                {% endif %}
+
+                {% if call_dooropen == 1 %}
+                  {{ dooropen() }}
+                {% endif %}
+
+              {%- endmacro -%}
+
+              {{- cleanup(mother_of_all_macros()) -}}

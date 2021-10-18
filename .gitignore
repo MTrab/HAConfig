@@ -24,3 +24,4 @@ __pycache__/
 tts/
 
 .vscode
+.shopping_list.json

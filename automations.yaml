@@ -106,21 +106,6 @@
       data:
         volume_level: 0.12
   mode: single
-- id: '1602229830948'
-  alias: State - Set volume on non-TV input
-  description: ''
-  trigger:
-  - platform: state
-    entity_id: media_player.stue
-    attribute: source
-    from: TV
-  condition: []
-  action:
-  - service: media_player.volume_set
-    data:
-      volume_level: 0.12
-    entity_id: media_player.stue
-  mode: single
 - id: '1602610466182'
   alias: Auto - Turn on some lights when dark and coming home
   description: ''
@@ -1125,4 +1110,99 @@
   - service: switch.turn_on
     target:
       entity_id: switch.store_stearinlys
+  mode: single
+- id: '1634541207719'
+  alias: TTS - Greeting when coming home
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: person.morten_trab
+    to: home
+  condition: []
+  action:
+  - wait_for_trigger:
+    - type: opened
+      platform: device
+      device_id: 22fbec51c6ceb7c4a5bad76c3ce22273
+      entity_id: binary_sensor.dor
+      domain: binary_sensor
+    continue_on_timeout: false
+    timeout: 00:05:00
+  - wait_for_trigger:
+    - type: not_opened
+      platform: device
+      device_id: 22fbec51c6ceb7c4a5bad76c3ce22273
+      entity_id: binary_sensor.dor
+      domain: binary_sensor
+      for:
+        hours: 0
+        minutes: 0
+        seconds: 30
+        milliseconds: 0
+    continue_on_timeout: false
+    timeout: 00:05:00
+  - service: tts.cloud_say
+    data:
+      entity_id: media_player.nesthub8311
+      message: Velkommen hjem, Morten.
+      cache: true
+  mode: restart
+- id: '1634544090085'
+  alias: TTS - DJ Skoge Stremer - New
+  description: Giv besked når Skoge streamer
+  trigger:
+  - platform: state
+    entity_id: sensor.djskoge
+    from: offline
+    to: streaming
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 30
+      milliseconds: 0
+  condition:
+  - condition: time
+    after: '10:00:00'
+    before: '22:00:00'
+  action:
+  - service: sonos.snapshot
+    data: {}
+    entity_id: media_player.stue
+  - service: script.do_speech
+    data:
+      device: livingroom
+      call_interrupt: 1
+      call_djskoge: 1
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 10
+      milliseconds: 0
+  - service: sonos.restore
+    data: {}
+    entity_id: media_player.stue
+  mode: single
+- id: '1634544242311'
+  alias: TTS - Døren er åben - New
+  description: ''
+  trigger:
+  - platform: time
+    at: '21:00:00'
+  condition:
+  - type: is_open
+    condition: device
+    device_id: 22fbec51c6ceb7c4a5bad76c3ce22273
+    entity_id: binary_sensor.dor
+    domain: binary_sensor
+  action:
+  - service: media_player.volume_mute
+    data:
+      is_volume_muted: false
+    target:
+      entity_id: media_player.stue
+  - service: script.do_speech
+    data:
+      device: livingroom
+      call_interrupt: 1
+      call_dooropen: 1
   mode: single
