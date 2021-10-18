@@ -92,6 +92,14 @@ pack_speechengine:
                 ] | random }}
               {% endmacro %}
 
+              {% macro morten_home() %}
+                {{ [
+                  'Velkommen hjem, Morten.',
+                  'Der var husets konge jo.',
+                  'Jeg har savnet dig, velkommen hjem.'
+                ] | random }}
+              {% endmacro %}
+
               {% macro interrupt() %}
                 {{ [
                   'Undskyld, ',
@@ -126,6 +134,14 @@ pack_speechengine:
                 ] | random }}
               {% endmacro %}
 
+              {% macro sleep() %}
+                {{ [
+                  'Godnat.',
+                  'Godnat og drøm sødt.',
+                  'Sov godt, jeg våger over dig her fra din side.'
+                ] | random }}
+              {% endmacro %}
+
               {%- macro cleanup(data) -%}
                 {%- for item in data.split("\n")  if item | trim != "" -%}
                   {{ item | trim | replace("_", " ") }}
@@ -155,6 +171,14 @@ pack_speechengine:
 
                 {% if call_dooropen == 1 %}
                   {{ dooropen() }}
+                {% endif %}
+
+                {% if call_morten_home == 1 %}
+                  {{ morten_home() }}
+                {% endif %}
+
+                {% if call_sleep == 1 %}
+                  {{ sleep() }}
                 {% endif %}
 
               {%- endmacro -%}
