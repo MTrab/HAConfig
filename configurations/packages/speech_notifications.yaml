@@ -72,10 +72,12 @@ pack_speechengine:
               {% macro greeting() %}
                 {% if now().strftime('%H')|int < 9%}
                   God morgen.
-                {% elif now().strftime('%H')|int >= 9 and now().strftime('%H')|int < 12 %}
-                  God formiddag.
-                {% elif now().strftime('%H')|int >= 12 and now().strftime('%H')|int < 17 %}
-                  God eftermiddag.
+                {% elif now().strftime('%H')|int >= 9 and now().strftime('%H')|int < 17 %}
+                  {{[
+                    'Goddag.',
+                    'Hej.',
+                    'Davs.'
+                  ] | random }}
                 {% else %}
                   God aften.
                 {% endif %}

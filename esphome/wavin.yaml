@@ -13,6 +13,9 @@ esphome:
   includes:
     - custom_components/wavinAhc9000/wavinAhc9000.h
 
+#external_components:
+#  - source: github://heinekmadsen/esphome_components
+  
 # Disable logger
 logger:
   baud_rate: 0

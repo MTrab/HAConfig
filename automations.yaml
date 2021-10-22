@@ -17,7 +17,7 @@
     domain: switch
   mode: single
 - id: '1602155183627'
-  alias: Light - Livingroom - Switch 1 - Desktop On
+  alias: Light - Livingroom - Desktop Switch
   description: ''
   trigger:
   - device_id: a4241273071711ebb5261fcfb2d6276f
@@ -25,30 +25,37 @@
     platform: device
     type: remote_button_short_press
     subtype: turn_on
-  condition: []
-  action:
-  - service: light.turn_on
-    data: {}
-    target:
-      entity_id: light.skrivebord
-  mode: single
-- id: '1602155267210'
-  alias: Light - Livingroom - Switch 1 - Desktop Off
-  description: ''
-  trigger:
+    id: desktop_on
   - device_id: a4241273071711ebb5261fcfb2d6276f
     domain: deconz
     platform: device
     type: remote_button_short_press
     subtype: turn_off
+    id: desktop_off
   condition: []
   action:
-  - service: light.turn_off
-    data: {}
-    entity_id: light.skrivebord
-  mode: single
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: desktop_on
+      sequence:
+      - type: turn_on
+        device_id: 1e97980e04e111eb800287a8184cbf3d
+        entity_id: light.skrivebord
+        domain: light
+    - conditions:
+      - condition: trigger
+        id: desktop_off
+      sequence:
+      - type: turn_off
+        device_id: 1e97980e04e111eb800287a8184cbf3d
+        entity_id: light.skrivebord
+        domain: light
+    default: []
+  mode: queued
+  max: 10
 - id: '1602158001584'
-  alias: Light - Livingroom - Toggle Deathstar
+  alias: Light - Livingroom - Wall Switch
   description: ''
   trigger:
   - device_id: b8eb1abd095c11eb89301f478a9e0ae6
@@ -56,28 +63,35 @@
     platform: device
     type: remote_button_short_press
     subtype: turn_on
-  condition: []
-  action:
-  - type: toggle
-    device_id: a0d3944505a411eb9a90dbc131472481
-    entity_id: light.dodsstjernen
-    domain: light
-  mode: single
-- id: '1602158073953'
-  alias: Light - Livingroom - Toggle Desktop
-  description: ''
-  trigger:
+    id: deathstar
   - device_id: b8eb1abd095c11eb89301f478a9e0ae6
     domain: deconz
     platform: device
     type: remote_button_short_press
     subtype: turn_off
+    id: desktop
   condition: []
   action:
-  - service: light.toggle
-    data: {}
-    entity_id: light.skrivebord
-  mode: single
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: deathstar
+      sequence:
+      - type: toggle
+        device_id: a0d3944505a411eb9a90dbc131472481
+        entity_id: light.dodsstjernen
+        domain: light
+    - conditions:
+      - condition: trigger
+        id: desktop
+      sequence:
+      - type: toggle
+        device_id: 1e97980e04e111eb800287a8184cbf3d
+        entity_id: light.skrivebord
+        domain: light
+    default: []
+  mode: parallel
+  max: 10
 - id: '1602228352429'
   alias: Auto - Set TV volume
   description: ''
@@ -135,7 +149,7 @@
       entity_id: switch.store_stearinlys
   mode: single
 - id: '1604828109538'
-  alias: Light - Diningroom - Table On
+  alias: Light - Diningroom - Diningtable
   description: ''
   trigger:
   - device_id: 8bfa641737a1fa5ecaf45de0848366df
@@ -143,29 +157,35 @@
     platform: device
     type: remote_button_short_press
     subtype: turn_on
-  condition: []
-  action:
-  - type: turn_on
-    device_id: 5e2dcf9304e111eb9a30e3199109ec3d
-    entity_id: light.spisebord
-    domain: light
-  mode: single
-- id: '1604828205176'
-  alias: Light - Diningroom - Table Off
-  description: ''
-  trigger:
+    id: turn_on
   - device_id: 8bfa641737a1fa5ecaf45de0848366df
     domain: deconz
     platform: device
     type: remote_button_short_press
     subtype: turn_off
+    id: turn_off
   condition: []
   action:
-  - type: turn_off
-    device_id: 5e2dcf9304e111eb9a30e3199109ec3d
-    entity_id: light.spisebord
-    domain: light
-  mode: single
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: turn_on
+      sequence:
+      - type: turn_on
+        device_id: 5e2dcf9304e111eb9a30e3199109ec3d
+        entity_id: light.spisebord
+        domain: light
+    - conditions:
+      - condition: trigger
+        id: turn_off
+      sequence:
+      - type: turn_off
+        device_id: 5e2dcf9304e111eb9a30e3199109ec3d
+        entity_id: light.spisebord
+        domain: light
+    default: []
+  mode: queued
+  max: 10
 - id: '1604828285058'
   alias: Light - Dimmer - Brighten - Diningtable
   description: ''
@@ -325,37 +345,6 @@
   - service: switch.turn_off
     target:
       entity_id: switch.store_stearinlys
-  mode: single
-- id: '1607082699961'
-  alias: TTS - DJ Skoge Stremer
-  description: Giv besked når Skoge streamer
-  trigger:
-  - platform: state
-    entity_id: sensor.djskoge
-    from: offline
-    to: streaming
-    for: 00:01:00
-  condition:
-  - condition: time
-    after: '10:00:00'
-    before: '22:00:00'
-  action:
-  - service: sonos.snapshot
-    data: {}
-    entity_id: media_player.stue
-  - service: media_player.volume_set
-    data:
-      volume_level: 0.3
-    entity_id: media_player.stue
-  - service: media_player.play_media
-    data:
-      media_content_id: https://home.trab.dk/local/djskoge.mp3
-      media_content_type: music
-    entity_id: media_player.stue
-  - delay: 00:00:05
-  - service: sonos.restore
-    data: {}
-    entity_id: media_player.stue
   mode: single
 - id: '1608025961275'
   alias: Alert - Doorbell
@@ -778,10 +767,14 @@
   - service: media_player.media_stop
     data:
       entity_id: all
+  - type: turn_off
+    device_id: 9f58561065cf2d2e3cfa2f1c1fcee848
+    entity_id: switch.pc_monitors
+    domain: switch
   mode: single
 - id: '1612785626004'
   alias: Auto - Coming Home
-  description: ''
+  description: Do specific stuff when coming home
   trigger:
   - platform: state
     entity_id: group.any_home
@@ -818,6 +811,10 @@
     device_id: 9f58561065cf2d2e3cfa2f1c1fcee848
     entity_id: switch.pc_monitors
     domain: switch
+  - type: turn_on
+    device_id: 0d38e72afcf2f15fd920c0edcaa4b47d
+    entity_id: switch.kaffemaskine_switch
+    domain: switch
   mode: single
 - id: '1612814644449'
   alias: Alert - Smoke Detected
@@ -828,14 +825,19 @@
     device_id: e322f928712824c67f5124a8f16de3ab
     entity_id: binary_sensor.smoke_livingroom_smoke_alarm_smoke_detected
     domain: binary_sensor
+  - type: smoke
+    platform: device
+    device_id: 159c7c744b771fc0d96223790acba2ff
+    entity_id: binary_sensor.smoke_bedroom_smoke_alarm_smoke_detected_2
+    domain: binary_sensor
   condition: []
   action:
-  - service: notify.mobile_app_mt_samsung_a42
+  - service: notify.mobile_app_mtopnord2
     data:
       message: command_ringer_mode
       title: normal
   - delay: 00:00:02
-  - service: notify.mobile_app_mt_samsung_a42
+  - service: notify.mobile_app_mtopnord2
     data:
       message: '!!! RØG DETEKTERET !!!'
       data:
@@ -1046,30 +1048,6 @@
     data:
       message: Gateway UPS batteri under 50%
   mode: single
-- id: '1631103222650'
-  alias: TTS - Døren er åben
-  description: ''
-  trigger:
-  - platform: time
-    at: '21:00:00'
-  condition:
-  - type: is_open
-    condition: device
-    device_id: 22fbec51c6ceb7c4a5bad76c3ce22273
-    entity_id: binary_sensor.dor
-    domain: binary_sensor
-  action:
-  - service: media_player.volume_mute
-    data:
-      is_volume_muted: false
-    target:
-      entity_id: media_player.stue
-  - service: tts.cloud_say
-    data:
-      cache: true
-      entity_id: media_player.stue
-      message: Døren er åben - måske den skulle lukkes
-  mode: single
 - id: '1632209322025'
   alias: Auto - Detect low battery and notify
   description: ''
@@ -1118,7 +1096,10 @@
   - platform: state
     entity_id: person.morten_trab
     to: home
-  condition: []
+  condition:
+  - condition: time
+    after: 00:00:00
+    before: '20:00:00'
   action:
   - wait_for_trigger:
     - type: opened
@@ -1137,18 +1118,17 @@
       for:
         hours: 0
         minutes: 0
-        seconds: 30
+        seconds: 10
         milliseconds: 0
     continue_on_timeout: false
     timeout: 00:05:00
-  - service: tts.cloud_say
+  - service: script.do_speech
     data:
-      entity_id: media_player.nesthub8311
-      message: Velkommen hjem, Morten.
-      cache: true
+      call_morten_home: 1
+      device: kitchen
   mode: restart
 - id: '1634544090085'
-  alias: TTS - DJ Skoge Stremer - New
+  alias: TTS - DJ Skoge Stremer
   description: Giv besked når Skoge streamer
   trigger:
   - platform: state
@@ -1183,7 +1163,7 @@
     entity_id: media_player.stue
   mode: single
 - id: '1634544242311'
-  alias: TTS - Døren er åben - New
+  alias: TTS - Døren er åben
   description: ''
   trigger:
   - platform: time
