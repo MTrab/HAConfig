@@ -538,7 +538,9 @@
       hours: 0
       minutes: 1
       seconds: 0
-  condition: []
+  condition:
+  - condition: template
+    value_template: '{{ trigger.event.data.notify_type != ''COMMBAD'' }}'
   action:
   - service: notify.mobile_app_mtopnord2
     data:
@@ -1042,7 +1044,9 @@
       minutes: 1
       seconds: 0
       milliseconds: 0
-  condition: []
+  condition:
+  - condition: template
+    value_template: '{{ trigger.event.data.notify_type != ''COMMBAD'' }}'
   action:
   - service: notify.mobile_app_mtopnord2
     data:

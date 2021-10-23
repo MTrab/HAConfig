@@ -2,7 +2,7 @@
 #include "esphome/core/log.h"
 
 namespace esphome {
-namespace wavinAhc9000 {
+namespace Ahc9000 {
 
 static const char *TAG = "wavinAhc9000.climate";
 

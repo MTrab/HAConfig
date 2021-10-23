@@ -9,12 +9,12 @@ packages:
   wifi: !include common/wifi.yaml
   device_base: !include common/device_base.yaml
 
-esphome:
-  includes:
-    - custom_components/wavinAhc9000/wavinAhc9000.h
+#esphome:
+#  includes:
+#    - custom_components/wavinAhc9000/wavinAhc9000.h
 
-#external_components:
-#  - source: github://heinekmadsen/esphome_components
+external_components:
+  - source: github://heinekmadsen/esphome_components
   
 # Disable logger
 logger:

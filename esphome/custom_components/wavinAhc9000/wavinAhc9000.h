@@ -2,9 +2,10 @@
 #include "esphome/core/component.h"
 #include "esphome/core/helpers.h"
 #include "esphome/components/modbus/modbus.h"
+#include "esphome/core/hal.h"
 
 namespace esphome {
-namespace wavinAhc9000 {
+namespace Ahc9000 {
 
 class WavinAhc9000 : public PollingComponent, public modbus::ModbusDevice {
   public:
