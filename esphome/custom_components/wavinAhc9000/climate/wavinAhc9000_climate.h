@@ -6,7 +6,7 @@
 #include "esphome/components/sensor/sensor.h"
 
 namespace esphome {
-namespace Ahc9000 {
+namespace wavinAhc9000 {
 
 class WavinAhc9000Climate : public climate::Climate, public Component {
  public:

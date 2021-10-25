@@ -2,7 +2,7 @@
 #include "esphome/core/log.h"
 
 namespace esphome {
-namespace Ahc9000 {
+namespace wavinAhc9000 {
 
 static const char *TAG = "wavinAhc9000.climate";
 
@@ -54,13 +54,6 @@ void WavinAhc9000Climate::control(const climate::ClimateCall &call) {
 climate::ClimateTraits WavinAhc9000Climate::traits() {
   auto traits = climate::ClimateTraits();
   traits.set_supports_current_temperature(true);
-  //traits.set_supports_heat(true);
-
-  traits.set_supported_modes({
-    climate::ClimateMode::CLIMATE_MODE_OFF,
-    climate::ClimateMode::CLIMATE_MODE_HEAT
-  });
-
   return traits;
 }
 

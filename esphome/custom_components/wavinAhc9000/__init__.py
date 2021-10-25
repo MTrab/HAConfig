@@ -4,7 +4,7 @@ from esphome import core, pins
 from esphome.components import modbus
 from esphome.const import CONF_ID, CONF_RW_PIN
 
-wavinAhc9000_ns = cg.esphome_ns.namespace('Ahc9000')
+wavinAhc9000_ns = cg.esphome_ns.namespace('wavinAhc9000')
 WavinAhc9000 = wavinAhc9000_ns.class_('WavinAhc9000', cg.PollingComponent)
 
 CONF_WAVINAHC9000_ID = 'wavinAhc9000_id'
