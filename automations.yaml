@@ -640,7 +640,9 @@
       sequence:
       - service: switch.turn_off
         data: {}
-        entity_id: switch.kaffemaskine_switch
+        target:
+          entity_id:
+          - switch.coffeemaker_switch
     default: []
   - choose:
     - conditions:
@@ -665,7 +667,8 @@
       sequence:
       - service: switch.turn_on
         data: {}
-        entity_id: switch.kaffemaskine_switch
+        target:
+          entity_id: switch.coffeemaker_switch
     default: []
   - choose:
     - conditions:
@@ -846,8 +849,8 @@
     entity_id: switch.pc_monitors
     domain: switch
   - type: turn_on
-    device_id: 0d38e72afcf2f15fd920c0edcaa4b47d
-    entity_id: switch.kaffemaskine_switch
+    device_id: 8ae93b9b7711ca61eaa526e03b81f43f
+    entity_id: switch.coffeemaker_switch
     domain: switch
   mode: single
 - id: '1612814644449'
