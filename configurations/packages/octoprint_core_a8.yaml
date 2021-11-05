@@ -43,7 +43,7 @@ pack_octoprint_core_a8:
         core_a8_power:
           friendly_name: Core A8 Power
           value_template: >-
-            {% if is_state('sensor.core_a8_current_state', 'unknown') %}
+            {% if is_state('sensor.core_a8_print_status', 'Offline after error') %}
               off
             {% else %}
               on

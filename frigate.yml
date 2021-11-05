@@ -1,0 +1,49 @@
+mqtt:
+  host: 10.254.254.9
+  user: frigate
+  password: 7n77op9RpRoHPQEn6xFK
+
+cameras:
+  horsensvej:
+    ffmpeg:
+      inputs:
+        - path: rtsp://192.168.143.254:554/11
+          roles:
+            - detect
+            - rtmp
+    detect:
+      width: 1024
+      height: 600
+      fps: 10
+      enabled: True
+      max_disappeared: 50
+    motion:
+      mask:
+        - 0,101,0,0,1024,0,1024,225,678,173,310,146,77,144,82,97
+
+timestamp_style:
+  position: "bl"
+  format: "%d/%m/%Y %H:%M:%S"
+  color:
+    red: 0
+    green: 0
+    blue: 0
+  thickness: 2
+
+record:
+  enabled: False
+  retain_days: 10
+  events:
+    max_seconds: 300
+    pre_capture: 5
+    post_capture: 5
+    objects:
+      - person
+      - car
+    retain:
+      default: 10
+
+objects:
+  track:
+    - person
+    - car

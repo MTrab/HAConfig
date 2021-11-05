@@ -509,21 +509,6 @@
     entity_id: light.kitchen
     domain: light
   mode: restart
-- id: '1609103747427'
-  alias: Auto - Turn Off - Core A8 3D printer
-  description: Slukker for 3D printeren 5 minutter efter printjob er sluttet
-  trigger:
-  - platform: state
-    entity_id: binary_sensor.core_a8_printing
-    from: 'on'
-    to: 'off'
-    for: 00:05:00
-  condition: []
-  action:
-  - service: switch.turn_off
-    data: {}
-    entity_id: switch.core_a8_power
-  mode: single
 - id: '1610442793326'
   alias: Alert - Main UPS - below 50% battery
   description: ''
@@ -681,19 +666,6 @@
         domain: switch
     default: []
   mode: single
-- id: '1612030066806'
-  alias: Auto - Turn On - GEEETech i3 3D Printer
-  description: ''
-  trigger:
-  - platform: webhook
-    webhook_id: ac3e91a9e00345c083575e371a93beaa
-  condition: []
-  action:
-  - type: turn_on
-    device_id: 6e4b89a5b6c1effbea4af11f69ee3aed
-    entity_id: switch.geeetech_i3_pi
-    domain: switch
-  mode: single
 - id: '1612350036408'
   alias: Auto - Outside Lights - Dusk - Auto On
   description: ''
@@ -706,7 +678,7 @@
     state: home
   action:
   - type: turn_on
-    device_id: f9692b510dd3de15c7384c1c23afd976
+    device_id: 61cb33c506d640e6fe3c3671320ecebc
     entity_id: light.outside
     domain: light
     brightness_pct: 10
@@ -723,7 +695,7 @@
     state: home
   action:
   - type: turn_on
-    device_id: f9692b510dd3de15c7384c1c23afd976
+    device_id: 61cb33c506d640e6fe3c3671320ecebc
     entity_id: light.outside
     domain: light
     brightness_pct: 10
@@ -796,18 +768,42 @@
     from: home
     to: not_home
     for: 00:02:00
+    id: 2min
+  - platform: state
+    entity_id: group.any_home
+    id: 30min
+    from: home
+    to: not_home
+    for:
+      hours: 0
+      minutes: 30
+      seconds: 0
+      milliseconds: 0
   condition: []
   action:
-  - service: light.turn_off
-    data:
-      entity_id: all
-  - service: media_player.media_stop
-    data:
-      entity_id: all
-  - type: turn_off
-    device_id: 9f58561065cf2d2e3cfa2f1c1fcee848
-    entity_id: switch.pc_monitors
-    domain: switch
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: 2min
+      sequence:
+      - type: turn_off
+        device_id: 9f58561065cf2d2e3cfa2f1c1fcee848
+        entity_id: switch.pc_monitors
+        domain: switch
+      - service: media_player.media_stop
+        target:
+          entity_id: all
+      - service: light.turn_off
+        target:
+          entity_id: all
+    - conditions:
+      - condition: trigger
+        id: 30min
+      sequence:
+      - service: switch.turn_off
+        target:
+          entity_id: switch.kaffemaskine_power
+    default: []
   mode: single
 - id: '1612785626004'
   alias: Auto - Coming Home
