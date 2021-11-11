@@ -1,0 +1,32 @@
+elpris:
+  template:
+    - trigger:
+        - platform: time_pattern
+          minutes: 0
+      binary_sensor:
+        - name: "Billigste elpris"
+          state: >
+            {% set charging_time = 3 %}
+            {% set departure_time = 6 %} {# could be calculated or another sensor #}
+            {% set current_hour = now().hour %}
+
+            {% set ns = namespace(prices = []) %}
+            {% set prices = state_attr("sensor.elpris", "today") | list %} {# nordpool sensors #}
+            {%if state_attr("sensor.elpris", "tomorrow_valid") %}
+              {% set prices = prices + state_attr("sensor.elpris", "tomorrow") | list %}
+            {% endif %}
+
+            {% set start_index = current_hour %}
+            {% set end_index = 1 + departure_time - charging_time %}
+            {% set end_index = end_index + 24 if departure_time <= current_hour else end_index %}
+            {% set end_index = [end_index, prices | length] | min %}
+
+            {% for index in range(start_index, end_index) -%}
+              {%- set price = prices[index] -%}
+              {%- set ns.current_total = 0 -%}
+              {%- for i in range(index, index + charging_time) -%} {# loop every hour in charge time#}
+                {%- set ns.current_total = ns.current_total + prices[i] -%}
+              {%-endfor -%}
+              {%- set ns.prices = ns.prices + [ns.current_total] -%}
+            {%- endfor -%}
+            {% if ns.prices | count == 0 or ns.prices[0] > ns.prices | min %}False{% else %}True{% endif %}

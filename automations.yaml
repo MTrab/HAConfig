@@ -709,38 +709,41 @@
     device_id: dbabcecdf25c0ce9cfdb7811e9ee1506
     entity_id: binary_sensor.motion_sensor_outdoor
     domain: binary_sensor
+    id: 'on'
+  - type: no_motion
+    platform: device
+    device_id: dbabcecdf25c0ce9cfdb7811e9ee1506
+    entity_id: binary_sensor.motion_sensor_outdoor
+    domain: binary_sensor
+    id: 'off'
+    for:
+      hours: 0
+      minutes: 3
+      seconds: 0
+      milliseconds: 0
   condition:
   - condition: device
     type: is_on
-    device_id: f9692b510dd3de15c7384c1c23afd976
+    device_id: 61cb33c506d640e6fe3c3671320ecebc
     entity_id: light.outside
     domain: light
   action:
-  - type: turn_on
-    device_id: f9692b510dd3de15c7384c1c23afd976
-    entity_id: light.outside
-    domain: light
-    brightness_pct: 100
-  - wait_for_trigger:
-    - type: no_motion
-      platform: device
-      device_id: dbabcecdf25c0ce9cfdb7811e9ee1506
-      entity_id: binary_sensor.motion_sensor_outdoor
-      domain: binary_sensor
-      for:
-        hours: 0
-        minutes: 3
-        seconds: 0
   - choose:
     - conditions:
-      - condition: device
-        type: is_on
-        device_id: f9692b510dd3de15c7384c1c23afd976
-        entity_id: light.outside
-        domain: light
+      - condition: trigger
+        id: 'on'
       sequence:
       - type: turn_on
-        device_id: f9692b510dd3de15c7384c1c23afd976
+        device_id: 61cb33c506d640e6fe3c3671320ecebc
+        entity_id: light.outside
+        domain: light
+        brightness_pct: 100
+    - conditions:
+      - condition: trigger
+        id: 'off'
+      sequence:
+      - type: turn_on
+        device_id: 61cb33c506d640e6fe3c3671320ecebc
         entity_id: light.outside
         domain: light
         brightness_pct: 10
@@ -802,7 +805,8 @@
       sequence:
       - service: switch.turn_off
         target:
-          entity_id: switch.kaffemaskine_power
+          entity_id:
+          - switch.coffeemaker_switch
     default: []
   mode: single
 - id: '1612785626004'

@@ -20,6 +20,12 @@ cameras:
     motion:
       mask:
         - 0,101,0,0,1024,0,1024,225,678,173,310,146,77,144,82,97
+    zones:
+      everything:
+        coordinates: 0,600,1024,600,1024,239,611,157,242,138,0,147,0,411
+        objects:
+          - car
+          - person
 
 timestamp_style:
   position: "bl"

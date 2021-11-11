@@ -1,27 +1,32 @@
 [
     {
-        "name": "Klorhexidin",
-        "id": "8a82a577a4644cccbcc0a82b267f8508",
-        "complete": false
-    },
-    {
         "name": "Havregryn",
-        "id": "6477423665cc43119520bd0d1d712416",
+        "id": "6bceeeb1455349fcb3b4455dffe6b150",
+        "complete": true
+    },
+    {
+        "name": "M\u00e6lk",
+        "id": "b057b45307b040a0ab4673b7f3d1839f",
+        "complete": true
+    },
+    {
+        "name": "Bagepapir (ark)",
+        "id": "8779e2e4cb9a4d94a8cbaeba52aaa432",
         "complete": false
     },
     {
-        "name": "R\u00f8rsukker",
-        "id": "cb50d6af62114031ae576a2fb342e7ff",
+        "name": "Ymerdrys",
+        "id": "275f5c5960f34724845cd8f5661bde65",
         "complete": false
     },
     {
-        "name": "Skyllemiddel",
-        "id": "9295027ba6dc49a88e68f237e9e58c22",
-        "complete": false
+        "name": "1kg oksek\u00f8d",
+        "id": "efb8923afe5a4b3eb6dadd4e2528045c",
+        "complete": true
     },
     {
-        "name": "Multifrugtjuice",
-        "id": "4dea4d6ccef345b09cb2c6800da578cc",
-        "complete": false
+        "name": "2x lasagne s\u00e6t",
+        "id": "9d5e4bf3277f4cef9a27d99c6c086de1",
+        "complete": true
     }
 ]
