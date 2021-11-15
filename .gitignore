@@ -26,3 +26,4 @@ tts/
 .vscode
 .shopping_list.json
 configurations/packages/loans.yaml
+shell_scripts/shell_secrets.txt

@@ -515,14 +515,10 @@
   trigger:
   - type: battery_level
     platform: device
-    device_id: f0759c04592072c41ff87ef39de80a43
+    device_id: 9db5d52b1d2fa58e19207f4c6e5dd887
     entity_id: sensor.main_ups_battery_charge
     domain: sensor
     below: 50
-    for:
-      hours: 0
-      minutes: 1
-      seconds: 0
   condition:
   - condition: template
     value_template: '{{ trigger.event.data.notify_type != ''COMMBAD'' }}'
@@ -1231,4 +1227,14 @@
       device: livingroom
       call_interrupt: 1
       call_dooropen: 1
+  mode: single
+- id: '1636984948215'
+  alias: Auto - Update Webasto State
+  description: Triggers update thru Parsehub
+  trigger:
+  - platform: time_pattern
+    minutes: /5
+  condition: []
+  action:
+  - service: shell_command.webasto_state
   mode: single
