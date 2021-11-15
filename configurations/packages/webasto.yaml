@@ -1,4 +1,46 @@
+###########################################
+#                                         #
+#   ! ! ! ONLY FOR ADVANCED USERS ! ! !   #
+#   -----------------------------------   #
+#                                         #
+# Webasto Package for reading state and   #
+# controlling on/off thru ParseHub        #
+# Please note that this is an UNSUPPORTED #
+# solution, and use at your own risk!     #
+#                                         #
+# REQUIRES Parsehub project Webasto.phj   #
+# imported into your Parsehub             #
+#                                         #
+# Replace t2JPRLvvEm1r with your Project  #
+# token (found in Parsehub app)           #
+#                                         #
+# Create path /config/rest_json           #
+#                                         #
+# Create path /config/shell_scripts       #
+# Copy get_parsehub.sh to this path       #
+# chmod 755 get_parsehub.sh               #
+#                                         #
+# Create file                             #
+# /config/shell_scripts/shell_secrets.txt #
+# Add these variables to the file:        #
+# PARSEHUB_API_TOKEN=TokenFromApp         #
+#                                         #
+# Rev. 1, 15/11-2021 by Morten Trab       #
+#                                         #
+###########################################
+
 pack_webasto:
+  automation:
+    alias: Auto - Update Webasto State
+    description: Triggers update thru Parsehub
+    trigger:
+      - platform: time_pattern
+        minutes: /5
+    condition: []
+    action:
+      - service: shell_command.webasto_state
+    mode: single
+
   shell_command:
     webasto_state: '/config/shell_scripts/get_parsehub.sh t2JPRLvvEm1r webasto.json'
     webasto_on: '/config/shell_scripts/get_parsehub.sh t2JPRLvvEm1r webasto.json command on'

@@ -1228,13 +1228,3 @@
       call_interrupt: 1
       call_dooropen: 1
   mode: single
-- id: '1636984948215'
-  alias: Auto - Update Webasto State
-  description: Triggers update thru Parsehub
-  trigger:
-  - platform: time_pattern
-    minutes: /5
-  condition: []
-  action:
-  - service: shell_command.webasto_state
-  mode: single
