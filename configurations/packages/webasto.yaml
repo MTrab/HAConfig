@@ -64,7 +64,8 @@ pack_webasto:
     - platform: file
       file_path: /config/rest_json/webasto.json
       name: Webasto Last Update
-      value_template: '{{ value_json.last_update }}'
+      value_template: >-
+        {{ strptime(value_json.last_update.replace(' GMT',''), '%a %b %d %Y %H:%M:%S%z (%Z)').timestamp() | timestamp_custom('%H:%M %d-%m-%Y') }}
 
   homeassistant:
     customize:
