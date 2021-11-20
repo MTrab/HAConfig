@@ -25,7 +25,8 @@
 # Add these variables to the file:        #
 # PARSEHUB_API_TOKEN=TokenFromApp         #
 #                                         #
-# Rev. 1, 15/11-2021 by Morten Trab       #
+# Rev. 1, 15/11-2021 by Morten Trab       # 
+# Rev. 2, 21/11-2021 by Morten Trab       #
 #                                         #
 ###########################################
 
@@ -40,6 +41,7 @@ pack_webasto:
       action:
         - service: shell_command.webasto_state
       mode: single
+
     - alias: Auto - Webasto - Get next departure time
       description: Reads next departuretime from calendar event
       mode: single
@@ -54,6 +56,7 @@ pack_webasto:
             entity_id: input_datetime.webasto_next_departure_time
           data:
             datetime: '{{ state_attr("calendar.webasto","start_time") }}'
+
     - alias: Auto - Webasto - Set next calculated start
       description: Reads the calculated departure time from sensor.webasto_calculated_start
       mode: single
@@ -67,6 +70,7 @@ pack_webasto:
             entity_id: input_datetime.webasto_calculated_departure_time
           data:
             datetime: '{{ states("sensor.webasto_calculated_start") }}'
+
     - alias: Auto - Webasto - Turn on at calculated start time
       description: 'Turns on the heater when input_datetime.webasto_calculated_departure_time is reached'
       trigger:
@@ -119,6 +123,7 @@ pack_webasto:
           {{ states("sensor.webasto_battery") }}
         {% endif %}
       unit_of_measurement: "V"
+
     - platform: file
       file_path: /config/rest_json/webasto.json
       name: Webasto Temperature
@@ -129,6 +134,7 @@ pack_webasto:
           {{ states("sensor.webasto_temperature") }}
         {% endif %}
       unit_of_measurement: "°C"
+
     - platform: file
       file_path: /config/rest_json/webasto.json
       name: Webasto State
@@ -138,6 +144,7 @@ pack_webasto:
         {% else %}
           {{ states("sensor.webasto_state") }}
         {% endif %}
+
     - platform: file
       file_path: /config/rest_json/webasto.json
       name: Webasto Last Update
@@ -147,6 +154,7 @@ pack_webasto:
         {% else %}
           {{ states("sensor.webasto_last_update") }}
         {% endif %}
+
     - platform: template
       sensors:
         webasto_calculated_start:
@@ -161,6 +169,7 @@ pack_webasto:
             {% else %}
                 Waiting For Sensors
             {% endif%}
+
     - platform: template
       sensors:
         car_heater_run_time:
@@ -178,23 +187,26 @@ pack_webasto:
             {%else%}
               0
             {%endif%}
-    - platform: template
-      sensors:
-        webasto_next_departure:
-          friendly_name: "Webasto Next Departure"
-          value_template: >
-            {% if state_attr("calendar.webasto","start_time") is defined %}
-              {{ state_attr("calendar.webasto","start_time") }}
-            {% else %}
-                Never
-            {% endif%}
+
+    # - platform: template
+    #   sensors:
+    #     webasto_next_departure:
+    #       friendly_name: "Webasto Next Departure"
+    #       value_template: >
+    #         {% if state_attr("calendar.webasto","start_time") is defined %}
+    #           {{ state_attr("calendar.webasto","start_time") }}
+    #         {% else %}
+    #             Never
+    #         {% endif%}
 
   homeassistant:
     customize:
       sensor.webasto_battery:
         icon: mdi:car-battery
+
       sensor.webasto_temperature:
         icon: mdi:thermometer
+
       sensor.webasto_state:
         icon: mdi:state-machine
 
@@ -221,6 +233,7 @@ pack_webasto:
       icon: mdi:send-clock
       has_date: true
       has_time: true
+
     webasto_next_departure_time:
       name: Webasto Next Departure Time
       icon: mdi:clock-start
@@ -235,6 +248,7 @@ pack_webasto:
       min: 0
       max: 30
       step: 1
+
     webasto_low_battery:
       name: Webasto Low Point
       icon: mdi:thermometer-low
