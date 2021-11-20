@@ -1228,3 +1228,118 @@
       call_interrupt: 1
       call_dooropen: 1
   mode: single
+- id: '1637156442232'
+  alias: Auto - Work From Home?
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: calendar.work_from_home
+    id: cal
+  - platform: state
+    entity_id: binary_sensor.workday_sensor
+    to: ff
+    id: wds
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: cal
+      - condition: state
+        entity_id: binary_sensor.workday_sensor
+        state: 'on'
+      sequence:
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: calendar.work_from_home
+            state: 'on'
+          sequence:
+          - service: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.is_home
+        - conditions:
+          - condition: state
+            entity_id: binary_sensor.workday_sensor
+            state: 'on'
+          - condition: state
+            entity_id: calendar.work_from_home
+            state: 'off'
+          sequence:
+          - service: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.is_home
+        default: []
+    - conditions:
+      - condition: trigger
+        id: wds
+      - condition: state
+        entity_id: binary_sensor.workday_sensor
+        state: 'off'
+      sequence:
+      - service: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.is_home
+    default:
+    - service: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.is_home
+  mode: single
+- id: '1637158027563'
+  alias: Auto - Kia Niro - Turn off heater when battery is low
+  description: ''
+  trigger:
+  - platform: template
+    value_template: '{{ states(''sensor.webasto_battery'') < states(''input_number.webasto_low_battery'')
+      and  states(''sensor.webasto_battery'') > "5" }}'
+  condition: []
+  action:
+  - service: shell_command.webasto_off
+  - service: notify.mobile_app_mtopnord2
+    data_template:
+      message: Webasto blev slukket da spændingen faldt under {{ states("input_number.webasto_low_battery")
+        }}v
+  mode: single
+- id: '1637178851136'
+  alias: Alert - WAN and VPN connections statechange
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.wan_connection
+  - platform: state
+    entity_id: binary_sensor.vpn_horsensvej
+  - platform: state
+    entity_id: binary_sensor.vpn_ivan
+  condition:
+  - condition: template
+    value_template: '{{ trigger.to_state.state != trigger.from_state.state }}'
+  action:
+  - service: notify.mobile_app_mtopnord2
+    data_template:
+      message: '{{ trigger.from_state.name }} skiftede fra {{ trigger.from_state.state
+        }} til {{ trigger.to_state.state }}'
+  mode: queued
+  max: 10
+- id: '1637443580844'
+  alias: Auto - Kia Niro - Travel Time - Origin Update
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: device_tracker.mtopnord2
+    attribute: latitude
+  - platform: state
+    entity_id: device_tracker.mtopnord2
+    attribute: longitude
+  - platform: state
+    entity_id: device_tracker.mtopnord2
+  condition: []
+  action:
+  - service: input_text.set_value
+    target:
+      entity_id: input_text.waze_origin
+    data:
+      value: "{% if states(\"device_tracker.mtopnord2\") == \"away\" %}\n  {{ state_attr(\"\
+        device_tracker.mtopnord2\", \"latitude\") }}, {{state_attr(\"device_tracker.mtopnord2\"\
+        , \"longitude\") }}\n{% else %}\n  {{ states(\"device_tracker.mtopnord2\"\
+        ) }}\n{% endif %}"
+  mode: single

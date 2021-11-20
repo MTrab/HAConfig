@@ -31,15 +31,77 @@
 
 pack_webasto:
   automation:
-    alias: Auto - Update Webasto State
-    description: Triggers update thru Parsehub
-    trigger:
-      - platform: time_pattern
-        minutes: /5
-    condition: []
-    action:
-      - service: shell_command.webasto_state
-    mode: single
+    - alias: Auto - Webasto - Update State
+      description: Triggers update thru Parsehub
+      trigger:
+        - platform: time_pattern
+          minutes: /5
+      condition: []
+      action:
+        - service: shell_command.webasto_state
+      mode: single
+    - alias: Auto - Webasto - Get next departure time
+      description: Reads next departuretime from calendar event
+      mode: single
+      trigger:
+        - platform: state
+          entity_id: calendar.webasto
+          attribute: start_time
+      condition: []
+      action:
+        - service: input_datetime.set_datetime
+          target:
+            entity_id: input_datetime.webasto_next_departure_time
+          data:
+            datetime: '{{ state_attr("calendar.webasto","start_time") }}'
+    - alias: Auto - Webasto - Set next calculated start
+      description: Reads the calculated departure time from sensor.webasto_calculated_start
+      mode: single
+      trigger:
+        - platform: state
+          entity_id: sensor.webasto_calculated_start
+      condition: []
+      action:
+        - service: input_datetime.set_datetime
+          target:
+            entity_id: input_datetime.webasto_calculated_departure_time
+          data:
+            datetime: '{{ states("sensor.webasto_calculated_start") }}'
+    - alias: Auto - Webasto - Turn on at calculated start time
+      description: 'Turns on the heater when input_datetime.webasto_calculated_departure_time is reached'
+      trigger:
+        - platform: time
+          at: input_datetime.webasto_calculated_departure_time
+          id: 'on'
+        - platform: state
+          entity_id: calendar.webasto
+          id: 'off'
+          to: 'off'
+      condition: []
+      action:
+        - choose:
+            - conditions:
+                - condition: trigger
+                  id: 'on'
+                - condition: template
+                  value_template: >-
+                    {{ states('sensor.webasto_temperature') <
+                    states('input_number.webasto_low_point') }}
+                - condition: state
+                  entity_id: switch.webasto
+                  state: 'off'
+              sequence:
+                - service: shell_command.webasto_on
+            - conditions:
+                - condition: trigger
+                  id: 'off'
+                - condition: state
+                  entity_id: switch.webasto
+                  state: 'on'
+              sequence:
+                - service: shell_command.webasto_off
+          default: []
+      mode: single
 
   shell_command:
     webasto_state: '/config/shell_scripts/get_parsehub.sh t2JPRLvvEm1r webasto.json'
@@ -50,22 +112,82 @@ pack_webasto:
     - platform: file
       file_path: /config/rest_json/webasto.json
       name: Webasto Battery
-      value_template: '{{ value_json.voltage }}'
+      value_template: >
+        {% if value_json.voltage %}
+          {{ value_json.voltage }}
+        {% else %}
+          {{ states("sensor.webasto_battery") }}
+        {% endif %}
       unit_of_measurement: "V"
     - platform: file
       file_path: /config/rest_json/webasto.json
       name: Webasto Temperature
-      value_template: '{{ value_json.temperature }}'
+      value_template: >
+        {% if value_json.temperature %}
+          {{ value_json.temperature }}
+        {% else %}
+          {{ states("sensor.webasto_temperature") }}
+        {% endif %}
       unit_of_measurement: "°C"
     - platform: file
       file_path: /config/rest_json/webasto.json
       name: Webasto State
-      value_template: '{{ value_json.state }}'
+      value_template: >
+        {% if value_json.state %}
+          {{ value_json.state }}
+        {% else %}
+          {{ states("sensor.webasto_state") }}
+        {% endif %}
     - platform: file
       file_path: /config/rest_json/webasto.json
       name: Webasto Last Update
       value_template: >-
-        {{ strptime(value_json.last_update.replace(' GMT',''), '%a %b %d %Y %H:%M:%S%z (%Z)').timestamp() | timestamp_custom('%H:%M %d-%m-%Y') }}
+        {% if value_json.last_update %}
+          {{ strptime(value_json.last_update.replace(' GMT',''), '%a %b %d %Y %H:%M:%S%z (%Z)').timestamp() | timestamp_custom('%H:%M %d-%m-%Y') }}
+        {% else %}
+          {{ states("sensor.webasto_last_update") }}
+        {% endif %}
+    - platform: template
+      sensors:
+        webasto_calculated_start:
+          friendly_name: "Webasto Calculated Start"
+          value_template: >
+            {% if state_attr("calendar.webasto","start_time") is defined %}
+              {% if (states('sensor.car_heater_run_time') | float) > 0 %}
+                {{ strptime(((as_timestamp(state_attr("calendar.webasto","start_time") | timestamp_local) - (states('sensor.car_heater_run_time')|float *3600))|timestamp_local), '%Y-%m-%d %H:%M:%S') }}
+              {%else%}
+                Never
+              {%endif%}
+            {% else %}
+                Waiting For Sensors
+            {% endif%}
+    - platform: template
+      sensors:
+        car_heater_run_time:
+          friendly_name: 'Calculated run time'
+          unit_of_measurement: h
+          value_template: >
+            {% if (states('sensor.webasto_temperature') | float) < (states('input_number.webasto_low_point') | float) %}
+              {% set diff = (states('input_number.webasto_low_point') | float) - (states('sensor.webasto_temperature') | float) %}
+              {% set runTime = 0.05 * diff | round(1) %}
+              {% if runTime < 0.15 %}
+                0.15
+              {% else %}
+                {{ runTime }}
+              {% endif %}
+            {%else%}
+              0
+            {%endif%}
+    - platform: template
+      sensors:
+        webasto_next_departure:
+          friendly_name: "Webasto Next Departure"
+          value_template: >
+            {% if state_attr("calendar.webasto","start_time") is defined %}
+              {{ state_attr("calendar.webasto","start_time") }}
+            {% else %}
+                Never
+            {% endif%}
 
   homeassistant:
     customize:
@@ -92,3 +214,31 @@ pack_webasto:
             service: shell_command.webasto_on
           turn_off:
             service: shell_command.webasto_off
+
+  input_datetime:
+    webasto_calculated_departure_time:
+      name: Webasto Calculated Departure Time
+      icon: mdi:send-clock
+      has_date: true
+      has_time: true
+    webasto_next_departure_time:
+      name: Webasto Next Departure Time
+      icon: mdi:clock-start
+      has_date: true
+      has_time: true
+
+  input_number:
+    webasto_low_point:
+      name: Webasto Low Point
+      icon: mdi:thermometer-low
+      unit_of_measurement: '°C'
+      min: 0
+      max: 30
+      step: 1
+    webasto_low_battery:
+      name: Webasto Low Point
+      icon: mdi:thermometer-low
+      unit_of_measurement: V
+      min: 10
+      max: 15
+      step: 0.1

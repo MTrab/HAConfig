@@ -69,3 +69,18 @@ godnat_tts:
         entity_id: media_player.sovevaerelse
         message: Godnat Morten, kan du sove godt
   mode: single
+turn_on_webasto:
+  alias: Turn on Webasto
+  sequence:
+  - condition: template
+    value_template: '{{ states(''sensor.webasto_temperature'') < states(''input_number.webasto_low_point'')
+      }}'
+  - condition: state
+    entity_id: input_boolean.is_home
+    state: 'off'
+  - condition: state
+    entity_id: switch.webasto
+    state: 'off'
+  - service: shell_command.webasto_on
+  mode: single
+  icon: mdi:radiator

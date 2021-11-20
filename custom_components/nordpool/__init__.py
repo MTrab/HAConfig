@@ -69,7 +69,11 @@ class NordpoolData:
             data = await spot.hourly(end_date=dt)
             if data:
                 self._data[currency][type_] = data["areas"]
+                if type_ == "tomorrow":
+                    self._tomorrow_valid = True
             else:
+                if type_ == "tomorrow":
+                    self._tomorrow_valid = False
                 _LOGGER.debug("Some crap happend, retrying request later.")
                 async_call_later(hass, 20, partial(self._update, type_=type_, dt=dt))
 
@@ -80,7 +84,6 @@ class NordpoolData:
     async def update_tomorrow(self, n: datetime):
         _LOGGER.debug("Updating tomorrows prices.")
         await self._update(type_="tomorrow", dt=dt_utils.now() + timedelta(hours=24))
-        self._tomorrow_valid = True
 
     async def _someday(self, area: str, currency: str, day: str):
         """Returns todays or tomorrows prices in a area in the currency"""
