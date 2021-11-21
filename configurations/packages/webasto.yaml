@@ -33,6 +33,7 @@
 pack_webasto:
   automation:
     - alias: Auto - Webasto - Update State
+      id: webastoUpdateState
       description: Triggers update thru Parsehub
       trigger:
         - platform: time_pattern
@@ -43,6 +44,7 @@ pack_webasto:
       mode: single
 
     - alias: Auto - Webasto - Get next departure time
+      id: webastoNextDeparture
       description: Reads next departuretime from calendar event
       mode: single
       trigger:
@@ -58,6 +60,7 @@ pack_webasto:
             datetime: '{{ state_attr("calendar.webasto","start_time") }}'
 
     - alias: Auto - Webasto - Set next calculated start
+      id: webastoCalculatedStart
       description: Reads the calculated departure time from sensor.webasto_calculated_start
       mode: single
       trigger:
@@ -72,6 +75,7 @@ pack_webasto:
             datetime: '{{ states("sensor.webasto_calculated_start") }}'
 
     - alias: Auto - Webasto - Turn on at calculated start time
+      id: webastoTurnOnAtCalcStart
       description: 'Turns on the heater when input_datetime.webasto_calculated_departure_time is reached'
       trigger:
         - platform: time

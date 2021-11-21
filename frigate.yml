@@ -1,7 +1,7 @@
 mqtt:
-  host: 10.254.254.9
-  user: frigate
-  password: 7n77op9RpRoHPQEn6xFK
+  host: 
+  user: 
+  password: 
 
 cameras:
   horsensvej:
