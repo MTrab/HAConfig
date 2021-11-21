@@ -28,3 +28,4 @@ tts/
 configurations/packages/loans.yaml
 shell_scripts/shell_secrets.txt
 rest_json/webasto.json
+frigate.yml
