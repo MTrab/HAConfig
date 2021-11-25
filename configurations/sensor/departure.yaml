@@ -1,0 +1,8 @@
+- platform: template
+  sensors:
+    time_until_departure:
+      friendly_name: Afgang om
+      unit_of_measurement: min
+      value_template: >-
+        {{ ((as_timestamp(states("input_datetime.webasto_next_departure_time")) - as_timestamp(now())) / 60) | int }}
+        

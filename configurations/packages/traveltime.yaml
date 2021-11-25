@@ -1,0 +1,14 @@
+package_traveltime:
+  sensor:
+    - platform: template
+      sensors:
+        traveltime_origin:
+          friendly_name: "Traveltime Origin"
+          value_template: >
+            {{ states("input_text.google_origin") }}
+    - platform: template
+      sensors:
+        traveltime_destination:
+          friendly_name: "Traveltime Destination"
+          value_template: >
+            {{ states("input_text.google_destination") }}

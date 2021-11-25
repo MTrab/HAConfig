@@ -24,7 +24,12 @@ script: !include scripts.yaml
 scene: !include scenes.yaml
 
 # Addons without configuration
+python_script:
 wake_on_lan:
+
+pyscript:
+  allow_all_imports: true
+  hass_is_global: true
 
 # Configurations
 binary_sensor: !include_dir_merge_list configurations/binary_sensor

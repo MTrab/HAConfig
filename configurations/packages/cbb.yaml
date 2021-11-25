@@ -1,0 +1,84 @@
+pack_cbb:
+  shell_command:
+    cbb_update: /config/shell_scripts/run_parsehub.sh tpyxiUd_w97U
+    cbb_fetch: /config/shell_scripts/fetch_result.sh tpyxiUd_w97U cbb.json
+
+  automation:
+    - alias: Auto - CBB - Update State
+      id: cbbUpdateState
+      description: Triggers update thru Parsehub
+      trigger:
+        - platform: time_pattern
+          hours: /1
+      condition: []
+      action:
+        - service: shell_command.cbb_update
+      mode: single
+
+    - alias: Auto - CBB - Fetch JSON after run
+      id: cbbFetchState
+      description: 'Fetch CBB JSON data after finished run'
+      trigger:
+        - platform: webhook
+          webhook_id: 1ddd7a2c-f4e1-4ff9-906d-ab611bfad772-9b14ee3c-cfeb-483e-84b7-a391bac12d94
+      condition: []
+      action:
+        - choose:
+            - conditions:
+                - condition: template
+                  value_template: '{{ trigger.data.data_ready == "1" }}'
+              sequence:
+                - service: shell_command.cbb_fetch
+          default: []
+      mode: restart
+
+  sensor:
+    - platform: file
+      file_path: /config/rest_json/cbb.json
+      name: 'CBB Talk'
+      value_template: >
+        {% if value_json.Talk %}
+          {{ value_json.Talk }}
+        {% else %}
+          {{ states("sensor.cbb_talk") }}
+        {% endif %}
+
+    - platform: file
+      file_path: /config/rest_json/cbb.json
+      name: 'CBB Data DK'
+      value_template: >
+        {% if value_json.DataDK %}
+          {{ value_json.DataDK }}
+        {% else %}
+          {{ states("sensor.cbb_data_dk") }}
+        {% endif %}
+
+    - platform: file
+      file_path: /config/rest_json/cbb.json
+      name: 'CBB Data EU'
+      value_template: >
+        {% if value_json.DataEU %}
+          {{ value_json.DataEU }}
+        {% else %}
+          {{ states("sensor.cbb_data_eu") }}
+        {% endif %}
+
+    - platform: file
+      file_path: /config/rest_json/cbb.json
+      name: 'CBB Messages'
+      value_template: >
+        {% if value_json.Messages %}
+          {{ value_json.Messages }}
+        {% else %}
+          {{ states("sensor.cbb_messages") }}
+        {% endif %}
+
+    - platform: file
+      file_path: /config/rest_json/cbb.json
+      name: 'CBB Extra'
+      value_template: >
+        {% if value_json.Extra %}
+          {{ value_json.Extra }}
+        {% else %}
+          {{ states("sensor.cbb_extra") }}
+        {% endif %}

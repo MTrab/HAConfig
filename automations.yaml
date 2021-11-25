@@ -1336,10 +1336,44 @@
   action:
   - service: input_text.set_value
     target:
-      entity_id: input_text.waze_origin
+      entity_id: input_text.google_origin
     data:
-      value: "{% if states(\"device_tracker.mtopnord2\") == \"away\" %}\n  {{ state_attr(\"\
-        device_tracker.mtopnord2\", \"latitude\") }}, {{state_attr(\"device_tracker.mtopnord2\"\
-        , \"longitude\") }}\n{% else %}\n  {{ states(\"device_tracker.mtopnord2\"\
-        ) }}\n{% endif %}"
+      value: "{% if states(\"device_tracker.mtopnord2\") == \"not_home\" %}\n  {{\
+        \ state_attr(\"device_tracker.mtopnord2\", \"latitude\") }}, {{state_attr(\"\
+        device_tracker.mtopnord2\", \"longitude\") }}\n{% else %}\n  {{ states(\"\
+        device_tracker.mtopnord2\") }}\n{% endif %}"
+  mode: restart
+- id: '1637574947818'
+  alias: Notification - Remind Departure
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: sensor.time_until_departure
+    to: '10'
+  condition: []
+  action:
+  - service: notify.mobile_app_mtopnord2
+    data:
+      message: Du skal afsted om 10 minutter
+      data:
+        title: Det er ved at være tid til afgang
+        importance: high
+        channel: calendar_departure
+        vibrationPattern: 50, 500, 50, 500, 50, 500, 50, 500
   mode: single
+- id: '1637589997012'
+  alias: Auto - Webasto - Fetch JSON after run
+  description: ''
+  trigger:
+  - platform: webhook
+    webhook_id: 89725818-f83d-4b46-8fa9-f70f3a923ace-9419993d-4f64-458a-99ce-33bacbec235e
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ trigger.data.data_ready == "1" }}'
+      sequence:
+      - service: shell_command.webasto_fetch
+    default: []
+  mode: restart

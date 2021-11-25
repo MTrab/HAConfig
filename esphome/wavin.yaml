@@ -16,11 +16,11 @@ packages:
 external_components:
   - source: github://heinekmadsen/esphome_components
 
-  - source:
-      type: git
-      url: https://github.com/martgras/esphome
-      ref: modbus-fix
-    components: [ modbus ]
+#  - source:
+#      type: git
+#      url: https://github.com/martgras/esphome
+#      ref: modbus-fix
+#    components: [ modbus ]
 
 web_server:
   port: 80

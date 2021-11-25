@@ -1,41 +1,161 @@
 pack_octoprint_core_a8:
-  octoprint:
-    host: !secret octoprint_core_a8_host
-    api_key: !secret octoprint_core_a8_api_key
-    name: Core A8
-    bed: true
-    number_of_tools: 1
-    sensors:
-      monitored_conditions:
-        - "Current State"
-        - "Temperatures"
-        - "Job Percentage"
-        - "Time Elapsed"
-        - "Time Remaining"
+  template:
+    - binary_sensor:
+        - name: "Core A8 Idle"
+          state: >
+            {% set idle = 'on' %}
+            {% if is_state("binary_sensor.core_a8_printing", "on") %}
+              {% set idle = 'off' %}
+            {% endif %}
+            {% if is_state("switch.core_a8_power", "off") %}
+              {% set idle = 'off' %}
+            {% endif %}
+            {% if is_state("switch.core_a8_mains", "off") %}
+              {% set idle = 'off' %}
+            {% endif %}
+            {{ idle }}
+
+  input_text:
+    core_a8_custom_command:
+      name: GCode
+      initial: ""
+
+  input_boolean:
+    core_a8_file_origin_local:
+      name: Local
+      icon: mdi:folder
+
+    core_a8_file_origin_sd:
+      name: SD
+      icon: mdi:sd
+
+  input_number:
+    core_a8_nozzle_temp:
+      name: Core A8 Nozzle Temp
+      min: 0
+      max: 400
+      step: 1
+      mode: box
+      icon: mdi:printer-3d-nozzle-outline
+      unit_of_measurement: "°C"
+
+    core_a8_bed_temp:
+      name: Core A8 Bed Temp
+      min: 0
+      max: 100
+      step: 1
+      mode: box
+      icon: mdi:thermometer
+      unit_of_measurement: "°C"
+
+  input_select:
+    core_a8_file_selector:
+      name: Core A8 Filer
+      options:
+        - Ingen
+      initial: Ingen
+      icon: mdi:folder-open
 
   automation:
-    alias: 3DPrint - Core A8 - Set Nozzle Temperature
-    trigger:
-      - platform: state
-        entity_id: input_number.core_a8_nozzle_temp
-    condition: []
-    action:
-      - service: rest_command.core_a8_nozzle_temp
+    - alias: "Auto - Core A8 - Read Nozzle Temperature"
+      id: coreA8SetNozzleTemp
+      trigger:
+        platform: state
+        entity_id: sensor.core_a8_tool_0_target
+      action:
+        service: input_number.set_value
+        target:
+          entity_id: input_number.core_a8_nozzle_temp
         data:
-          temp: "{{ trigger.to_state.state }}"
-    mode: single
+          value: >
+            {% if states('sensor.core_a8_tool_0_target') != "unavailable" %}
+              {{ states("sensor.core_a8_tool_0_target") }}
+            {% else %}
+              0
+            {% endif %}
+
+    - alias: "Auto - Core A8 - Read Bed Temperature"
+      id: coreA8SetBedTemp
+      trigger:
+        platform: state
+        entity_id: sensor.core_a8_bed_target
+      action:
+        service: input_number.set_value
+        target:
+          entity_id: input_number.core_a8_bed_temp
+        data:
+          value: >
+            {% if states('sensor.core_a8_bed_target') != "unavailable" %}
+              {{ states("sensor.core_a8_bed_target") }}
+            {% else %}
+              0
+            {% endif %}
+
+    - alias: "Auto - Core A8 - Radio Button Functionality - Origin"
+      trigger:
+        - platform: state
+          entity_id: input_boolean.core_a8_file_origin_local
+          to: 'on'
+          id: 'local'
+        - platform: state
+          entity_id: input_boolean.core_a8_file_origin_sd
+          to: 'on'
+          id: 'sd'
+      action:
+        - choose:
+            - conditions:
+                - condition: trigger
+                  id: local
+              sequence:
+                - service: input_boolean.turn_off
+                  target:
+                    entity_id: input_boolean.core_a8_file_origin_sd
+                - service: pyscript.octoprint_get_files
+                  data:
+                    entity_id: input_select.core_a8_file_selector
+                    url: !secret octoprint_core_a8_api_files_command
+                    key: !secret octoprint_core_a8_api_key
+                    origin: local
+          default: []
+        - choose:
+            - conditions:
+                - condition: trigger
+                  id: sd
+              sequence:
+                - service: input_boolean.turn_off
+                  target:
+                    entity_id: input_boolean.core_a8_file_origin_local
+                - service: pyscript.octoprint_get_files
+                  data:
+                    entity_id: input_select.core_a8_file_selector
+                    url: !secret octoprint_core_a8_api_files_command
+                    key: !secret octoprint_core_a8_api_key
+                    origin: sdcard
+          default: []
+      mode: restart
+
+    - alias: "Auto - Core A8 - Send Custom GCode"
+      id: coreA8SendCustomGCode
+      trigger:
+        - platform: state
+          entity_id: input_text.core_a8_custom_command
+      action:
+        - service: mqtt.publish
+          data:
+            topic: octoprint/core_a8/hassControl/commands
+            payload_template: '{{ states("input_text.core_a8_custom_command") }}'
+        - service: input_text.set_value
+          target:
+            entity_id: input_text.core_a8_custom_command
+          data:
+            value: ""
+      mode: queued
 
   camera:
     - platform: mjpeg
       name: Core A8
       still_image_url: !secret octoprint_core_a8_still
       mjpeg_url: !secret octoprint_core_a8_stream
-
-  binary_sensor:
-    - platform: octoprint
-      monitored_conditions:
-        - Printing
-        - Printing Error
 
   switch:
     - platform: template
@@ -53,127 +173,62 @@ pack_octoprint_core_a8:
           turn_off:
             service: rest_command.core_a8_turn_off
 
+  script:
+    # Relevel bed by script
+    3dp_core_a8_relevel_bed:
+      alias: 3DP - Core A8 - Relevel Bed
+      sequence:
+        # Home all axes
+        - service: mqtt.publish
+          data:
+            topic: octoprint/core_a8/hassControl/commands
+            payload: "G28"
+        # Set Z to 300 (over max Z to ensure leveling sideways)
+        - service: mqtt.publish
+          data:
+            topic: octoprint/core_a8/hassControl/commands
+            payload: "G0 Z300"
+
+    #Safe shutdown script
+    3dp_core_a8_safe_shutdown:
+      sequence:
+        - service: switch.turn_on
+          target:
+            entity_id: switch.core_a8_shutdown_system
+        - wait_template:
+            "{{ is_state('sensor.core_a8_print_status', 'unavailable')
+            }}"
+        - delay:
+            hours: 0
+            minutes: 1 # PLEASE MAKE SURE YOUR PI REACHES POWER OFF STATE BEFORE THIS DELAY ENDS!
+            seconds: 0
+            milliseconds: 0
+        - service: switch.turn_off
+          target:
+            entity_id: switch.core_a8_mains
+      mode: single
+      alias: 3DP - Core A8 - Safe Shutdown
+      icon: mdi:power-cycle
+
+    # Power up after safe shutdown
+    3dp_core_a8_power_up:
+      alias: 3DP - Core A8 - Power Up
+      sequence:
+        - service: switch.turn_on
+          target:
+            entity_id: switch.core_a8_mains
+        - wait_template:
+            "{{ is_state('sensor.core_a8_print_status', 'unavailable')
+            == false }}"
+        - service: switch.turn_on
+          target:
+            entity_id: switch.core_a8_power
+      mode: single
+      icon: mdi:power
+
   rest_command:
     core_a8_turn_on:
       url: !secret octoprint_core_a8_api_power_on
 
     core_a8_turn_off:
       url: !secret octoprint_core_a8_api_power_off
-
-    core_a8_job_command:
-      url: !secret octoprint_core_a8_api_job_command
-      payload: "{{ payload }}"
-      headers:
-        Content-Type: "application/json"
-        X-Api-Key: !secret octoprint_core_a8_api_key
-      method: POST
-
-    core_a8_home:
-      url: !secret octoprint_core_a8_printhead_command
-      payload: '{"command": "home", "axes": ["x", "y", "z"]}'
-      headers:
-        Content-Type: "application/json"
-        X-Api-Key: !secret octoprint_core_a8_api_key
-      method: POST
-
-    core_a8_nozzle_temp:
-      url: !secret octoprint_core_a8_tool_command
-      payload: '{"command": "target", "targets": {"tool0": {{ temp }} }}'
-      headers:
-        Content-Type: "application/json"
-        X-Api-Key: !secret octoprint_core_a8_api_key
-      method: POST
-
-    core_a8_bed_temp:
-      url: !secret octoprint_core_a8_bed_command
-      payload: '{"command": "target", "target": {{ temp }} }'
-      headers:
-        Content-Type: "application/json"
-        X-Api-Key: !secret octoprint_core_a8_api_key
-      method: POST
-
-    core_a8_printer_command:
-      url: !secret octoprint_core_a8_printer_command
-      payload: '{"command": "{{ cmd }}"}'
-      headers:
-        Content-Type: "application/json"
-        X-Api-Key: !secret octoprint_core_a8_api_key
-      method: POST
-
-  sensor: #fix time display
-    - platform: template
-      sensors:
-        core_a8_time_elapsed_format:
-          friendly_name: 'Printing Time Elapsed'
-          value_template: >-
-            {% set etime = states.sensor.core_a8_time_elapsed.state | int %}
-            {% set seconds = etime % 60 %}
-            {% set minutes = ((etime % 3600) / 60) | int %}
-            {% set hours = ((etime % 86400) / 3600) | int %}
-            {% set days = (etime / 86400) | int %}
-            {%- if days > 0 -%}
-              {%- if days == 1 -%}
-                1 dag
-              {%- else -%}
-                {{ days }} dage
-              {%- endif -%}
-              {{ ', ' }}
-            {%- endif -%}
-            {%- if hours > 0 -%}
-              {%- if hours == 1 -%}
-                1 time
-              {%- else -%}
-                {{ hours }} timer
-              {%- endif -%}
-              {{ ', ' }}
-            {%- endif -%}
-            {%- if minutes > 0 -%}
-              {%- if minutes == 1 -%}
-                1 minut
-              {%- else -%}
-                {{ minutes }} minutter
-              {%- endif -%}
-            {%- endif -%}
-        core_a8_time_remaining_format:
-          friendly_name: 'Printing Time Remaining'
-          value_template: >-
-            {% set rtime = states.sensor.core_a8_time_remaining.state | int %}
-            {% set seconds = rtime % 60 %}
-            {% set minutes = ((rtime % 3600) / 60) | int %}
-            {% set hours = ((rtime % 86400) / 3600) | int %}
-            {% set days = (rtime / 86400) | int %}
-            {%- if days > 0 -%}
-              {%- if days == 1 -%}
-                1 dag
-              {%- else -%}
-                {{ days }} dage
-              {%- endif -%}
-              {{ ', ' }}
-            {%- endif -%}
-            {%- if hours > 0 -%}
-              {%- if hours == 1 -%}
-                1 time
-              {%- else -%}
-                {{ hours }} timer
-              {%- endif -%}
-              {{ ', ' }}
-            {%- endif -%}
-            {%- if minutes > 0 -%}
-              {%- if minutes == 1 -%}
-                1 minut
-              {%- else -%}
-                {{ minutes }} minutter
-              {%- endif -%}
-            {%- endif -%}
-    - platform: rest
-      resource: !secret octoprint_core_a8_api_job_command
-      name: "Core A8 STL file"
-      value_template: '{{ value_json.job.file.name }}'
-      headers:
-        X-Api-Key: !secret octoprint_core_a8_api_key
-    - platform: rest
-      resource: !secret octoprint_core_a8_api_job_command
-      name: "Core A8 STL Display"
-      value_template: '{{value_json.job.file.display}}'
-      headers:
-        X-Api-Key: !secret octoprint_core_a8_api_key

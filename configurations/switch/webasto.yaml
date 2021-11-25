@@ -1,5 +1,0 @@
-# - platform: command_line
-#   switches:
-#     webasto_kia:
-#       command_on: 
-#       command_off: 

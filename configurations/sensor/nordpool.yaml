@@ -1,0 +1,22 @@
+- platform: nordpool
+  VAT: True
+  low_price_cutoff: 0.00
+  region: "DK1"
+  precision: 3 
+  price_type: kWh
+  friendly_name: "Nordpool Elpris"
+  additional_costs: '{% set s = {
+    "elafgift": 1.125,
+    "transport_lavlast": 0.2717,
+    "transport_spidslast": 0.2717,
+    "abonnement": 0.3512
+    } %}
+    {% if now().month >= 10 or now().month <4 %}
+      {% if now().hour >=17 and now().hour <21 %}
+        {{s.elafgift+s.transport_spidslast+s.abonnement}}
+      {% else %}
+        {{s.elafgift+s.transport_lavlast+s.abonnement}}
+      {% endif %}
+    {% else %}
+        {{s.elafgift+s.transport_lavlast+s.abonnement}}
+    {% endif %}'

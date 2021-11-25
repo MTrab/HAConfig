@@ -114,3 +114,17 @@ elpris:
               {% if ns.prices | length  > 0 %}
                 {{ "%.2f"|format(ns.prices[0]) }}kr
               {% endif %}
+    - sensor:
+      - name: charge_price_low
+        state: >
+          {{ state_attr("binary_sensor.billigste_opladningspris", "billigst") }}
+    - sensor:
+      - name: charge_price_high
+        state: >
+          {{ state_attr("binary_sensor.billigste_opladningspris", "dyrest") }}
+    - sensor:
+      - name: charge_price_current
+        device_class: monetary
+        unit_of_measurement: 'kr'
+        state: >
+          {{ state_attr("binary_sensor.billigste_opladningspris", "nuværende") | replace("kr", "") }}
