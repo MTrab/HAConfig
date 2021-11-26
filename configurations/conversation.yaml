@@ -1,0 +1,3 @@
+intents:
+  LivingRoomTemperature:
+    - What is the temperature in the living room

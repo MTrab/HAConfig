@@ -36,10 +36,11 @@ fields:
                 - sdcard
 """
     if entity_id is not None:
-        headers = { 'X-Api-Key': key }
+        headers = { 'X-Api-Key': key, 'Content-Type': 'application/json' }
         data = ""
         json = '{"command": "select", "print": true}'
-
+        log.warning(json)
         async with aiohttp.ClientSession(headers=headers) as session:
             async with session.post(url + "/" + origin + "/" + state.get(entity_id), data=json) as r:
                 data = r
+                log.warning(data)

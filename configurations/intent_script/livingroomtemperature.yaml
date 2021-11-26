@@ -1,0 +1,3 @@
+LivingRoomTemperature:
+  speech:
+    text: It is currently {{ states.sensor.stue_temperature }} degrees in the living room.

@@ -27,20 +27,19 @@ scene: !include scenes.yaml
 python_script:
 wake_on_lan:
 
-pyscript:
-  allow_all_imports: true
-  hass_is_global: true
-
 # Configurations
 binary_sensor: !include_dir_merge_list configurations/binary_sensor
 browser_mod: !include configurations/browser_mod.yaml
+conversation: !include configurations/conversation.yaml
 device_tracker: !include configurations/device_tracker.yaml
 google: !include configurations/google.yaml
 group: !include_dir_merge_named configurations/groups
 home_connect: !include configurations/home_connect.yaml
 influxdb: !include configurations/influx.yaml
+intent_script: !include_dir_merge_named configurations/intent_script
 landroid_cloud: !include configurations/landroid_cloud.yaml
 media_player: !include_dir_merge_list configurations/media_player
+pyscript: !include configurations/pyscript.yaml
 recorder: !include configurations/recorder.yaml
 sensor: !include_dir_merge_list configurations/sensor
 sonos: !include configurations/sonos.yaml
