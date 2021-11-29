@@ -10,7 +10,7 @@ http:
 # Home Assistant setup
 homeassistant:
   customize: !include customize.yaml
-  packages: !include_dir_merge_named configurations/packages
+  packages: !include_dir_named configurations/packages
   allowlist_external_dirs:
     - /config/rest_json
     

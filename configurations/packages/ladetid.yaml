@@ -1,17 +1,41 @@
-elpris:
-  template:
-    - trigger:
-        - platform: time_pattern
-          minutes: 0
-        - platform: state
-          entity_id:
-            - input_number.car_charge_time
-            - input_datetime.car_departure_time
-        - platform: homeassistant
-          event: start
-      binary_sensor:
-        - name: "Billigste opladningspris"
-          state: >
+template:
+  - trigger:
+      - platform: time_pattern
+        minutes: 0
+      - platform: state
+        entity_id:
+          - input_number.car_charge_time
+          - input_datetime.car_departure_time
+      - platform: homeassistant
+        event: start
+    binary_sensor:
+      - name: "Billigste opladningspris"
+        state: >
+          {%- set charging_time = states("input_number.car_charge_time") | int %}
+          {%- set departure_time = state_attr("input_datetime.car_departure_time", "hour") | int -%}
+          {% set current_hour = now().hour %}
+
+          {% set departure_time = departure_time + 24 if departure_time <= current_hour else departure_time %}
+
+          {% set ns = namespace(prices = []) %}
+          {% set prices = state_attr("sensor.elpris", "today") | list + state_attr("sensor.elpris", "tomorrow") | list if state_attr("sensor.elpris", "tomorrow_valid") else state_attr("sensor.elpris", "today") %}
+
+          {% set start_index = current_hour | int %}
+          {% set end_index = ([departure_time, prices | length] | min - charging_time) | int + 1  %}
+
+          {% for index in range(start_index, end_index) -%}
+            {%- set price = prices[index] -%}
+              {%- set ns.current_total = 0 -%}
+              {%- for i in range(index, index + charging_time) -%} {# loop every hour in charge time#}
+                {%- set ns.current_total = ns.current_total + prices[i] | float -%}
+              {%-endfor -%}
+
+            {% set ns.prices = ns.prices + [ns.current_total] -%}
+          {% endfor %}
+
+          {% if ns.prices | count == 0 or ns.prices[0] > ns.prices | min %}False{% else %}True{% endif %}
+        attributes:
+          billigst: >
             {%- set charging_time = states("input_number.car_charge_time") | int %}
             {%- set departure_time = state_attr("input_datetime.car_departure_time", "hour") | int -%}
             {% set current_hour = now().hour %}
@@ -34,131 +58,106 @@ elpris:
               {% set ns.prices = ns.prices + [ns.current_total] -%}
             {% endfor %}
 
-            {% if ns.prices | count == 0 or ns.prices[0] > ns.prices | min %}False{% else %}True{% endif %}
-          attributes:
-            billigst: >
-              {%- set charging_time = states("input_number.car_charge_time") | int %}
-              {%- set departure_time = state_attr("input_datetime.car_departure_time", "hour") | int -%}
-              {% set current_hour = now().hour %}
+            {% if ns.prices | length  > 0 %}
+              kl {{'{:0>2}'.format((ns.prices.index(ns.prices | min) + start_index) % 24)}},  {{ "%.2f"|format(ns.prices | min) }}kr
+            {% endif %}
+          dyrest: >
+            {%- set charging_time = states("input_number.car_charge_time") | int %}
+            {%- set departure_time = state_attr("input_datetime.car_departure_time", "hour") | int -%}
+            {% set current_hour = now().hour %}
 
-              {% set departure_time = departure_time + 24 if departure_time <= current_hour else departure_time %}
+            {% set departure_time = departure_time + 24 if departure_time <= current_hour else departure_time %}
 
-              {% set ns = namespace(prices = []) %}
-              {% set prices = state_attr("sensor.elpris", "today") | list + state_attr("sensor.elpris", "tomorrow") | list if state_attr("sensor.elpris", "tomorrow_valid") else state_attr("sensor.elpris", "today") %}
+            {% set ns = namespace(prices = []) %}
+            {% set prices = state_attr("sensor.elpris", "today") | list + state_attr("sensor.elpris", "tomorrow") | list if state_attr("sensor.elpris", "tomorrow_valid") else state_attr("sensor.elpris", "today") %}
 
-              {% set start_index = current_hour | int %}
-              {% set end_index = ([departure_time, prices | length] | min - charging_time) | int + 1  %}
+            {% set start_index = current_hour | int %}
+            {% set end_index = ([departure_time, prices | length] | min - charging_time) | int + 1  %}
 
-              {% for index in range(start_index, end_index) -%}
-                {%- set price = prices[index] -%}
-                  {%- set ns.current_total = 0 -%}
-                  {%- for i in range(index, index + charging_time) -%} {# loop every hour in charge time#}
-                    {%- set ns.current_total = ns.current_total + prices[i] | float -%}
-                  {%-endfor -%}
+            {% for index in range(start_index, end_index) -%}
+              {%- set price = prices[index] -%}
+                {%- set ns.current_total = 0 -%}
+                {%- for i in range(index, index + charging_time) -%} {# loop every hour in charge time#}
+                  {%- set ns.current_total = ns.current_total + prices[i] | float -%}
+                {%-endfor -%}
 
-                {% set ns.prices = ns.prices + [ns.current_total] -%}
-              {% endfor %}
+              {% set ns.prices = ns.prices + [ns.current_total] -%}
+            {% endfor %}
 
-              {% if ns.prices | length  > 0 %}
-                kl {{'{:0>2}'.format((ns.prices.index(ns.prices | min) + start_index) % 24)}},  {{ "%.2f"|format(ns.prices | min) }}kr
-              {% endif %}
-            dyrest: >
-              {%- set charging_time = states("input_number.car_charge_time") | int %}
-              {%- set departure_time = state_attr("input_datetime.car_departure_time", "hour") | int -%}
-              {% set current_hour = now().hour %}
+            {% if ns.prices | length  > 0 %}
+              kl {{'{:0>2}'.format((ns.prices.index(ns.prices | max) + start_index) % 24)}},  {{ "%.2f"|format(ns.prices | max) }}kr
+            {% endif %}
+          nuværende: >
+            {%- set charging_time = states("input_number.car_charge_time") | int %}
+            {%- set departure_time = state_attr("input_datetime.car_departure_time", "hour") | int -%}
+            {% set current_hour = now().hour %}
 
-              {% set departure_time = departure_time + 24 if departure_time <= current_hour else departure_time %}
+            {% set departure_time = departure_time + 24 if departure_time <= current_hour else departure_time %}
 
-              {% set ns = namespace(prices = []) %}
-              {% set prices = state_attr("sensor.elpris", "today") | list + state_attr("sensor.elpris", "tomorrow") | list if state_attr("sensor.elpris", "tomorrow_valid") else state_attr("sensor.elpris", "today") %}
+            {% set ns = namespace(prices = []) %}
+            {% set prices = state_attr("sensor.elpris", "today") | list + state_attr("sensor.elpris", "tomorrow") | list if state_attr("sensor.elpris", "tomorrow_valid") else state_attr("sensor.elpris", "today") %}
 
-              {% set start_index = current_hour | int %}
-              {% set end_index = ([departure_time, prices | length] | min - charging_time) | int + 1  %}
+            {% set start_index = current_hour | int %}
+            {% set end_index = ([departure_time, prices | length] | min - charging_time) | int + 1  %}
 
-              {% for index in range(start_index, end_index) -%}
-                {%- set price = prices[index] -%}
-                  {%- set ns.current_total = 0 -%}
-                  {%- for i in range(index, index + charging_time) -%} {# loop every hour in charge time#}
-                    {%- set ns.current_total = ns.current_total + prices[i] | float -%}
-                  {%-endfor -%}
+            {% for index in range(start_index, end_index) -%}
+              {%- set price = prices[index] -%}
+                {%- set ns.current_total = 0 -%}
+                {%- for i in range(index, index + charging_time) -%} {# loop every hour in charge time#}
+                  {%- set ns.current_total = ns.current_total + prices[i] | float -%}
+                {%-endfor -%}
 
-                {% set ns.prices = ns.prices + [ns.current_total] -%}
-              {% endfor %}
+              {% set ns.prices = ns.prices + [ns.current_total] -%}
+            {% endfor %}
 
-              {% if ns.prices | length  > 0 %}
-                kl {{'{:0>2}'.format((ns.prices.index(ns.prices | max) + start_index) % 24)}},  {{ "%.2f"|format(ns.prices | max) }}kr
-              {% endif %}
-            nuværende: >
-              {%- set charging_time = states("input_number.car_charge_time") | int %}
-              {%- set departure_time = state_attr("input_datetime.car_departure_time", "hour") | int -%}
-              {% set current_hour = now().hour %}
+            {% if ns.prices | length  > 0 %}
+              {{ "%.2f"|format(ns.prices[0]) }}kr
+            {% endif %}
+  - sensor:
+    - name: charge_price_low
+      state: >
+        {{ state_attr("binary_sensor.billigste_opladningspris", "billigst") }}
+  - sensor:
+    - name: charge_price_high
+      state: >
+        {{ state_attr("binary_sensor.billigste_opladningspris", "dyrest") }}
+  - sensor:
+    - name: charge_price_current
+      device_class: monetary
+      unit_of_measurement: 'kr'
+      state: >
+        {{ state_attr("binary_sensor.billigste_opladningspris", "nuværende") | replace("kr", "") }}
 
-              {% set departure_time = departure_time + 24 if departure_time <= current_hour else departure_time %}
+input_boolean:
+  allow_auto_charge:
+    name: Styring af opladning
+    icon: mdi:ev-station
 
-              {% set ns = namespace(prices = []) %}
-              {% set prices = state_attr("sensor.elpris", "today") | list + state_attr("sensor.elpris", "tomorrow") | list if state_attr("sensor.elpris", "tomorrow_valid") else state_attr("sensor.elpris", "today") %}
+automation:
+  - alias: Auto - Kia Niro - Charge when cheapest
+    id: niroChargeCheap
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.billigste_opladningspris
+        from: "off"
+        to: "on"
+        id: "on"
+    condition:
+      - alias: "Only if automation is allowed"
+        condition: state
+        entity_id: input_boolean.allow_auto_charge
+        state: "on"
+    action:
+      - service: switch.turn_on
+        target:
+          entity_id: switch.car_charger
+      - delay: '{{ states("input_number.car_charge_time") | int }}:00:00'
+      - service: switch.turn_off
+        target:
+          entity_id: switch.car_charger
+    mode: single
 
-              {% set start_index = current_hour | int %}
-              {% set end_index = ([departure_time, prices | length] | min - charging_time) | int + 1  %}
-
-              {% for index in range(start_index, end_index) -%}
-                {%- set price = prices[index] -%}
-                  {%- set ns.current_total = 0 -%}
-                  {%- for i in range(index, index + charging_time) -%} {# loop every hour in charge time#}
-                    {%- set ns.current_total = ns.current_total + prices[i] | float -%}
-                  {%-endfor -%}
-
-                {% set ns.prices = ns.prices + [ns.current_total] -%}
-              {% endfor %}
-
-              {% if ns.prices | length  > 0 %}
-                {{ "%.2f"|format(ns.prices[0]) }}kr
-              {% endif %}
-    - sensor:
-      - name: charge_price_low
-        state: >
-          {{ state_attr("binary_sensor.billigste_opladningspris", "billigst") }}
-    - sensor:
-      - name: charge_price_high
-        state: >
-          {{ state_attr("binary_sensor.billigste_opladningspris", "dyrest") }}
-    - sensor:
-      - name: charge_price_current
-        device_class: monetary
-        unit_of_measurement: 'kr'
-        state: >
-          {{ state_attr("binary_sensor.billigste_opladningspris", "nuværende") | replace("kr", "") }}
-
-  input_boolean:
-    allow_auto_charge:
-      name: Styring af opladning
-      icon: mdi:ev-station
-
-  automation:
-    - alias: Auto - Kia Niro - Charge when cheapest
-      id: niroChargeCheap
-      trigger:
-        - platform: state
-          entity_id: binary_sensor.billigste_opladningspris
-          from: "off"
-          to: "on"
-          id: "on"
-      condition:
-        - alias: "Only if automation is allowed"
-          condition: state
-          entity_id: input_boolean.allow_auto_charge
-          state: "on"
-      action:
-        - service: switch.turn_on
-          target:
-            entity_id: switch.car_charger
-        - delay: '{{ states("input_number.car_charge_time") | int }}:00:00'
-        - service: switch.turn_off
-          target:
-            entity_id: switch.car_charger
-      mode: single
-
-  utility_meter:
-    car_charge_usage:
-      source: sensor.car_charger_energy
-      cycle: daily
+utility_meter:
+  car_charge_usage:
+    source: sensor.car_charger_energy
+    cycle: daily
