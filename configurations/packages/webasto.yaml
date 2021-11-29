@@ -38,7 +38,6 @@ pack_webasto:
       trigger:
         - platform: time_pattern
           minutes: /5
-      condition: []
       action:
         - service: shell_command.webasto_state
       mode: single
@@ -49,9 +48,11 @@ pack_webasto:
       mode: single
       trigger:
         - platform: state
-          entity_id: calendar.webasto
+          entity_id: calendar.heating
           to: "off"
-      condition: []
+        - platform: time_pattern
+          hours: /1
+          minutes: 5
       action:
         - service: input_datetime.set_datetime
           target:
@@ -72,7 +73,6 @@ pack_webasto:
       trigger:
         - platform: state
           entity_id: sensor.webasto_calculated_start
-      condition: []
       action:
         - service: input_datetime.set_datetime
           target:

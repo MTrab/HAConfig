@@ -10,7 +10,6 @@ pack_cbb:
       trigger:
         - platform: time_pattern
           hours: /1
-      condition: []
       action:
         - service: shell_command.cbb_update
       mode: single
@@ -21,7 +20,6 @@ pack_cbb:
       trigger:
         - platform: webhook
           webhook_id: 1ddd7a2c-f4e1-4ff9-906d-ab611bfad772-9b14ee3c-cfeb-483e-84b7-a391bac12d94
-      condition: []
       action:
         - choose:
             - conditions:
@@ -29,7 +27,6 @@ pack_cbb:
                   value_template: '{{ trigger.data.data_ready == "1" }}'
               sequence:
                 - service: shell_command.cbb_fetch
-          default: []
       mode: restart
 
   sensor:
