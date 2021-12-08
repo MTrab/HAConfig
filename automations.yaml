@@ -1105,15 +1105,6 @@
       - service: notify.mobile_app_mtopnord2
         data:
           message: 'Low battery detected on: {{sensors}}'
-- id: '1632209422267'
-  alias: Auto - Cast to Google Hub
-  description: ''
-  use_blueprint:
-    path: kind3r/cast-and-re-cast-a-lovelace-view-to-a-google-hub.yaml
-    input:
-      dashboard: lovelace
-      player: media_player.nesthub8311
-      view: lys
 - id: '1633628292945'
   alias: Auto - Turn on candles when sun goes down
   description: ''
@@ -1291,7 +1282,7 @@
   trigger:
   - platform: template
     value_template: '{{ states(''sensor.webasto_battery'') < states(''input_number.webasto_low_battery'')
-      and  states(''sensor.webasto_battery'') > "5" }}'
+      }}'
   condition: []
   action:
   - service: shell_command.webasto_off
@@ -1361,19 +1352,41 @@
         channel: calendar_departure
         vibrationPattern: 50, 500, 50, 500, 50, 500, 50, 500
   mode: single
-- id: '1637589997012'
-  alias: Auto - Webasto - Fetch JSON after run
+- id: '1638190307088'
+  alias: Notification - Medical reminder
+  description: ''
+  use_blueprint:
+    path: Aohzan/medication_reminder.yaml
+    input:
+      logbook_message_no_answer: No Medication Answer Time Out
+      reminder_time: 06:30:00
+      notify_device: 5a203dc793181fba91d8220b160558c1
+      input_boolean: input_boolean.husket_medicin
+      notification_title: Husk medicin
+      notification_message: Det er tid til at tage din medicin
+      notification_action_taken: Taget
+      notification_action_later: Spørg senere
+      notification_action_skip: Spring over
+      logbook_message_remind: Medication Reminder Sent
+      logbook_message_taken: Medication Taken
+      logbook_message_later: Postpone Medication Reminder
+      logbook_message_skip: Medication Reminder Skipped
+      ask_later_wait_time: 60
+- id: '1638363003788'
+  alias: Auto - Webasto - Turn Off When Getting Near Zone
   description: ''
   trigger:
-  - platform: webhook
-    webhook_id: 89725818-f83d-4b46-8fa9-f70f3a923ace-9419993d-4f64-458a-99ce-33bacbec235e
-  condition: []
+  - platform: numeric_state
+    entity_id: proximity.morten_home
+    below: '15'
+  condition:
+  - condition: state
+    entity_id: proximity.morten_home
+    state: towards
+    attribute: dir_of_travel
+  - condition: state
+    entity_id: switch.webasto
+    state: 'on'
   action:
-  - choose:
-    - conditions:
-      - condition: template
-        value_template: '{{ trigger.data.data_ready == "1" }}'
-      sequence:
-      - service: shell_command.webasto_fetch
-    default: []
-  mode: restart
+  - service: shell_command.webasto_off
+  mode: single

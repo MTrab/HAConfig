@@ -1,18 +1,34 @@
 template:
   - binary_sensor:
-      - name: "Core A8 Idle"
-        state: >
-          {% set idle = 'on' %}
-          {% if is_state("binary_sensor.core_a8_printing", "on") %}
-            {% set idle = 'off' %}
+    - name: "Core A8 Idle"
+      state: >
+        {% set idle = 'on' %}
+        {% if is_state("binary_sensor.core_a8_printing", "on") %}
+          {% set idle = 'off' %}
+        {% endif %}
+        {% if is_state("switch.core_a8_power", "off") %}
+          {% set idle = 'off' %}
+        {% endif %}
+        {% if is_state("switch.core_a8_mains", "off") %}
+          {% set idle = 'off' %}
+        {% endif %}
+        {{ idle }}
+
+switch:
+  - platform: template
+    switches:
+      core_a8_power:
+        friendly_name: Core A8 Power
+        value_template: >-
+          {% if is_state('sensor.core_a8_print_status', 'Offline after error') or is_state('sensor.core_a8_print_status', 'Offline') or is_state('sensor.core_a8_print_status', 'unavailable')%}
+            off
+          {% else %}
+            on
           {% endif %}
-          {% if is_state("switch.core_a8_power", "off") %}
-            {% set idle = 'off' %}
-          {% endif %}
-          {% if is_state("switch.core_a8_mains", "off") %}
-            {% set idle = 'off' %}
-          {% endif %}
-          {{ idle }}
+        turn_on:
+          service: rest_command.core_a8_turn_on
+        turn_off:
+          service: rest_command.core_a8_turn_off
 
 input_text:
   core_a8_custom_command:
@@ -202,22 +218,6 @@ camera:
     name: Core A8
     still_image_url: !secret octoprint_core_a8_still
     mjpeg_url: !secret octoprint_core_a8_stream
-
-switch:
-  - platform: template
-    switches:
-      core_a8_power:
-        friendly_name: Core A8 Power
-        value_template: >-
-          {% if is_state('sensor.core_a8_print_status', 'Offline after error') or is_state('sensor.core_a8_print_status', 'Offline') or is_state('sensor.core_a8_print_status', 'unavailable')%}
-            off
-          {% else %}
-            on
-          {% endif %}
-        turn_on:
-          service: rest_command.core_a8_turn_on
-        turn_off:
-          service: rest_command.core_a8_turn_off
 
 script:
   # Reset UBL script

@@ -4,7 +4,7 @@
 source /config/shell_scripts/shell_secrets.txt
 
 # SCRIPT CONST
-JSON_PATH="/config/rest_json"
+JSON_PATH="/config/www/rest"
 TEMP_PATH="/config/shell_scripts/temp"
 
 # Get result

@@ -1,0 +1,51 @@
+automation:
+  - alias: Auto - OK Usage - Parsehub - Update State
+    id: okUsageUpdateState
+    description: Triggers update thru Parsehub
+    trigger:
+      - platform: time
+        at:
+          - "00:10:00"
+    action:
+      - service: shell_command.parsehub_run
+        data_template:
+          token: !secret token_ok_usage
+    mode: single
+
+  - alias: Auto - OK Usage - Parsehub - Fetch JSON after run
+    id: okUsageFetchState
+    description: Fetch JSON data after finished run
+    trigger:
+      - platform: webhook
+        webhook_id: !secret webhook_ok_usage
+    action:
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: '{{ trigger.data.data_ready == "1" }}'
+            sequence:
+              - service: shell_command.parsehub_fetch
+                data_template:
+                  token: !secret token_ok_usage
+                  filename: 'ok_usage.json'
+    mode: restart
+
+rest:
+  - resource: https://home.trab.dk/local/rest/ok_usage.json
+    scan_interval: 3600
+    sensor:
+      - name: OK Forbrug
+        device_class: monetary
+        force_update: true
+        unit_of_measurement: 'kr'
+        value_template: >
+          {{ value_json.entries[0].total }}
+        # json_attributes_path: "$"
+        json_attributes:
+          - entries
+        #   - date
+        #   - product
+        #   - location
+        #   - price
+        #   - amount
+        #   - total

@@ -1,0 +1,9 @@
+template:
+  - sensor:
+    - name: Extra Wakeup Reminder
+      state: >
+        {% if states("sensor.google_sovevaerelse_alarms") != "unavailable" %}
+          {{ strptime(((as_timestamp(states("sensor.google_sovevaerelse_alarms")) + (15*60)))|timestamp_local, '%Y-%m-%d %H:%M:%S') }}
+        {% else %}
+          {{ states("sensor.extra_wakeup_reminder") }}
+        {% endif %}

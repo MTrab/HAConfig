@@ -1,8 +1,8 @@
 - platform: generic_hygrostat
   name: Toilet Hygrostat
   sensor: sensor.temperature_sensor_bathroom_2 # Source humidity sensor
-  delta_trigger: 5 # Optional humidity swing to detect. Default = 3
+  delta_trigger: 6 # Optional humidity swing to detect. Default = 3
   target_offset: 3 # Optional dehumidification target offset. Default = 3
-  max_on_time: 7200 # Optional safety max on time in seconds. Default = 7200 seconds
+  max_on_time: 3600 # Optional safety max on time in seconds. Default = 7200 seconds
   sample_interval: 60 # Optional time between taking humidity samples in seconds, default 300 seconds
   min_humidity: 30 # Optional minimum humidity to enable dehumidification. Default = 0

@@ -1,0 +1,13 @@
+- platform: template
+  sensors:
+    kr_km_electric:
+      friendly_name: Kr. pr. km på el
+      value_template: '{{ ((states.sensor.charge_price_low.state.split(" ")[-1].replace("kr","") | float) / 40) | round(2) }}'
+      device_class: monetary
+      unit_of_measurement: 'kr'
+    kr_km_fuel:
+      friendly_name: Kr. pr. km på benzin
+      value_template: '{{ ((states.sensor.ok_95.state.replace(",",".") | float) / 25) | round(2) }}'
+      device_class: monetary
+      unit_of_measurement: 'kr'
+

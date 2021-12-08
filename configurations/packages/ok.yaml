@@ -1,0 +1,44 @@
+automation:
+  - alias: Auto - OK Price - Parsehub - Update State
+    id: okUpdateState
+    description: Triggers update thru Parsehub
+    trigger:
+      - platform: time
+        at:
+          - "12:00:00"
+          - "00:00:00"
+    action:
+      - service: shell_command.parsehub_run
+        data_template:
+          token: !secret token_ok_price
+    mode: single
+
+  - alias: Auto - OK Price - Parsehub - Fetch JSON after run
+    id: okFetchState
+    description: Fetch JSON data after finished run
+    trigger:
+      - platform: webhook
+        webhook_id: !secret webhook_ok_price
+    action:
+      - choose:
+          - conditions:
+              - condition: template
+                value_template: '{{ trigger.data.data_ready == "1" }}'
+            sequence:
+              - service: shell_command.parsehub_fetch
+                data_template:
+                  token: !secret token_ok_price
+                  filename: 'ok.json'
+    mode: restart
+
+rest:
+  - resource: https://home.trab.dk/local/rest/ok.json
+    scan_interval: 3600
+    sensor:
+      - name: OK 95
+        device_class: monetary
+        force_update: true
+        unit_of_measurement: 'kr'
+        value_template: >
+          {% set product = value_json.products | selectattr('name', 'eq', 'Blyfri 95') | list | first %}
+          {{ product['price'] }}

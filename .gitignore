@@ -28,4 +28,5 @@ tts/
 configurations/packages/loans.yaml
 shell_scripts/shell_secrets.txt
 rest_json/
+www/rest/
 frigate.yml

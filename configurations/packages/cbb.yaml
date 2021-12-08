@@ -1,36 +1,37 @@
-shell_command:
-  cbb_update: /config/shell_scripts/run_parsehub.sh tpyxiUd_w97U
-  cbb_fetch: /config/shell_scripts/fetch_result.sh tpyxiUd_w97U cbb.json
-
 automation:
-  - alias: Auto - CBB - Update State
+  - alias: Auto - CBB - Parsehub - Update State
     id: cbbUpdateState
     description: Triggers update thru Parsehub
     trigger:
       - platform: time_pattern
         hours: /1
     action:
-      - service: shell_command.cbb_update
+      - service: shell_command.parsehub_run
+        data_template:
+          token: !secret token_cbb
     mode: single
 
-  - alias: Auto - CBB - Fetch JSON after run
+  - alias: Auto - CBB - Parsehub - Fetch JSON after run
     id: cbbFetchState
-    description: 'Fetch CBB JSON data after finished run'
+    description: Fetch JSON data after finished run
     trigger:
       - platform: webhook
-        webhook_id: 1ddd7a2c-f4e1-4ff9-906d-ab611bfad772-9b14ee3c-cfeb-483e-84b7-a391bac12d94
+        webhook_id: !secret webhook_cbb
     action:
       - choose:
           - conditions:
               - condition: template
                 value_template: '{{ trigger.data.data_ready == "1" }}'
             sequence:
-              - service: shell_command.cbb_fetch
+              - service: shell_command.parsehub_fetch
+                data_template:
+                  token: !secret token_cbb
+                  filename: 'cbb.json'
     mode: restart
 
 sensor:
   - platform: file
-    file_path: /config/rest_json/cbb.json
+    file_path: /config/www/rest/cbb.json
     name: 'CBB Talk'
     value_template: >
       {% if value_json.Talk %}
@@ -40,7 +41,7 @@ sensor:
       {% endif %}
 
   - platform: file
-    file_path: /config/rest_json/cbb.json
+    file_path: /config/www/rest/cbb.json
     name: 'CBB Data DK'
     value_template: >
       {% if value_json.DataDK %}
@@ -50,7 +51,7 @@ sensor:
       {% endif %}
 
   - platform: file
-    file_path: /config/rest_json/cbb.json
+    file_path: /config/www/rest/cbb.json
     name: 'CBB Data EU'
     value_template: >
       {% if value_json.DataEU %}
@@ -60,7 +61,7 @@ sensor:
       {% endif %}
 
   - platform: file
-    file_path: /config/rest_json/cbb.json
+    file_path: /config/www/rest/cbb.json
     name: 'CBB Messages'
     value_template: >
       {% if value_json.Messages %}
@@ -70,7 +71,7 @@ sensor:
       {% endif %}
 
   - platform: file
-    file_path: /config/rest_json/cbb.json
+    file_path: /config/www/rest/cbb.json
     name: 'CBB Extra'
     value_template: >
       {% if value_json.Extra %}

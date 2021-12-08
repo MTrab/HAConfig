@@ -83,8 +83,10 @@ mqtt:
 
 deep_sleep:
   id: sleeper
-  sleep_duration: 6h
-  run_duration: 3min
+  sleep_duration:
+    hours: 6
+  run_duration:
+    minutes: 3
   
 globals:
   - id: stayawake

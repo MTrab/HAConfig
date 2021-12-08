@@ -1,0 +1,14 @@
+# - resource: http://rest.apptoo.dk/fuelfinder.json
+#   scan_interval: 3600
+#   sensor:
+#     - name: OK
+#       device_class: monetary
+#       force_update: true
+#       unit_of_measurement: 'kr'
+#       value_template: >
+#         {% set fuelcompany = value_json.fuelprices | selectattr('company_name', 'eq', 'OK') | list | first %}
+#         {{ fuelcompany['gas_95'] | float }}
+#       json_attributes_path: "$.fuelprices[?(@.company_name == 'OK')]"
+#       json_attributes:
+#         - company_logo
+#         - last_update

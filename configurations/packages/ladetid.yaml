@@ -151,7 +151,8 @@ automation:
       - service: switch.turn_on
         target:
           entity_id: switch.car_charger
-      - delay: '{{ states("input_number.car_charge_time") | int }}:00:00'
+      - delay: "00:10:00"
+      - wait_template: '{{ (states("sensor.car_charger_power") | float) < 5 }}'
       - service: switch.turn_off
         target:
           entity_id: switch.car_charger

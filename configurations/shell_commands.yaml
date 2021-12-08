@@ -1,0 +1,2 @@
+parsehub_run: /config/shell_scripts/run_parsehub.sh {{ token }} command {{ command }}
+parsehub_fetch: /config/shell_scripts/fetch_result.sh {{ token }} {{ filename }}
