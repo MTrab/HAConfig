@@ -10,8 +10,11 @@ Home Assistant Supervised in Docker on a virtual (ESXi) Debian Stretch server.
   <li>Samba Share</li>
   <li>ESPHome</li>
   <li>Home Assistant Google Drive Backup</li>
-  <li>OpenZWave</li>
+  <li>Z-Wave JS to MQTT</li>
   <li>RPC Shutdown</li>
+  <li>Frigate NVR (Full access)</li>
+  <li>Log viewer</li>
+  <li>Terminal & SSH</li>
 </ul><br>
 <br>
 Additional repositories:<br>

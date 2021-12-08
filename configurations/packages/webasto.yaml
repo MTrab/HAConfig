@@ -166,7 +166,7 @@ rest:
       - name: Webasto Runtime Left
         unit_of_measurement: "min"
         value_template: >
-          {% if timeleft in value_json %}
+          {% if 'timeleft' in value_json %}
             {% if ":" in value_json.timeleft %}
               {% set split = value_json.timeleft.split(":") %}
                 {{ (split[0] | int * 60) + (split[1] | int) }}

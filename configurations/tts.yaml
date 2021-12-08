@@ -1,4 +1,5 @@
 - platform: google_cloud
+  key_file: google-tts-key.json
   voice: da-DK-Wavenet-E
   language: en-US
   gender: female

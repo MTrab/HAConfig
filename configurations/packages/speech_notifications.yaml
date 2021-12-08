@@ -67,7 +67,7 @@ script:
         data:
           device: '{{ device }}'
           message: >-
-
+            <speak>
             {% macro greeting() %}
               {% if now().strftime('%H')|int < 9%}
                 God morgen.
@@ -89,7 +89,8 @@ script:
                 'Som du ønsker.',
                 'Straks.',
                 'Selvfølgeligt, som om jeg aldrig har brug for hvile.',
-                'Jeg skulle lige til at gøre det.'
+                'Jeg skulle alligevel lige til at gøre det.',
+                'Ja ja - klap nu lige hesten!'
               ] | random }}
             {% endmacro %}
 
@@ -185,3 +186,4 @@ script:
             {%- endmacro -%}
 
             {{- cleanup(mother_of_all_macros()) -}}
+            </speak>
