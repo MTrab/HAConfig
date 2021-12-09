@@ -139,7 +139,7 @@ rest:
     sensor:
       - name: Webasto Battery
         value_template: >
-          {% if value_json.voltage %}
+          {% if 'voltage' in value_json %}
             {{ value_json.voltage }}
           {% else %}
             {{ states("sensor.webasto_battery") }}
@@ -148,7 +148,7 @@ rest:
 
       - name: Webasto Temperature
         value_template: >
-          {% if value_json.temperature %}
+          {% if 'temperature' in value_json %}
             {{ value_json.temperature }}
           {% else %}
             {{ states("sensor.webasto_temperature") }}
@@ -157,7 +157,7 @@ rest:
 
       - name: Webasto State
         value_template: >
-          {% if value_json.state and value.state != "unknown" %}
+          {% if 'state' in value_json and value.state != "unknown" %}
             {{ value_json.state }}
           {% else %}
             {{ states("sensor.webasto_state") }}
@@ -179,7 +179,7 @@ rest:
 
       - name: Webasto Last Update
         value_template: >-
-          {% if value_json.last_update %}
+          {% if 'last_update' in value_json %}
             {{ strptime(value_json.last_update.replace(' GMT',''), '%a %b %d %Y %H:%M:%S%z (%Z)').timestamp() | timestamp_custom('%H:%M %d-%m-%Y') }}
           {% else %}
             {{ states("sensor.webasto_last_update") }}
@@ -194,10 +194,16 @@ template:
         {%- else %}
           {%- set checkTime =  now().strftime("%Y-%m-%d") + " " + states("input_datetime.car_departure_time") %}
         {%- endif %}
-        {% if checkTime < state_attr("calendar.heating","start_time") %}
-          {{ strptime(((as_timestamp(checkTime) - (states('sensor.calculated_run_time')|int*60) - (10*60)))|timestamp_local, '%Y-%m-%d %H:%M:%S') }}
+        {% set startManual = strptime(((as_timestamp(checkTime) - (states('sensor.calculated_run_time')|int*60) - (10*60)))|timestamp_local, '%Y-%m-%d %H:%M:%S') %}
+        {% set startAuto = strptime(((as_timestamp(state_attr("calendar.heating","start_time") | timestamp_local) - (states('sensor.google_travel_time')|int*60) - (states('sensor.calculated_run_time')|int*60) - (10*60)))|timestamp_local, '%Y-%m-%d %H:%M:%S') %}
+        {% if states("input_boolean.charge_time_override") == "on" %}
+          {% if checkTime < state_attr("calendar.heating","start_time") %}
+            {{ startManual }}
+          {% else %}
+            {{ startAuto }}
+          {% endif %}
         {% else %}
-          {{ strptime(((as_timestamp(state_attr("calendar.heating","start_time") | timestamp_local) - (states('sensor.google_travel_time')|int*60) - (states('sensor.calculated_run_time')|int*60) - (10*60)))|timestamp_local, '%Y-%m-%d %H:%M:%S') }}
+          {{ startAuto }}
         {% endif %}
 
   - sensor:

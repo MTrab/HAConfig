@@ -34,7 +34,7 @@ sensor:
     file_path: /config/www/rest/cbb.json
     name: 'CBB Talk'
     value_template: >
-      {% if value_json.Talk %}
+      {% if 'Talk' in value_json %}
         {{ value_json.Talk }}
       {% else %}
         {{ states("sensor.cbb_talk") }}
@@ -44,7 +44,7 @@ sensor:
     file_path: /config/www/rest/cbb.json
     name: 'CBB Data DK'
     value_template: >
-      {% if value_json.DataDK %}
+      {% if 'DataDK' in value_json %}
         {{ value_json.DataDK }}
       {% else %}
         {{ states("sensor.cbb_data_dk") }}
@@ -54,7 +54,7 @@ sensor:
     file_path: /config/www/rest/cbb.json
     name: 'CBB Data EU'
     value_template: >
-      {% if value_json.DataEU %}
+      {% if 'DataEU' in value_json %}
         {{ value_json.DataEU }}
       {% else %}
         {{ states("sensor.cbb_data_eu") }}
@@ -64,7 +64,7 @@ sensor:
     file_path: /config/www/rest/cbb.json
     name: 'CBB Messages'
     value_template: >
-      {% if value_json.Messages %}
+      {% if 'Messages' in value_json %}
         {{ value_json.Messages }}
       {% else %}
         {{ states("sensor.cbb_messages") }}
@@ -74,7 +74,7 @@ sensor:
     file_path: /config/www/rest/cbb.json
     name: 'CBB Extra'
     value_template: >
-      {% if value_json.Extra %}
+      {% if 'Extra' in value_json %}
         {{ value_json.Extra }}
       {% else %}
         {{ states("sensor.cbb_extra") }}

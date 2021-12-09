@@ -63,7 +63,6 @@ def findRecursive(data, origin = "local", subprocess = False):
         path = ""
 
     for file in data[src]:
-        log.warning("%s %s %s", file['name'], file['type'], file['origin'])
         if file['origin'] == origin:
             if file['type'] == "machinecode":
                 if path != file['name'] and path != "":

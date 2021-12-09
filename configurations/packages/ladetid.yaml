@@ -132,6 +132,9 @@ input_boolean:
   allow_auto_charge:
     name: Styring af opladning
     icon: mdi:ev-station
+  charge_time_override:
+    name: Start varmer ved manuel tidspunkt
+    icon: mdi:clock-alert
 
 automation:
   - alias: Auto - Kia Niro - Charge when cheapest
@@ -157,6 +160,48 @@ automation:
         target:
           entity_id: switch.car_charger
     mode: single
+
+  - alias: Auto - Kia Niro - Charge Time Override
+    description: 'Allow manual start time override'
+    id: niroChargeOverride
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.workday_sensor
+        id: workday_on
+        from: 'off'
+        to: 'on'
+      - platform: state
+        entity_id: binary_sensor.workday_sensor
+        id: workday_off
+        from: 'on'
+        to: 'off'
+      - platform: state
+        entity_id: input_datetime.car_departure_time
+        id: time_set
+    condition: []
+    action:
+      - choose:
+          - conditions:
+              - condition: or
+                conditions:
+                  - condition: trigger
+                    id: workday_on
+                  - condition: trigger
+                    id: time_set
+            sequence:
+              - service: input_boolean.turn_on
+                target:
+                  entity_id: input_boolean.charge_time_override
+          - conditions:
+              - condition: trigger
+                id: workday_off
+            sequence:
+              - service: input_boolean.turn_off
+                target:
+                  entity_id: input_boolean.charge_time_override
+        default: []
+    mode: restart
+
 
 utility_meter:
   car_charge_usage:

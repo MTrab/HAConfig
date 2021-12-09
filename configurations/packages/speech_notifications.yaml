@@ -39,7 +39,7 @@ script:
           {% else %}
             .50
           {% endif %}
-    - service: tts.cloud_say
+    - service: tts.google_cloud_say
       data_template:
         entity_id: >
           {% if device == 'kitchen' %}
@@ -53,7 +53,7 @@ script:
           {% endif %}
         message: >-
           {{ message }}
-        cache: true
+        cache: false
         language: da-DK
         options:
           gender: female
