@@ -31,3 +31,5 @@ rest_json/
 www/rest/
 frigate.yml
 google-tts-key.json
+glances/
+diyhue/

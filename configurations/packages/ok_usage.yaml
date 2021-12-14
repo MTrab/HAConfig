@@ -6,6 +6,7 @@ automation:
       - platform: time
         at:
           - "00:10:00"
+          - "12:10:00"
     action:
       - service: shell_command.parsehub_run
         data_template:
@@ -40,5 +41,11 @@ rest:
         unit_of_measurement: 'kr'
         value_template: >
           {{ value_json.entries[0].total }}
+        json_attributes_path: "$.entries[0]"
         json_attributes:
-          - entries
+          - date
+          - product
+          - location
+          - price
+          - amount
+          - total

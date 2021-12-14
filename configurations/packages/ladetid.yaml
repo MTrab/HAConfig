@@ -27,7 +27,7 @@ template:
             {%- set price = prices[index] -%}
               {%- set ns.current_total = 0 -%}
               {%- for i in range(index, index + charging_time) -%} {# loop every hour in charge time#}
-                {%- set ns.current_total = ns.current_total + prices[i] | float -%}
+                {%- set ns.current_total = ns.current_total + prices[i] | float(0) -%}
               {%-endfor -%}
 
             {% set ns.prices = ns.prices + [ns.current_total] -%}
@@ -52,7 +52,7 @@ template:
               {%- set price = prices[index] -%}
                 {%- set ns.current_total = 0 -%}
                 {%- for i in range(index, index + charging_time) -%} {# loop every hour in charge time#}
-                  {%- set ns.current_total = ns.current_total + prices[i] | float -%}
+                  {%- set ns.current_total = ns.current_total + prices[i] | float(0) -%}
                 {%-endfor -%}
 
               {% set ns.prices = ns.prices + [ns.current_total] -%}
@@ -78,7 +78,7 @@ template:
               {%- set price = prices[index] -%}
                 {%- set ns.current_total = 0 -%}
                 {%- for i in range(index, index + charging_time) -%} {# loop every hour in charge time#}
-                  {%- set ns.current_total = ns.current_total + prices[i] | float -%}
+                  {%- set ns.current_total = ns.current_total + prices[i] | float(0) -%}
                 {%-endfor -%}
 
               {% set ns.prices = ns.prices + [ns.current_total] -%}
@@ -104,7 +104,7 @@ template:
               {%- set price = prices[index] -%}
                 {%- set ns.current_total = 0 -%}
                 {%- for i in range(index, index + charging_time) -%} {# loop every hour in charge time#}
-                  {%- set ns.current_total = ns.current_total + prices[i] | float -%}
+                  {%- set ns.current_total = ns.current_total + prices[i] | float(0) -%}
                 {%-endfor -%}
 
               {% set ns.prices = ns.prices + [ns.current_total] -%}
@@ -155,7 +155,7 @@ automation:
         target:
           entity_id: switch.car_charger
       - delay: "00:10:00"
-      - wait_template: '{{ (states("sensor.car_charger_power") | float) < 5 }}'
+      - wait_template: '{{ (states("sensor.car_charger_power") | float(0)) < 5 }}'
       - service: switch.turn_off
         target:
           entity_id: switch.car_charger

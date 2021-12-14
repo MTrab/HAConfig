@@ -1,0 +1,8 @@
+- platform: places
+  name: morten
+  devicetracker_id: device_tracker.mtopnord2
+  options: street, street_number, postal_code, city, state, country
+  map_provider: google
+  map_zoom: 17
+  language: da
+  home_zone: zone.home
