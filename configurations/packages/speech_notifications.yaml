@@ -13,7 +13,7 @@ script:
           {% elif device == 'livingroom' %}
             media_player.stue
           {% elif device == 'bedroom' %}
-            media_player.sovevaerelse_2
+            media_player.sovevaerelse
           {% else %}
             media_player.all_house
           {% endif %}
@@ -25,7 +25,7 @@ script:
           {% elif device == 'livingroom' %}
             media_player.stue
           {% elif device == 'bedroom' %}
-            media_player.sovevaerelse_2
+            media_player.sovevaerelse
           {% else %}
             media_player.all_house
           {% endif %}
@@ -47,7 +47,7 @@ script:
           {% elif device == 'livingroom' %}
             media_player.stue
           {% elif device == 'bedroom' %}
-            media_player.sovevaerelse_2
+            media_player.sovevaerelse
           {% else %}
             media_player.all_house
           {% endif %}
@@ -138,9 +138,9 @@ script:
 
             {% macro sleep() %}
               {{ [
-                'Godnat.',
-                'Godnat og drøm sødt.',
-                'Sov godt, jeg våger over dig her fra din side.'
+                'Godnat min ven.',
+                'Godnat Morten, drøm sødt.',
+                'Sov godt Morten, jeg våger over dig her fra din side.'
               ] | random }}
             {% endmacro %}
 

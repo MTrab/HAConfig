@@ -53,21 +53,10 @@ dimmer_dim_light:
 godnat_tts:
   alias: Godnat TTS
   sequence:
-  - choose:
-    - conditions:
-      - condition: state
-        entity_id: person.pia
-        state: home
-      sequence:
-      - service: tts.cloud_say
-        data:
-          message: Godnat Morten og godnat Pia, kan i sove godt
-          entity_id: media_player.sovevaerelse
-    default:
-    - service: tts.cloud_say
-      data:
-        entity_id: media_player.sovevaerelse
-        message: Godnat Morten, kan du sove godt
+  - service: script.do_speech
+    data:
+      call_sleep: 1
+      device: bedroom
   mode: single
 turn_on_webasto:
   alias: Turn on Webasto
