@@ -1,0 +1,12 @@
+mqtt:
+  broker: !secret mqtt_broker
+  username: ${mqtt_username}
+  password: ${mqtt_password}
+  topic_prefix: esphome/${node_name}
+  discovery: false
+  birth_message:
+    topic: esphome/${node_name}/LWT
+    payload: online
+  will_message:
+    topic: esphome/${node_name}/LWT
+    payload: offline

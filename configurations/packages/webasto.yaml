@@ -125,8 +125,7 @@ automation:
         conditions:
           - condition: template
             value_template: >-
-              {{ states('sensor.webasto_temperature') <
-              states('input_number.webasto_low_point') }}
+              {{ (states('sensor.webasto_temperature') | float(0)) < (states('input_number.webasto_low_point') | float(0)) }}
           - condition: state
             entity_id: switch.webasto
             state: "off"
@@ -183,7 +182,7 @@ rest:
       - name: Webasto Last Update
         value_template: >-
           {% if 'last_update' in value_json %}
-            {{ strptime(value_json.last_update.replace(' GMT',''), '%a %b %d %Y %H:%M:%S%z (%Z)').timestamp() | timestamp_custom('%H:%M %d-%m-%Y', default='0') }}
+            {{ strptime(value_json.last_update.replace(' GMT',''), '%a %b %d %Y %H:%M:%S%z (%Z)').timestamp() | timestamp_custom('%H:%M %d-%m-%Y') }}
           {% else %}
             {{ states("sensor.webasto_last_update") }}
           {% endif %}
@@ -197,8 +196,8 @@ template:
         {%- else %}
           {%- set checkTime =  now().strftime("%Y-%m-%d") + " " + states("input_datetime.car_departure_time") %}
         {%- endif %}
-        {% set startManual = strptime(((as_timestamp(checkTime, 0) - (states('sensor.calculated_run_time')|int(0)*60) - (10*60)))|timestamp_custom(false), '%Y-%m-%d %H:%M:%S') %}
-        {% set startAuto = strptime(((as_timestamp(state_attr("calendar.heating","start_time") | timestamp_custom(false), 0) - (states('sensor.google_travel_time')|int(0)*60) - (states('sensor.calculated_run_time')|int(0)*60) - (10*60)))|timestamp_custom(default='0'), '%Y-%m-%d %H:%M:%S') %}
+        {% set startManual = strptime(((as_timestamp(checkTime, 0) - (states('sensor.calculated_run_time')|int(0)*60) - (20*60)))|timestamp_custom('%Y-%m-%d %H:%M:%S'), '%Y-%m-%d %H:%M:%S') %}
+        {% set startAuto = strptime(((as_timestamp(state_attr("calendar.heating","start_time"), 0) - (states('sensor.google_travel_time')|int(0)*60) - (states('sensor.calculated_run_time')|int(0)*60) - (20*60))) | timestamp_custom('%Y-%m-%d %H:%M:%S'), '%Y-%m-%d %H:%M:%S') %}
         {% if states("input_boolean.charge_time_override") == "on" %}
           {% if checkTime < state_attr("calendar.heating","start_time") %}
             {{ startManual }}

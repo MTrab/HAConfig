@@ -11,7 +11,7 @@ script:
           {% if device == 'kitchen' %}
             media_player.nesthub8311
           {% elif device == 'livingroom' %}
-            media_player.stue
+            media_player.stue_2
           {% elif device == 'bedroom' %}
             media_player.sovevaerelse
           {% else %}
@@ -23,7 +23,7 @@ script:
           {% if device == 'kitchen' %}
             media_player.nesthub8311
           {% elif device == 'livingroom' %}
-            media_player.stue
+            media_player.stue_2
           {% elif device == 'bedroom' %}
             media_player.sovevaerelse
           {% else %}
@@ -33,9 +33,9 @@ script:
           {% if device == 'kitchen' %}
             .60
           {% elif device == 'livingroom' %}
-            .20
+            .30
           {% elif device == 'bedroom' %}
-            .10
+            .30
           {% else %}
             .50
           {% endif %}
@@ -45,7 +45,7 @@ script:
           {% if device == 'kitchen' %}
             media_player.nesthub8311
           {% elif device == 'livingroom' %}
-            media_player.stue
+            media_player.stue_2
           {% elif device == 'bedroom' %}
             media_player.sovevaerelse
           {% else %}
@@ -68,7 +68,7 @@ script:
           device: '{{ device }}'
           message: >-
             <speak>
-            {% macro greeting() %}
+            {%- macro greeting() %}
               {% if now().strftime('%H')|int < 9%}
                 God morgen.
               {% elif now().strftime('%H')|int >= 9 and now().strftime('%H')|int < 17 %}
@@ -82,7 +82,7 @@ script:
               {% endif %}
             {% endmacro %}
 
-            {% macro confirm() %}
+            {%- macro confirm() %}
               {{ [
                 'Okay.',
                 'Javel.',
@@ -94,7 +94,7 @@ script:
               ] | random }}
             {% endmacro %}
 
-            {% macro morten_home() %}
+            {%- macro morten_home() %}
               {{ [
                 'Velkommen hjem, Morten.',
                 'Der var husets konge jo.',
@@ -102,7 +102,7 @@ script:
               ] | random }}
             {% endmacro %}
 
-            {% macro interrupt() %}
+            {%- macro interrupt() %}
               {{ [
                 'Undskyld, ',
                 'Beklager afbrydelsen, men, ',
@@ -111,41 +111,96 @@ script:
               ] | random }}
             {% endmacro %}
 
-            {% macro freezing() %}
+            {%- macro freezing() %}
               {{ [
                 'Det er koldt ude, pas på du ikke falder.',
                 'Pas på pingvinerne udenfor, det er lige deres yndlings vejr.'
               ] | random }}
             {% endmacro %}
 
-            {% macro djskoge() %}
+            {%- macro djskoge() %}
               {{ [
-                'Så er der bassarm med Skoge.',
-                'DJ Skoge streamer nu på Twitch.',
+                'Så er der bassarm med Skoge!',
+                'DJ Skoge streamer nu på Twitch!',
                 'Op med volumen og tænd for Twitch, Skoge er online.',
-                'Retroparty med DJ Skoge, tænd for Twitch.'
+                'Retroparty med DJ Skoge, tænd for Twitch nu!'
               ] | random }}
             {% endmacro %}
 
-            {% macro dooropen() %}
+            {%- macro dooropen() %}
               {{ [
                 'Du tænker ikke det er på tide at lukke døren?',
-                'Puha, jeg synes det bliver køligt. Kan du ikke lukke døren?',
-                'Det trækker, jeg bliver syg. Så luk dog døren menneske!',
-                'Har du overvejet alle de insekter der kommer ind af døren lige nu? Luk den!'
+                'Puha, jeg synes det bliver køligt.<break time="0.5s"/>Kan du ikke lukke døren?',
+                'Det trækker, jeg bliver syg.<break time="1s"/>Så luk dog døren menneske!',
+                'Har du overvejet alle de insekter der kommer ind af døren lige nu?<break time="0.5s"/>Luk den!'
               ] | random }}
             {% endmacro %}
 
-            {% macro sleep() %}
+            {%- macro dinner() %}
               {{ [
-                'Godnat min ven.',
-                'Godnat Morten, drøm sødt.',
-                'Sov godt Morten, jeg våger over dig her fra din side.'
+                'Du tænker ikke det er på tide lave noget at spise?',
+                'Jeg er sulten, og jeg er endda en robot!<break time="0.5s"/>Hvad med dig?<break time="0.5s"/>Er du ikke sulten?',
+                'Det der med at undlade at spise, det er ikke så sundt.',
+                'Har du overvejet at lave noget aftensmad?',
+                'Du bliver ikke kønnere, bare fordi du ikke spiser<break time="1s"/>Få så lavet noget mad!'
+              ] | random }}
+            {% endmacro %}
+
+            {%- macro flowers() %}
+              {{ [
+                'Dine blomster tørster.',
+                'Jeg tænker det er på tide at få vandet blomsterne, så de ikke visner helt.'
+              ] | random }}
+            {% endmacro %}
+
+            {%- macro sleep() %}
+              {% set name = "Morten" %}
+              {% set you = "dig" %}
+              {% set your = "din" %}
+
+              {% if states("person.pia") == "home" %}
+                {% set name = "Morten og Pia" %}
+                {% set you = "jer" %}
+                {% set your = "jeres" %}
+              {% endif %}
+
+              {{ [
+                'Godnat og sov godt.',
+                'Godnat ' + name + ', drøm sødt.',
+                'Sov godt ' + name + ', jeg våger over ' + you + ' her fra ' + your + ' side.'
+              ] | random }}
+            {% endmacro %}
+
+            {%- macro custom() %}
+              {{ custom_text }}
+            {% endmacro %}
+
+            {%- macro reminder() %}
+              {{ [
+                'du har bedt mig om at give dig denne påmindelse: <break time="1s"/>'
+              ] | random }}
+            {% endmacro %}
+
+            {%- macro bedtime_first() %}
+              {{ [
+                'du skal i seng.<break time="1s"/>Det er arbejdsdag i morgen.',
+                'det er sengetid nu.',
+                'du skal i seng, ellers er du bare træt i morgen.',
+                'det er tid for at finde dynen,<break time="0.5s"/>den kalder på dig.'
+              ] | random }}
+            {% endmacro %}
+
+            {%- macro bedtime_recurring() %}
+              {{ [
+                'afgang til sengen!',
+                'kan du så se at komme i seng.',
+                'i seng<break time="0.5s"/>NU!',
+                'du er for dum når ikke du kommer i seng til tiden, du er så træt hele dagen i morgen.'
               ] | random }}
             {% endmacro %}
 
             {%- macro cleanup(data) -%}
-              {%- for item in data.split("\n")  if item | trim != "" -%}
+              {%- for item in data.split("\n") if item | trim != "" -%}
                 {{ item | trim | replace("_", " ") }}
               {% endfor -%}
             {%- endmacro -%}
@@ -161,6 +216,10 @@ script:
 
               {% if call_interrupt == 1 %}
                 {{ interrupt() }}
+              {% endif %}
+
+              {% if call_remind == 1 %}
+                {{ reminder() }}
               {% endif %}
 
               {% if call_freezing == 1 %}
@@ -179,8 +238,28 @@ script:
                 {{ morten_home() }}
               {% endif %}
 
+              {% if call_dinner == 1 %}
+                {{ dinner() }}
+              {% endif %}
+
+              {% if call_flowers == 1 %}
+                {{ flowers() }}
+              {% endif %}
+
               {% if call_sleep == 1 %}
                 {{ sleep() }}
+              {% endif %}
+
+              {% if call_bedtime_first == 1 %}
+                {{ bedtime_first() }}
+              {% endif %}
+
+              {% if call_bedtime_recurring == 1 %}
+                {{ bedtime_recurring() }}
+              {% endif %}
+
+              {% if call_custom == 1 %}
+                {{ custom() }}
               {% endif %}
 
             {%- endmacro -%}

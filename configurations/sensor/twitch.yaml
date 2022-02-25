@@ -1,0 +1,9 @@
+- platform: twitch_helix
+  client_id: !secret twitch_client_id
+  client_secret: !secret twitch_client_secret
+  own_channel: "morten_t"
+  channels:
+    - "DJSkoge"
+    - "Promic2"
+    - "iJensen79"
+    - "f1nn5ter"

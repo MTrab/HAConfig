@@ -33,9 +33,15 @@ sensor:
   - platform: file
     file_path: /config/www/rest/cbb.json
     name: 'CBB Talk'
+    unit_of_measurement: 'min'
     value_template: >
       {% if 'Talk' in value_json %}
-        {{ value_json.Talk }}
+        {% set Talk = value_json.Talk.replace(" time ","|").replace(" timer ","|").replace("min.","").split("|") %}
+        {% if (Talk | length) > 1 %}
+          {{ ((Talk[0] | int(false)) * 60) + (Talk[1] | int(false)) }}
+        {% else %}
+          {{ (Talk[0] | int(0)) }}
+        {% endif %}
       {% else %}
         {{ states("sensor.cbb_talk") }}
       {% endif %}
@@ -43,9 +49,16 @@ sensor:
   - platform: file
     file_path: /config/www/rest/cbb.json
     name: 'CBB Data DK'
+    unit_of_measurement: 'MB'
     value_template: >
       {% if 'DataDK' in value_json %}
-        {{ value_json.DataDK }}
+        {% if "Bytes" in value_json.DataDK %}
+          {{ ((value_json.DataDK.replace(",",".").replace("Bytes","") | float) / 1024 | round(2)) }}
+        {% elif "MB" in value_json.DataDK %}
+          {{ (value_json.DataDK.replace(",",".").replace("MB","") | float)}}
+        {% elif "GB" in value_json.DataDK %}
+          {{ (value_json.DataDK.replace(",",".").replace("GB","") | float) * 1024}}
+        {% endif %}
       {% else %}
         {{ states("sensor.cbb_data_dk") }}
       {% endif %}
@@ -53,9 +66,16 @@ sensor:
   - platform: file
     file_path: /config/www/rest/cbb.json
     name: 'CBB Data EU'
+    unit_of_measurement: 'MB'
     value_template: >
       {% if 'DataEU' in value_json %}
-        {{ value_json.DataEU }}
+        {% if "Bytes" in value_json.DataEU %}
+          {{ ((value_json.DataEU.replace(",",".").replace("Bytes","") | float) / 1024 | round(2)) }}
+        {% elif "MB" in value_json.DataEU %}
+          {{ (value_json.DataEU.replace(",",".").replace("MB","") | float)}}
+        {% elif "GB" in value_json.DataEU %}
+          {{ (value_json.DataEU.replace(",",".").replace("GB","") | float) * 1024}}
+        {% endif %}
       {% else %}
         {{ states("sensor.cbb_data_eu") }}
       {% endif %}
@@ -63,9 +83,10 @@ sensor:
   - platform: file
     file_path: /config/www/rest/cbb.json
     name: 'CBB Messages'
+    unit_of_measurement: 'stk'
     value_template: >
       {% if 'Messages' in value_json %}
-        {{ value_json.Messages }}
+        {{ value_json.Messages.replace("stk.","") }}
       {% else %}
         {{ states("sensor.cbb_messages") }}
       {% endif %}
@@ -73,9 +94,10 @@ sensor:
   - platform: file
     file_path: /config/www/rest/cbb.json
     name: 'CBB Extra'
+    unit_of_measurement: 'kr'
     value_template: >
       {% if 'Extra' in value_json %}
-        {{ value_json.Extra }}
+        {{ value_json.Extra.replace(",",".").replace("kr.","") }}
       {% else %}
         {{ states("sensor.cbb_extra") }}
       {% endif %}

@@ -1,17 +1,14 @@
 esphome:
   name: ${node_name}
+  build_path: ./build/${node_name}
   platform: ${platform}
   board: ${board}
-  build_path: ./build/${node_name}
-
-# Enable logging
-logger:
-  level: ${log_level}
 
 api:
   reboot_timeout: 1h
 
 ota:
+  safe_mode: True
 
 text_sensor:
   - <<: !include text_sensor/uptime.yaml
@@ -22,5 +19,8 @@ sensor:
 binary_sensor:
   - <<: !include binary_sensor/connection_status.yaml
 
-switch:
-  - <<: !include switch/restart.yaml
+#switch:
+#  - <<: !include switch/safemode.yaml
+
+button:
+  - <<: !include button/restart.yaml

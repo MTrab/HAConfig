@@ -4,7 +4,7 @@ from collections import OrderedDict
 from typing import MutableMapping, cast
 
 import attr
-from homeassistant.core import (callback, HomeAssistant)
+from homeassistant.core import callback, HomeAssistant
 from homeassistant.loader import bind_hass
 from homeassistant.const import (
     ATTR_NAME,
@@ -17,7 +17,7 @@ _LOGGER = logging.getLogger(__name__)
 
 DATA_REGISTRY = f"{const.DOMAIN}_storage"
 STORAGE_KEY = f"{const.DOMAIN}.storage"
-STORAGE_VERSION = 2
+STORAGE_VERSION = 3
 SAVE_DELAY = 10
 
 
@@ -97,17 +97,50 @@ def parse_schedule_data(data: dict):
 class MigratableStore(Store):
     async def _async_migrate_func(self, old_version, data: dict):
 
+        def remove_unequal_number_conditions(timeslots):
+            """ensure all timeslots have the same number of conditions"""
+            if len(timeslots) > 1 and not all(
+                len(el["conditions"]) == len(timeslots[0]["conditions"])
+                for el in timeslots
+            ):
+                return [
+                    {
+                        **slot,
+                        "conditions": timeslots[0]["conditions"]
+                    }
+                    for slot in timeslots
+                ]
+            return timeslots
+
         if old_version < 2:
-            data["schedules"] = [
-                {
-                    **entry,
-                    const.ATTR_START_DATE: entry[const.ATTR_START_DATE]
-                    if const.ATTR_START_DATE in entry else None,
-                    const.ATTR_END_DATE: entry[const.ATTR_END_DATE]
-                    if const.ATTR_END_DATE in entry else None,
-                }
-                for entry in data["schedules"]
-            ] if "schedules" in data else []
+            data["schedules"] = (
+                [
+                    {
+                        **entry,
+                        const.ATTR_START_DATE: entry[const.ATTR_START_DATE]
+                        if const.ATTR_START_DATE in entry
+                        else None,
+                        const.ATTR_END_DATE: entry[const.ATTR_END_DATE]
+                        if const.ATTR_END_DATE in entry
+                        else None,
+                    }
+                    for entry in data["schedules"]
+                ]
+                if "schedules" in data
+                else []
+            )
+        if old_version < 3:
+            data["schedules"] = (
+                [
+                    {
+                        **entry,
+                        const.ATTR_TIMESLOTS: remove_unequal_number_conditions(entry[const.ATTR_TIMESLOTS])
+                    }
+                    for entry in data["schedules"]
+                ]
+                if "schedules" in data
+                else []
+            )
         return data
 
 
@@ -199,9 +232,7 @@ class ScheduleStorage:
                 item[const.ATTR_TIMESLOTS].append(timeslot)
             store_data["schedules"].append(item)
 
-        store_data["tags"] = [
-            attr.asdict(entry) for entry in self.tags.values()
-        ]
+        store_data["tags"] = [attr.asdict(entry) for entry in self.tags.values()]
 
         return store_data
 
@@ -230,12 +261,10 @@ class ScheduleStorage:
     def async_create_schedule(self, data: dict) -> ScheduleEntry:
         """Create a new ScheduleEntry."""
         if const.ATTR_SCHEDULE_ID in data:
-            # migrate existing schedule to store
             schedule_id = data[const.ATTR_SCHEDULE_ID]
             del data[const.ATTR_SCHEDULE_ID]
             if schedule_id in self.schedules:
                 return
-            _LOGGER.info("Migrating schedule {}".format(schedule_id))
         else:
             schedule_id = secrets.token_hex(3)
             while schedule_id in self.schedules:

@@ -5,7 +5,7 @@ rest:
     authentication: basic
     headers:
       Content-Type: application/json
-    scan_interval: 360
+    scan_interval: 3600
     sensor:
       - name: Renovation Restaffald
         value_template: '{{ strptime(value_json[6].NextCollectionDate, "%d-%m-%Y") }}'

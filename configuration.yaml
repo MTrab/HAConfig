@@ -3,9 +3,15 @@ default_config:
 
 # HTTP setup for allowing reverse-proxy
 http:
+  cors_allowed_origins:
+    - https://google.com
+    - https://www.home-assistant.io
   use_x_forwarded_for: true
   trusted_proxies:
-    - 172.16.210.11
+    - 10.254.254.9
+    - 172.30.33.0/24
+  ip_ban_enabled: true
+  login_attempts_threshold: 5
 
 # Home Assistant setup
 homeassistant:
@@ -13,6 +19,7 @@ homeassistant:
   packages: !include_dir_named configurations/packages
   allowlist_external_dirs:
     - /config/www/rest
+    - /config
 
 # Frontend setup
 frontend:

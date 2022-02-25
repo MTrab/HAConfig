@@ -6,3 +6,4 @@
   max_on_time: 3600 # Optional safety max on time in seconds. Default = 7200 seconds
   sample_interval: 60 # Optional time between taking humidity samples in seconds, default 300 seconds
   min_humidity: 30 # Optional minimum humidity to enable dehumidification. Default = 0
+  unique_id: bathroom_hygrostat

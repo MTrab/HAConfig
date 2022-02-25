@@ -1,2 +1,7 @@
 - platform: workday
   country: DK
+
+- platform: workday
+  name: Workday Tomorrow
+  country: DK
+  days_offset: 1

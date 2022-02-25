@@ -41,4 +41,4 @@ rest:
         unit_of_measurement: 'kr'
         value_template: >
           {% set product = value_json.products | selectattr('name', 'eq', 'Blyfri 95') | list | first %}
-          {{ product['price'] }}
+          {{ product['price'].replace(",",".") }}

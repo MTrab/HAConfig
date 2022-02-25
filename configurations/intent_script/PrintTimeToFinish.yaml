@@ -1,0 +1,32 @@
+PrintTimeToFinish:
+  speech:
+    text: >
+      {% if is_state("binary_sensor.core_a8_printing", "off") %}
+        Printeren printer ikke lige nu!
+      {% else %}
+        {% set jobTime = states("sensor.core_a8_print_time_left").split(':') %}
+        {% set timeString = "" %}
+        {% if (jobTime | count) == 3 %}
+          {% if (jobTime[0] > '00') %}
+            {% set timeString = (jobTime[0] | replace("0","")) %}
+            {% if (jobTime[0] == '01') %}
+              {% set timeString = timeString + " time" %}
+            {% else %}        
+              {% set timeString = timeString + " timer" %}
+            {% endif %}
+          {% endif %}
+
+          {% if (jobTime[1] > '00') %}
+            {% if (jobTime[0] > '00') %}
+              {% set timeString = timeString + " og " %}
+            {% endif %}
+            {% set timeString = timeString + (jobTime[1] | replace("0","")) %}
+            {% if (jobTime[1] == '01') %}
+              {% set timeString = timeString + " minut" %}
+            {% else %} 
+              {% set timeString = timeString + " minutter" %}
+            {% endif %}        
+          {% endif %}        
+        {% endif %}
+        Printeren er færdig om {{ timeString }}
+      {% endif %}

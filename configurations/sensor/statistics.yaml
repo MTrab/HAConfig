@@ -1,5 +1,6 @@
 - platform: statistics
   name: Køleskab Temperatur
   entity_id: sensor.temperature_2
+  state_characteristic: mean
   max_age:
     minutes: 30

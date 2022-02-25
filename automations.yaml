@@ -13,8 +13,8 @@
   action:
   - type: turn_on
     device_id: f2338eee06de11eba65eb3aa68dad3d5
-    entity_id: switch.vitrine
-    domain: switch
+    entity_id: light.vitrine
+    domain: light
   mode: single
 - id: '1602155183627'
   alias: Light - Livingroom - Desktop Switch
@@ -137,8 +137,8 @@
   action:
   - type: turn_on
     device_id: f2338eee06de11eba65eb3aa68dad3d5
-    entity_id: switch.vitrine
-    domain: switch
+    entity_id: light.vitrine
+    domain: light
   - type: turn_on
     device_id: 61cb33c506d640e6fe3c3671320ecebc
     entity_id: light.outside
@@ -376,9 +376,9 @@
   action:
   - type: turn_off
     device_id: f2338eee06de11eba65eb3aa68dad3d5
-    entity_id: switch.vitrine
+    entity_id: light.vitrine
     domain: switch
-  - service: switch.turn_off
+  - service: light.turn_off
     target:
       entity_id: switch.store_stearinlys
   mode: single
@@ -562,37 +562,6 @@
   - service: notify.mobile_app_mtopnord2
     data:
       message: Main UPS batteri under 50%
-  mode: single
-- id: '1610443053399'
-  alias: Alert - UPS State Change
-  description: ''
-  trigger:
-  - platform: event
-    event_type: nut.ups_event
-  condition: []
-  action:
-  - choose:
-    - conditions:
-      - condition: template
-        value_template: '{{ trigger.event.data.notify_type == ''COMMBAD'' }}'
-      sequence:
-      - service: hassio.addon_restart
-        data:
-          addon: a0d7b954_nut
-    - conditions:
-      - condition: template
-        value_template: '{{ trigger.event.data.notify_type != ''COMMBAD'' }}'
-      sequence:
-      - service: notify.mobile_app_mtopnord2
-        data_template:
-          title: UPS skiftede status
-          message: '{{ trigger.event.data.notify_msg }}'
-          data:
-            subject: UPS skiftede status
-            group: UPS
-            channel: UPS
-            importance: high
-    default: []
   mode: single
 - id: '1611133656102'
   alias: Light - Dartskab
@@ -790,7 +759,7 @@
   condition: []
   action:
   - type: turn_off
-    device_id: f9692b510dd3de15c7384c1c23afd976
+    device_id: 61cb33c506d640e6fe3c3671320ecebc
     entity_id: light.outside
     domain: light
   mode: single
@@ -813,7 +782,6 @@
       hours: 0
       minutes: 30
       seconds: 0
-      milliseconds: 0
   condition: []
   action:
   - choose:
@@ -826,11 +794,11 @@
         entity_id: switch.pc_monitors
         domain: switch
       - service: media_player.media_stop
-        target:
-          entity_id: all
+        entity_id: all
+        data: {}
       - service: light.turn_off
-        target:
-          entity_id: all
+        entity_id: all
+        data: {}
     - conditions:
       - condition: trigger
         id: 30min
@@ -839,6 +807,7 @@
         target:
           entity_id:
           - switch.coffeemaker_switch
+        data: {}
     default: []
   mode: single
 - id: '1612785626004'
@@ -917,39 +886,6 @@
         priority: high
         ttl: 0
   mode: single
-- id: '1614613529953'
-  alias: Auto - Update foodplanner
-  description: ''
-  trigger:
-  - platform: state
-    entity_id: input_text.foodplanner_mon
-  - platform: state
-    entity_id: input_text.foodplanner_tue
-  - platform: state
-    entity_id: input_text.foodplanner_wed
-  - platform: state
-    entity_id: input_text.foodplanner_thu
-  - platform: state
-    entity_id: input_text.foodplanner_fri
-  - platform: state
-    entity_id: input_text.foodplanner_sat
-  - platform: state
-    entity_id: input_text.foodplanner_sun
-  condition: []
-  action:
-  - delay: 00:00:05
-  - service: mqtt.publish
-    data:
-      payload: "{\n  \"monday\": \"{{ states('input_text.foodplanner_mon') }}\",\n\
-        \  \"tuesday\": \"{{ states('input_text.foodplanner_tue') }}\",\n  \"wednesday\"\
-        : \"{{ states('input_text.foodplanner_wed') }}\",\n  \"thursday\": \"{{ states('input_text.foodplanner_thu')\
-        \ }}\",\n  \"friday\": \"{{ states('input_text.foodplanner_fri') }}\",\n \
-        \ \"saturday\": \"{{ states('input_text.foodplanner_sat') }}\",\n  \"sunday\"\
-        : \"{{ states('input_text.foodplanner_sun') }}\"\n}  "
-      topic: esphome/foodplanner/plan
-      retain: true
-  mode: restart
-  max: 10
 - id: '1615284560741'
   alias: Auto - Toilet - Humidity Exhaust
   description: ''
@@ -990,10 +926,11 @@
     domain: sensor
     below: 130
   action:
-  - type: turn_on
-    device_id: aa1e532da567f3e46f9253fc839e7ec2
-    entity_id: light.gang_loftlys
-    domain: light
+  - service: light.turn_on
+    target:
+      device_id: aa1e532da567f3e46f9253fc839e7ec2
+    data:
+      transition: 5
   - wait_for_trigger:
     - type: no_motion
       platform: device
@@ -1232,11 +1169,11 @@
     entity_id: media_player.stue
   mode: single
 - id: '1634544242311'
-  alias: TTS - Døren er åben
-  description: ''
+  alias: TTS - Reminder - Frontdoor is open
+  description: Reminding to close the frontdoor
   trigger:
   - platform: time
-    at: '21:00:00'
+    at: '21:00'
   condition:
   - type: is_open
     condition: device
@@ -1264,7 +1201,7 @@
     id: cal
   - platform: state
     entity_id: binary_sensor.workday_sensor
-    to: ff
+    to: 'off'
     id: wds
   condition: []
   action:
@@ -1285,6 +1222,7 @@
           - service: input_boolean.turn_on
             target:
               entity_id: input_boolean.is_home
+            data: {}
         - conditions:
           - condition: state
             entity_id: binary_sensor.workday_sensor
@@ -1296,6 +1234,7 @@
           - service: input_boolean.turn_off
             target:
               entity_id: input_boolean.is_home
+            data: {}
         default: []
     - conditions:
       - condition: trigger
@@ -1307,10 +1246,12 @@
       - service: input_boolean.turn_on
         target:
           entity_id: input_boolean.is_home
+        data: {}
     default:
     - service: input_boolean.turn_off
       target:
         entity_id: input_boolean.is_home
+      data: {}
   mode: single
 - id: '1637158027563'
   alias: Auto - Kia Niro - Turn off heater when battery is low
@@ -1426,43 +1367,239 @@
   action:
   - service: shell_command.webasto_off
   mode: single
-- id: '1639044549681'
-  alias: Auto - Kia Niro - Charge Time Override
+- id: '1640077919167'
+  alias: Notification - Prepare dinner
+  description: ''
+  use_blueprint:
+    path: Aohzan/medication_reminder.yaml
+    input:
+      logbook_message_no_answer: No answer time out for dinner reminder
+      notify_device: 5a203dc793181fba91d8220b160558c1
+      notification_title: Det er tid for aftensmad
+      notification_message: Husk at du skal lave aftensmad
+      notification_action_taken: Igang
+      notification_action_later: Senere
+      notification_action_skip: Ikke i dag
+      logbook_message_remind: Reminder sent for dinner
+      logbook_message_taken: Dinner done
+      logbook_message_later: Dinner later
+      logbook_message_skip: Dinner skipped
+      optional_action: []
+      reminder_time: '18:00:00'
+      input_boolean: input_boolean.dinner_reminder
+- id: '1640082213543'
+  alias: TTS - Reminder - Dinner
+  description: Påmindelse for aftensmad
+  trigger:
+  - platform: time
+    at: '17:30'
+  condition: []
+  action:
+  - service: sonos.snapshot
+    data: {}
+    entity_id: media_player.stue
+  - service: script.do_speech
+    data:
+      device: livingroom
+      call_interrupt: 1
+      call_dinner: 1
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 10
+      milliseconds: 0
+  - service: sonos.restore
+    data: {}
+    entity_id: media_player.stue
+  mode: single
+- id: '1640082318900'
+  alias: TTS - Reminder - Water the flowers
+  description: Påmindelse at vande blomsterne
+  trigger:
+  - platform: time
+    at: '21:00'
+  condition:
+  - condition: time
+    weekday:
+    - sun
+  action:
+  - service: sonos.snapshot
+    data: {}
+    entity_id: media_player.stue
+  - service: script.do_speech
+    data:
+      device: livingroom
+      call_interrupt: 1
+      call_flowers: 1
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 10
+      milliseconds: 0
+  - service: sonos.restore
+    data: {}
+    entity_id: media_player.stue
+  mode: single
+- id: '1641207894004'
+  alias: TTS - Calendar Notification
   description: ''
   trigger:
   - platform: state
-    entity_id: binary_sensor.workday_sensor
-    id: workday_on
+    entity_id: calendar.automations
+    id: TTS
     from: 'off'
     to: 'on'
-  - platform: state
+  condition:
+  - condition: state
+    entity_id: calendar.automations
+    state: TTS
+    attribute: message
+  action:
+  - service: script.do_speech
+    data:
+      device: livingroom
+      call_interrupt: 1
+      call_remind: 1
+      call_custom: 1
+      custom_text: '{{ state_attr("calendar.automations","description") }}'
+  mode: single
+- id: '1642950827716'
+  alias: Auto - Actions at morning alarm when working at home
+  description: ''
+  trigger:
+  - platform: time
+    at: sensor.google_sovevaerelse_alarms
+  condition:
+  - condition: state
     entity_id: binary_sensor.workday_sensor
-    id: workday_off
+    state: 'on'
+  - condition: state
+    entity_id: input_boolean.is_home
+    state: 'on'
+  action:
+  - wait_for_trigger:
+    - type: motion
+      platform: device
+      device_id: eefb5fea06ec11eba7df65196ef7855b
+      entity_id: binary_sensor.motion_sensor_hall
+      domain: binary_sensor
+    timeout: 01:00:00
+    continue_on_timeout: false
+  - service: switch.turn_on
+    target:
+      entity_id: switch.toilet
+    data: {}
+  - type: turn_on
+    device_id: 3b6afdd5aff2138e80230367beebc215
+    entity_id: switch.kaffemaskine_power
+    domain: switch
+  - service: switch.turn_on
+    target:
+      entity_id:
+      - switch.pc
+      - switch.pc_monitors
+    data: {}
+  - service: media_player.play_media
+    data:
+      media_content_id: http://live-icy.dr.dk/A/A14H.mp3
+      media_content_type: music
+    target:
+      entity_id: media_player.stue
+  - service: media_player.volume_mute
+    data:
+      is_volume_muted: false
+    target:
+      entity_id: media_player.stue
+  - service: light.turn_on
+    target:
+      entity_id:
+      - light.spisebord
+      - light.kitchen
+    data: {}
+  mode: single
+- id: '1642951260065'
+  alias: Auto - Core A8 - Turn off when job is done
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.core_a8_printing
     from: 'on'
     to: 'off'
-  - platform: state
-    entity_id: input_datetime.car_departure_time
-    id: time_set
+    for:
+      hours: 0
+      minutes: 10
+      seconds: 0
   condition: []
   action:
+  - service: switch.turn_off
+    target:
+      entity_id: switch.core_a8_power
+  mode: restart
+- id: '1644826763466'
+  alias: TTS - Bedtime
+  description: ''
+  trigger:
+  - platform: time
+    at: input_datetime.bedtime
+  condition:
+  - condition: state
+    entity_id: sensor.google_sovevaerelse_alarms
+    state: unavailable
+  - condition: state
+    entity_id: person.morten_trab
+    state: home
+  - condition: state
+    entity_id: binary_sensor.workday_tomorrow
+    state: 'on'
+  action:
+  - service: script.do_speech
+    data:
+      device: livingroom
+      call_interrupt: 1
+      call_bedtime_first: 1
+  - delay:
+      hours: 0
+      minutes: 30
+      seconds: 0
+      milliseconds: 0
   - choose:
     - conditions:
-      - condition: or
-        conditions:
-        - condition: trigger
-          id: workday_on
-        - condition: trigger
-          id: time_set
+      - condition: state
+        entity_id: sensor.google_sovevaerelse_alarms
+        state: unavailable
       sequence:
-      - service: input_boolean.turn_on
-        target:
-          entity_id: input_boolean.charge_time_override
-    - conditions:
-      - condition: trigger
-        id: workday_off
-      sequence:
-      - service: input_boolean.turn_off
-        target:
-          entity_id: input_boolean.charge_time_override
+      - service: script.go_to_bed_reminder
+        data: {}
     default: []
-  mode: restart
+  mode: single
+- id: '1645448355621'
+  alias: TTS - Departure Time Reached
+  description: ''
+  trigger:
+  - platform: time
+    at: input_datetime.car_departure_time
+  condition:
+  - condition: state
+    entity_id: input_boolean.charge_time_override
+    state: 'on'
+  action:
+  - service: tts.google_cloud_say
+    data:
+      message: Så er det tid at tage afsted
+      entity_id: media_player.nesthub8311
+  mode: single
+- id: '1645621979465'
+  alias: Infopanel - Update events
+  description: ''
+  trigger:
+  - platform: time_pattern
+    minutes: '30'
+  condition:
+  - condition: state
+    entity_id: binary_sensor.infopanel_connected
+    state: 'on'
+  action:
+  - service: pyscript.infopanel_get_calendar_event
+    data:
+      count: 3
+  mode: single

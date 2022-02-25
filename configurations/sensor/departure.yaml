@@ -4,5 +4,5 @@
       friendly_name: Afgang om
       unit_of_measurement: min
       value_template: >-
-        {{ ((as_timestamp(states("input_datetime.webasto_next_departure_time")) - as_timestamp(now())) / 60) | int(0) }}
+        {{ ((as_timestamp(states("input_datetime.webasto_next_departure_time"), 0) - as_timestamp(now(), 0)) / 60) | int(0) }}
         

@@ -8,9 +8,10 @@ bedroom_enable_sleep_timer:
       entity_id: media_player.sovevaerelse_2
   - service: media_player.play_media
     data:
-      media_content_id: http://live-icy.dr.dk/A/A14H.mp3.m3u
+      media_content_id: http://live-icy.dr.dk/A/A14H.mp3
       media_content_type: music
-    entity_id: media_player.sovevaerelse_2
+    target:
+      entity_id: media_player.sovevaerelse_2
   - service: sonos.set_sleep_timer
     data:
       sleep_time: 7200
@@ -73,3 +74,42 @@ turn_on_webasto:
   - service: shell_command.webasto_on
   mode: single
   icon: mdi:radiator
+staa_position:
+  alias: Stå Position
+  sequence:
+  - service: button.press
+    target:
+      entity_id: button.skrivebord_m2
+  mode: single
+  icon: mdi:account-arrow-up
+sidde_position:
+  alias: Sidde Position
+  sequence:
+  - service: button.press
+    target:
+      entity_id: button.skrivebord_m1
+  mode: single
+  icon: mdi:account-arrow-down
+go_to_bed_reminder:
+  alias: Go To Bed Reminder
+  sequence:
+  - service: script.do_speech
+    data:
+      device: livingroom
+      call_bedtime_recurring: 1
+  - delay:
+      hours: 0
+      minutes: 30
+      seconds: 0
+      milliseconds: 0
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: sensor.google_sovevaerelse_alarms
+        state: unavailable
+      sequence:
+      - service: script.go_to_bed_reminder
+        data: {}
+    default: []
+  mode: parallel
+  max: 10

@@ -392,7 +392,7 @@ class Places(Entity):
         return self._entity_picture
 
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         """Return the state attributes."""
         return{
             ATTR_STREET_NUMBER: self._street_number,
@@ -465,7 +465,7 @@ class Places(Entity):
         _LOGGER.info( "(" + self._name + ") Check if update req'd : " + self._devicetracker_id )
         _LOGGER.debug( "(" + self._name + ") Previous State        : " + previous_state )
 
-        if hasattr(self, '_devicetracker_id'):
+        if hasattr(self, '_devicetracker_id') and self.hass.states.get(self._devicetracker_id) is not None:
             now = datetime.now()
             old_latitude    = str(self._latitude)
             old_longitude   = str(self._longitude)

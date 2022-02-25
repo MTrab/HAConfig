@@ -1,0 +1,298 @@
+substitutions:
+  node_name: desktop
+  device_verbose_name: "Skrivebord"
+  board: nodemcu
+  platform: ESP8266
+  log_level: DEBUG
+
+packages:
+  wifi: !include common/wifi.yaml
+  device_base: !include common/device_base.yaml
+  web: !include common/web.yaml
+
+logger:
+  level: DEBUG
+  logs:
+    sensor: WARN
+    ultrasonic.sensor: WARN
+
+esphome:
+  esp8266_restore_from_flash: true
+
+api:
+  services:
+    - service: set_position_min
+      then:
+        - globals.set:
+            id: position_min
+            value: !lambda 'return id(height).state;'
+        - logger.log: 
+            format: "Saving minimum height %i"
+            args: [ 'id(position_min)' ]
+    - service: set_position_max
+      then:
+        - globals.set:
+            id: position_max
+            value: !lambda 'return id(height).state;'
+        - logger.log: 
+            format: "Saving maximum height %i"
+            args: [ 'id(position_max)' ]
+    - service: set_position_m1
+      variables:
+        height: int
+      then:
+        - logger.log: 
+            format: "Setting M1 height %i"
+            args: [ 'height' ]
+        - globals.set:
+            id: m1
+            value: !lambda 'return (static_cast<float>(height)/100);'
+    - service: set_position_m2
+      variables:
+        height: int
+      then:
+        - logger.log: 
+            format: "Setting M2 height %i"
+            args: [ 'height' ]
+        - globals.set:
+            id: m2
+            value: !lambda 'return (static_cast<float>(height)/100);'
+
+button:
+  - platform: template
+    name: "${device_verbose_name} M1"
+    on_press:
+      - logger.log: 
+          format: "Requested M1 at height %.2f"
+          args: [ 'id(m1)' ]
+      - cover.control:
+          id: desk
+          position: !lambda "return id(m1);"
+  - platform: template
+    name: "${device_verbose_name} M2"
+    on_press:
+      - logger.log: 
+          format: "Requested M2 at height %.2f"
+          args: [ 'id(m2)' ]
+      - cover.control:
+          id: desk
+          position: !lambda "return id(m2);"
+
+sensor:
+  - platform: ultrasonic
+    id: height
+    trigger_pin: D2
+    echo_pin: D1
+    pulse_time:
+      milliseconds: 5
+    update_interval:
+      milliseconds: 100
+    name: "${device_verbose_name} Height"
+    filters:
+      - median:
+          window_size: 11
+          send_every: 3
+          send_first_at: 3
+    on_value:
+      then:
+        - component.update: height_pct
+  - platform: template
+    id: height_pct
+    unit_of_measurement: '%'
+    name: "${device_verbose_name} Height in percent"
+    lambda: |-
+      return (int)(((id(height).state-id(position_min))/(id(position_max)-id(position_min)))*100);
+  
+  - platform: debug
+    free:
+      name: "Heap Free"
+    fragmentation:
+      name: "Heap Fragmentation"
+    block:
+      name: "Heap Max Block"
+    loop_time:
+      name: "Loop Time"
+      
+text_sensor:
+  - platform: debug
+    device:
+      name: "Device Info"
+
+debug:
+  update_interval: 5s
+
+globals:
+  - id: up_height
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: down_height
+    type: int
+    restore_value: yes
+    initial_value: '0'
+  - id: position_max
+    type: float
+    restore_value: yes
+  - id: position_min
+    type: float
+    restore_value: yes
+  - id: m1
+    type: float
+    restore_value: yes
+  - id: m2
+    type: float
+    restore_value: yes
+
+binary_sensor:
+# Up button
+  - platform: gpio
+    id: btn_up
+    name: "${device_verbose_name} Up"
+    pin:
+      number: D3
+      mode: INPUT
+      inverted: true
+    filters:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+    internal: false
+    on_multi_click:
+      #Double Click
+      - timing:
+          - ON for at most 0.5s
+          - OFF for at most 0.3s
+          - ON for at most 0.5s
+          - OFF for at least 0.2s
+        then:
+          - globals.set:
+              id: m2
+              value: !lambda 'return (static_cast<float>(id(height_pct).state)/100);'
+          - logger.log: 
+              format: "Saving M2 height %i"
+              args: [ 'id(m2)' ]
+      #Single Click
+      - timing:
+          - ON for at most 0.5s
+          - OFF for at least 0.5s
+        then:
+          - logger.log: 
+              format: "Requested M2 at height %.2f"
+              args: [ 'id(m2)' ]
+          - cover.control:
+              id: desk
+              position: !lambda "return id(m2);"
+      #Hold
+      - timing:
+          - ON for at least 0.75s
+        then:
+          - switch.turn_on: up
+      #Release
+      - timing:
+          - ON for at least 1s
+          - OFF for at least 0.5s
+        then:
+          - switch.turn_off: up
+
+# Down button
+  - platform: gpio
+    id: btn_down
+    name: "${device_verbose_name} Down"
+    pin:
+      number: D4
+      mode: INPUT
+      inverted: true
+    filters:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+    internal: false
+    on_multi_click:
+      #Double Click
+      - timing:
+          - ON for at most 0.5s
+          - OFF for at most 0.3s
+          - ON for at most 0.5s
+          - OFF for at least 0.2s
+        then:
+          - globals.set:
+              id: m1
+              value: !lambda 'return (static_cast<float>(id(height_pct).state)/100);'
+          - logger.log: 
+              format: "Saving M1 height %i"
+              args: [ 'id(m1)' ]
+      #Single Click
+      - timing:
+          - ON for at most 0.5s
+          - OFF for at least 0.5s
+        then:
+          - logger.log: 
+              format: "Requested M1 at height %.2f"
+              args: [ 'id(m1)' ]
+          - cover.control:
+              id: desk
+              position: !lambda "return id(m1);"
+      #Hold
+      - timing:
+          - ON for at least 0.75s
+        then:
+          - switch.turn_on: down
+      #Release
+      - timing:
+          - ON for at least 1s
+          - OFF for at least 0.5s
+        then:
+          - switch.turn_off: down
+
+switch:
+  - platform: gpio
+    pin:
+      number: D7
+      inverted: false
+    name: "${device_verbose_name} Up"
+    id: up
+    interlock: &interlock_group [up, down]
+    restore_mode: ALWAYS_OFF
+    internal: true
+
+  - platform: gpio
+    pin:
+      number: D8
+      inverted: false
+    name: "${device_verbose_name} Down"
+    id: down
+    interlock: *interlock_group
+    restore_mode: ALWAYS_OFF
+    internal: true
+
+cover:
+  - platform: template
+    id: desk
+    name: "${device_verbose_name}"
+    icon: 'mdi:desk'
+    lambda: |-
+      return (id(height_pct).state/100);
+    open_action:
+      - switch.turn_on: up
+    close_action:
+      - switch.turn_on: down
+    stop_action:
+      - switch.turn_off: up
+      - switch.turn_off: down
+    position_action:
+      - if:
+          condition:
+            lambda: 'return (id(height_pct).state/100) < pos;'
+          then:
+            - logger.log: "Going up"
+            - switch.turn_on: up
+            - wait_until: 
+                lambda: 'return ((id(height_pct).state/100)+0.02) >= pos;'
+            - switch.turn_off: up
+            - logger.log: "Height reached"
+          else:
+            - logger.log: "Going down"
+            - switch.turn_on: down
+            - wait_until: 
+                lambda: 'return ((id(height_pct).state/100)-0.05) <= pos;'
+            - switch.turn_off: down
+            - logger.log: "Height reached"
+    has_position: true

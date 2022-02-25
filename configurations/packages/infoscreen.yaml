@@ -1,0 +1,125 @@
+template:
+  - sensor:
+#      - name: First Day Of Month
+#        state: '{{ (now().replace(day=1).weekday()+1) | string }}'
+#      - name: Days In Month
+#        state: >
+#          {% if now().month in [1,3,5,7,8,10,12] %}
+#            31
+#          {% elif now().month in [4,6,9,11] %}
+#            30
+#          {% elif now().month == 2 and ((now().year-2000) % 4 > 0) %}
+#            28
+#          {% elif now().month == 2 and ((now().year-2000) % 4 == 0) %}
+#            29
+#          {% endif %}
+#      - name: Current Year
+#        state: '{{ now().year }}'
+#      - name: Date Today
+#        state: '{{ now().day }}'
+      - name: Infopanel Calendar Events
+        state: ''
+      - name: Infopanel Date and Time
+        state: >
+          {% set month = now().strftime("%-m") %}
+          {% set weekday = now().strftime("%w") %}
+          {% set daysofmonth = 31 %}
+          {% if month == "1" %}
+            {% set month = "Jan" %}
+          {% elif month == "2" %}
+            {% set month = "Feb" %}
+          {% elif month == "3" %}
+            {% set month = "Mar" %}
+          {% elif month == "4" %}
+            {% set month = "Apr" %}
+          {% elif month == "5" %}
+            {% set month = "Maj" %}
+          {% elif month == "6" %}
+            {% set month = "Jun" %}
+          {% elif month == "7" %}
+            {% set month = "Jul" %}
+          {% elif month == "8" %}
+            {% set month = "Aug" %}
+          {% elif month == "9" %}
+            {% set month = "Sep" %}
+          {% elif month == "10" %}
+            {% set month = "Okt" %}
+          {% elif month == "11" %}
+            {% set month = "Nov" %}
+          {% elif month == "12" %}
+            {% set month = "Dec" %}
+          {% endif %}
+          {% if weekday == "0" %}
+            {% set weekday = "Søn" %}
+          {% elif weekday == "1" %}
+            {% set weekday = "Man" %}
+          {% elif weekday == "2" %}
+            {% set weekday = "Tir" %}
+          {% elif weekday == "3" %}
+            {% set weekday = "Ons" %}
+          {% elif weekday == "4" %}
+            {% set weekday = "Tor" %}
+          {% elif weekday == "5" %}
+            {% set weekday = "Fre" %}
+          {% elif weekday == "6" %}
+            {% set weekday = "Lør" %}
+          {% endif %}
+          {% if now().month in [4,6,9,11] %}
+            {% set daysofmonth = 30 %}
+          {% elif now().month == 2 and ((now().year-2000) % 4 > 0) %}
+            {% set daysofmonth = 28 %}
+          {% elif now().month == 2 and ((now().year-2000) % 4 == 0) %}
+            {% set daysofmonth = 29 %}
+          {% endif %}
+          {{
+            weekday + ";" +
+            month + ";" +
+            (now().day | string) + ";" +
+            (now().year | string) + ";" +
+            (daysofmonth | string) + ";" +
+            ((now().replace(day=1).weekday()+1) | string) + ";" +
+            (now().strftime("%H") | string) + ";" +
+            (now().strftime("%M") | string) + ";" +
+            (now().strftime("%W") | string)
+          }}
+      - name: Infopanel Weather Current Conditions
+        state: >
+          {% set wind = ((states.sensor.netatmo_public_wind_strength.state | float(0)) * 0.277777778) | round(2) | string %}
+          {% set gust = ((states.sensor.netatmo_public_gust_strength.state | float(0)) * 0.277777778) | round(2) | string %}
+
+          {{
+            states.sensor.hjemme_weather_condition.state + ";" +
+            states.sensor.netatmo_public_temperature.state + ";" +
+            states.sensor.netatmo_public_humidity.state + ";" +
+            states.sensor.netatmo_public_pressure.state + ";" +
+            states.sensor.netatmo_public_rain_today.state + ";" +
+            states.sensor.netatmo_public_rain_last_hour.state + ";" +
+            wind + ";" +
+            gust
+          }}
+      - name: Infopanel Weather Forecast
+        state: >
+          {% set forecast = state_attr("weather.hjem", "forecast") %}
+          {{
+            (strptime(forecast[0].datetime, "%Y-%m-%dT%H:%M:%S%z").weekday() | string) + ";" +
+            forecast[0].condition + ";" +
+            (forecast[0].temperature | string) + ";" +
+            (forecast[0].templow | string) + ";" +
+            (forecast[0].precipitation | string) + ";" +
+            (forecast[0].wind_speed * 0.277777778) | round(2) | string + ";" +
+            (forecast[0].wind_bearing | string) + "#" +
+            (strptime(forecast[1].datetime, "%Y-%m-%dT%H:%M:%S%z").weekday() | string) + ";" +
+            forecast[1].condition + ";" +
+            (forecast[1].temperature | string) + ";" +
+            (forecast[1].templow | string) + ";" +
+            (forecast[1].precipitation | string) + ";" +
+            (forecast[1].wind_speed * 0.277777778) | round(2) | string + ";" +
+            (forecast[1].wind_bearing | string) + "#" +
+            (strptime(forecast[2].datetime, "%Y-%m-%dT%H:%M:%S%z").weekday() | string) + ";" +
+            forecast[2].condition + ";" +
+            (forecast[2].temperature | string) + ";" +
+            (forecast[2].templow | string) + ";" +
+            (forecast[2].precipitation | string) + ";" +
+            (forecast[2].wind_speed * 0.277777778) | round(2) | string + ";" +
+            (forecast[2].wind_bearing | string)
+          }}

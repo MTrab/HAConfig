@@ -3,9 +3,13 @@
   name: WAN connection
 
 - platform: ping
-  host: 10.0.0.10
+  host: 10.0.0.1
   name: VPN Ivan
 
 - platform: ping
   host: 192.168.143.1
   name: VPN Horsensvej
+
+- platform: ping
+  host: 172.16.100.1
+  name: VPN Hetzner

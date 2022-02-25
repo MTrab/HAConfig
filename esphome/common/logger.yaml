@@ -1,0 +1,3 @@
+# Enable logging
+logger:
+  level: ${log_level}

@@ -1,5 +1,0 @@
-- platform: mqtt
-  name: Foodplan Battery
-  device_class: battery
-  unit_of_measurement: '%'
-  state_topic: "esphome/foodplanner/sensor/battery/state"
