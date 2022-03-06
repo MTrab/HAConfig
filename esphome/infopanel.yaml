@@ -23,7 +23,7 @@ esphome:
     - priority: -100
       then:
         - delay: 10s
-        - display.page.show: weather
+        - display.page.show: calendar
         - component.update: screen
     - priority: 200
       then:
@@ -42,6 +42,16 @@ api:
 interval:
   - interval: 1min
     then:
+      - if:
+          condition:
+            switch.is_on: rotate
+          then:
+            - display.page.show_next: screen
+            - if:
+                condition:
+                  display.is_displaying_page: boot
+                then:
+                - display.page.show: calendar
       - component.update: screen
 
 spi:
@@ -61,7 +71,9 @@ display:
     pages:
       - id: boot
         lambda: |-
-          it.print(110, 70, id(icon_states), "\U000F16C4");
+          int tmpX, tmpY, dWidth, dHeight;
+          it.get_text_bounds(0, 0, "\U000F16C4", id(icon_states), TextAlign::TOP_LEFT, &tmpX, &tmpY, &dWidth, &dHeight);
+          it.print(200-(dWidth/2), 150-(dHeight/2), id(icon_states), "\U000F16C4");
       - id: calendar
         lambda: |-
           /* Defines */
@@ -81,20 +93,28 @@ display:
           int x_start[8], y_start[8];
           int width[8], height[8];
 
+          int X, Y, tmpX, tmpY, dWidth, dHeight;
+
           /* Display template */
           std::string month_data = id(month_info).state;
           it.filled_rectangle(0, 210, 400, 100);
-          it.print(10, 5, id(font_datetime), ExtractDateTime(month_data, 6).c_str());               // Hour
-          it.print(10, 55, id(font_datetime), ExtractDateTime(month_data, 7).c_str());              // Minute
-          it.print(10, 215, id(font_datetime), id(white), ExtractDateTime(month_data, 2).c_str());  // Date
-          it.print(3, 265, id(font_month), id(white), ExtractDateTime(month_data, 1).c_str());      // Month
+          it.get_text_bounds(0, 0, ExtractDateTime(month_data, 6).c_str(), id(font_datetime), TextAlign::TOP_LEFT, &tmpX, &tmpY, &dWidth, &dHeight);
+          it.print(46.5-(dWidth/2), 5, id(font_datetime), ExtractDateTime(month_data, 6).c_str());
+          it.get_text_bounds(0, 0, ExtractDateTime(month_data, 7).c_str(), id(font_datetime), TextAlign::TOP_LEFT, &tmpX, &tmpY, &dWidth, &dHeight);
+          it.print(46.5-(dWidth/2), 55, id(font_datetime), ExtractDateTime(month_data, 7).c_str());
+          it.get_text_bounds(0, 0, ExtractDateTime(month_data, 2).c_str(), id(font_datetime), TextAlign::TOP_LEFT, &tmpX, &tmpY, &dWidth, &dHeight);
+          it.print(46.5-(dWidth/2), 215, id(font_datetime), id(white), ExtractDateTime(month_data, 2).c_str());
+          it.get_text_bounds(0, 0, ExtractDateTime(month_data, 1).c_str(), id(font_month), TextAlign::TOP_LEFT, &tmpX, &tmpY, &dWidth, &dHeight);
+          it.print(46.5-(dWidth/2), 265, id(font_month), id(white), ExtractDateTime(month_data, 1).c_str());
           it.filled_rectangle(93, 0, 5, 210);
           it.filled_rectangle(93, 210, 5, 100, id(white));
 
           /* Display weeknumber on 2 lines */
-          it.print(17, 130, id(font_week), "Uge");
-          it.print(29, 160, id(font_week), ExtractDateTime(month_data, 8).c_str());
-          
+          it.get_text_bounds(0, 0, "Uge", id(font_week), TextAlign::TOP_LEFT, &tmpX, &tmpY, &dWidth, &dHeight);
+          it.print(46.5-(dWidth/2), 130, id(font_week), "Uge");
+          it.get_text_bounds(0, 0, ExtractDateTime(month_data, 8).c_str(), id(font_week), TextAlign::TOP_LEFT, &tmpX, &tmpY, &dWidth, &dHeight);
+          it.print(46.5-(dWidth/2), 160, id(font_week), ExtractDateTime(month_data, 8).c_str());
+
           /* Display today text */
           it.print(105, 215, id(font_date), id(white), "Kommende aftaler:");
 
@@ -132,8 +152,6 @@ display:
           x_offset_next = x_header_start + firstDayOffset;
           
           y_offset = y_header_start + height[1] + y_start_offset;
-          
-          int X, tmpX, tmpY, dWidth, dHeight;
           
           for(i = 1; i <= lastDate; i++) {
             it.get_text_bounds(x_offset_next, y_header_start, std::to_string(i).c_str(), id(font_date), TextAlign::TOP_LEFT, &tmpX, &tmpY, &dWidth, &dHeight);
@@ -177,15 +195,21 @@ display:
           int x_start[8], y_start[8];
           int width[8], height[8];
 
+          int tmpX, tmpY, dWidth, dHeight;
+
           char delimm = ';';
 
           /* Display template */
           std::string month_data = id(month_info).state;
           it.filled_rectangle(0, 210, 400, 100);
-          it.print(10, 5, id(font_datetime), ExtractDateTime(month_data, 6).c_str());
-          it.print(10, 55, id(font_datetime), ExtractDateTime(month_data, 7).c_str());
-          it.print(10, 215, id(font_datetime), id(white), ExtractDateTime(month_data, 2).c_str());
-          it.print(3, 265, id(font_month), id(white), ExtractDateTime(month_data, 1).c_str());
+          it.get_text_bounds(0, 0, ExtractDateTime(month_data, 6).c_str(), id(font_datetime), TextAlign::TOP_LEFT, &tmpX, &tmpY, &dWidth, &dHeight);
+          it.print(46.5-(dWidth/2), 5, id(font_datetime), ExtractDateTime(month_data, 6).c_str());
+          it.get_text_bounds(0, 0, ExtractDateTime(month_data, 7).c_str(), id(font_datetime), TextAlign::TOP_LEFT, &tmpX, &tmpY, &dWidth, &dHeight);
+          it.print(46.5-(dWidth/2), 55, id(font_datetime), ExtractDateTime(month_data, 7).c_str());
+          it.get_text_bounds(0, 0, ExtractDateTime(month_data, 2).c_str(), id(font_datetime), TextAlign::TOP_LEFT, &tmpX, &tmpY, &dWidth, &dHeight);
+          it.print(46.5-(dWidth/2), 215, id(font_datetime), id(white), ExtractDateTime(month_data, 2).c_str());
+          it.get_text_bounds(0, 0, ExtractDateTime(month_data, 1).c_str(), id(font_month), TextAlign::TOP_LEFT, &tmpX, &tmpY, &dWidth, &dHeight);
+          it.print(46.5-(dWidth/2), 265, id(font_month), id(white), ExtractDateTime(month_data, 1).c_str());
           it.filled_rectangle(93, 0, 5, 210);
           it.filled_rectangle(93, 210, 5, 100, id(white));
 
@@ -197,10 +221,12 @@ display:
           for (int i=0; i<5; i++){
             if (i == 0) {
               // Current condition icon
-              it.print(10, 100, id(icon_weather_large), conditionMap[weather_today.substr(previousWeatherToday, currentWeatherToday - previousWeatherToday)].c_str());
+              it.get_text_bounds(0, 0, weather_today.substr(previousWeatherToday, currentWeatherToday - previousWeatherToday).c_str(), id(icon_weather_large), TextAlign::TOP_LEFT, &tmpX, &tmpY, &dWidth, &dHeight);
+              it.print(46.5-(dWidth/2), 100, id(icon_weather_large), weather_today.substr(previousWeatherToday, currentWeatherToday - previousWeatherToday).c_str());
             } else if (i == 1) {
               // Current outside temperature
-              it.printf(10, 175, id(font_week), "%s°c", weather_today.substr(previousWeatherToday, currentWeatherToday - previousWeatherToday).c_str());
+              it.get_text_bounds(0, 0, weather_today.substr(previousWeatherToday, currentWeatherToday - previousWeatherToday).c_str(), id(font_week), TextAlign::TOP_LEFT, &tmpX, &tmpY, &dWidth, &dHeight);
+              it.printf(46.5-(dWidth/2), 175, id(font_week), "%s°", weather_today.substr(previousWeatherToday, currentWeatherToday - previousWeatherToday).c_str());
             } else if (i == 2) {
               // Current outside humidity and pressure
               std::string hum = weather_today.substr(previousWeatherToday, currentWeatherToday - previousWeatherToday);
@@ -229,12 +255,12 @@ display:
               std::string gust = weather_today.substr(previousWeatherToday, currentWeatherToday - previousWeatherToday);
 
               // Wind
-              it.print(105, 275, id(icon_weather_small), id(white), "\U000F059D");
+              it.print(105, 275, id(icon_weather_small), id(white), "\U000F059E");
               it.printf(125, 275, id(font_date), id(white), "%sm/s", wind.c_str());
 
               // Gust
-              it.print(205, 275, id(icon_weather_small), id(white), "\U000F059E");
-              it.printf(225, 275, id(font_date), id(white), "%sm/s", gust.c_str());
+              it.print(185, 275, id(icon_weather_small), id(white), "\U000F059D");
+              it.printf(205, 275, id(font_date), id(white), "%sm/s", gust.c_str());
             }
             previousWeatherToday = currentWeatherToday + 1;
             currentWeatherToday = weather_today.find(delimm, previousWeatherToday);
@@ -251,6 +277,7 @@ display:
           /* Draw forecast seperations */
           it.line(limits[0], 0, limits[0], 210);
           it.line(limits[1], 0, limits[1], 210);
+          it.line(93, 40, 400, 40);
           
           /* Display forecast info */
           char forDelim = '#';
@@ -258,38 +285,63 @@ display:
           currentForecast = forecast.find(forDelim);
 
           /* Loop forecast string */
-          for (int i=0; i<3; i++){
+          for (int y=0; y<3; y++){
             /* Display forecast info */
             std::size_t currentInfo, previousInfo = 0;
-            currentInfo = forecast.find(delimm);
-            std::string info = forecast.substr(previousInfo, currentInfo - previousInfo);
-
-            int tmpX, tmpY, dWidth, dHeight;
-
-            ESP_LOGD("infopanel", "String %s", info.c_str());
-            ESP_LOGD("infopanel", "i %i", i);
-            ESP_LOGD("infopanel", "currentInfo %s", currentInfo);
-            ESP_LOGD("infopanel", "previousInfo %s", previousInfo);
+            std::string info = forecast.substr(previousForecast, currentForecast - previousForecast);
+            currentInfo = info.find(delimm);
 
             /* Loop forecast data */
             for (int x=0; x<6; x++){
-              // info.substr(previousWeatherToday, currentWeatherToday - previousWeatherToday)
+              // info.substr(previousInfo, currentInfo - previousInfo)
               if (x == 0) {
                 // Day of week
                 
-                it.get_text_bounds(0, 0, dayMapWeather[info.substr(previousWeatherToday, currentWeatherToday - previousWeatherToday)].c_str(), id(font_month), TextAlign::TOP_LEFT, &tmpX, &tmpY, &dWidth, &dHeight);
-                it.print((limits[i]-50-(dWidth/2)), 5, id(font_month), dayMapWeather[info.substr(previousWeatherToday, currentWeatherToday - previousWeatherToday)].c_str());
+                it.get_text_bounds(0, 0, info.substr(previousInfo, currentInfo - previousInfo).c_str(), id(font_weather_days), TextAlign::TOP_LEFT, &tmpX, &tmpY, &dWidth, &dHeight);
+                it.print((limits[y]-50-(dWidth/2)), 5, id(font_weather_days), info.substr(previousInfo, currentInfo - previousInfo).c_str());
               } else if (x == 1) {
                 // Condition icon
-                // conditionMap[info.substr(previousWeatherToday, currentWeatherToday - previousWeatherToday)].c_str()
+
+                it.get_text_bounds(0, 0, info.substr(previousInfo, currentInfo - previousInfo).c_str(), id(icon_weather_large), TextAlign::TOP_LEFT, &tmpX, &tmpY, &dWidth, &dHeight);
+                it.print((limits[y]-50-(dWidth/2)), 45, id(icon_weather_large), info.substr(previousInfo, currentInfo - previousInfo).c_str());
               } else if (x == 2) {
                 // Temperature high and low (+1)
+
+                // High
+                it.get_text_bounds(0, 0, "\U000F0E03", id(icon_weather_medium), TextAlign::TOP_LEFT, &tmpX, &tmpY, &dWidth, &dHeight);
+                it.print((limits[y]-85-(dWidth/2)), 110, id(icon_weather_medium), "\U000F0E03");
+
+                it.printf((limits[y]-75), 110, id(font_small_arial), "%s°", info.substr(previousInfo, currentInfo - previousInfo).c_str());
+
+                previousInfo = currentInfo + 1;
+                currentInfo = info.find(delimm, previousInfo);
+
+                // Low
+                it.get_text_bounds(0, 0, "\U000F0E02", id(icon_weather_medium), TextAlign::TOP_LEFT, &tmpX, &tmpY, &dWidth, &dHeight);
+                it.print((limits[y]-40-(dWidth/2)), 110, id(icon_weather_medium), "\U000F0E02");
+
+                it.printf((limits[y]-30), 110, id(font_small_arial), "%s°", info.substr(previousInfo, currentInfo - previousInfo).c_str());
               } else if (x == 3) {
                 // Precipitation
+
+                it.get_text_bounds(0, 0, "\U000F0596", id(icon_weather_medium), TextAlign::TOP_LEFT, &tmpX, &tmpY, &dWidth, &dHeight);
+                it.print((limits[y]-85-(dWidth/2)), 135, id(icon_weather_medium), "\U000F0596");
+
+                it.printf((limits[y]-70), 135, id(font_small_arial), "%s mm", info.substr(previousInfo, currentInfo - previousInfo).c_str());
               } else if (x == 4) {
                 // Wind speed
+                
+                it.get_text_bounds(0, 0, "\U000F059D", id(icon_weather_medium), TextAlign::TOP_LEFT, &tmpX, &tmpY, &dWidth, &dHeight);
+                it.print((limits[y]-85-(dWidth/2)), 160, id(icon_weather_medium), "\U000F059D");
+
+                it.printf((limits[y]-70), 160, id(font_small_arial), "%s m/s", info.substr(previousInfo, currentInfo - previousInfo).c_str());
               } else if (x == 5) {
                 // Wind bearing
+
+                it.get_text_bounds(0, 0, "\U000F018C", id(icon_weather_medium), TextAlign::TOP_LEFT, &tmpX, &tmpY, &dWidth, &dHeight);
+                it.print((limits[y]-85-(dWidth/2)), 185, id(icon_weather_medium), "\U000F018C");
+
+                it.print((limits[y]-70), 185, id(icon_weather_medium), info.substr(previousInfo, currentInfo - previousInfo).c_str());
               }
               previousInfo = currentInfo + 1;
               currentInfo = info.find(delimm, previousInfo);
@@ -334,6 +386,15 @@ sensor:
     loop_time:
       name: "Loop Time"
 
+switch:
+  - platform: template
+    name: Rotate Pages
+    id: rotate
+    entity_category: config
+    icon: mdi:update
+    restore_state: false
+    optimistic: true
+
 text_sensor:
   - platform: homeassistant
     id: month_info
@@ -356,18 +417,23 @@ font:
   - file: "fonts/Arial-Black-Bold.ttf"
     id: font_month
     size: 40
+    glyphs: "ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ abcdefghijklmnopqrstuvwxyzæøå"
   - file: "fonts/Arial-Black-Bold.ttf"
     id: font_week
     size: 25
-    glyphs: "°.cUge0123456789"
+    glyphs: "°.c-Uge0123456789"
   - file: "fonts/Arial-Bold.ttf"
     id: font_date
     size: 15
-    glyphs: "()/+,.-%°&:0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅÖ abcdefghijklmnopqrstuvwxyzæøåö"
+    glyphs: "()/+,.-%&:0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ abcdefghijklmnopqrstuvwxyzæøå"
+  - file: "fonts/Arial-Bold.ttf"
+    id: font_weather_days
+    size: 35
+    glyphs: "ManTirOsoFeLøS"
   - file: "fonts/Arial.ttf"
     id: font_small_arial
-    size: 15
-    glyphs: "()/+,-&:0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅÖ abcdefghijklmnopqrstuvwxyzæøåö"
+    size: 18
+    glyphs: "()/+,.-°&:0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ abcdefghijklmnopqrstuvwxyzæøå"
   - file: "fonts/materialdesignicons-webfont.ttf"
     id: icon_states
     size: 150
@@ -383,6 +449,24 @@ font:
       - "\U000F059E" # Windy Variant
       - "\U000F0E03" # Temp high
       - "\U000F0E02" # Temp low
+  - file: "fonts/materialdesignicons-webfont.ttf"
+    id: icon_weather_medium
+    size: 20
+    glyphs:
+      - "\U000F0596" # Pouring
+      - "\U000F059D" # Windy
+      - "\U000F059E" # Windy Variant
+      - "\U000F0E03" # Temp high
+      - "\U000F0E02" # Temp low
+      - "\U000F005D" # Bearing N
+      - "\U000F005C" # Bearing NE
+      - "\U000F0054" # Bearing E
+      - "\U000F0043" # Bearing SE
+      - "\U000F0045" # Bearing S
+      - "\U000F0042" # Bearing SW
+      - "\U000F004D" # Bearing E
+      - "\U000F005B" # Bearing NW
+      - "\U000F018C" # Compass
   - file: "fonts/materialdesignicons-webfont.ttf"
     id: icon_weather_large
     size: 70

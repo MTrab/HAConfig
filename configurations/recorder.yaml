@@ -5,7 +5,10 @@ exclude:
     - automation
     - script
     - updater
+    - media_player
   entities:
     - sun.sun
+  entity_globs:
+    - sensor.infopanel_*
   event_types:
     - call_service

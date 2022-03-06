@@ -1,6 +1,8 @@
+######################################
 # Configure a default setup of Home Assistant (frontend, api, etc)
 default_config:
 
+######################################
 # HTTP setup for allowing reverse-proxy
 http:
   cors_allowed_origins:
@@ -13,6 +15,7 @@ http:
   ip_ban_enabled: true
   login_attempts_threshold: 5
 
+######################################
 # Home Assistant setup
 homeassistant:
   customize: !include customize.yaml
@@ -21,23 +24,25 @@ homeassistant:
     - /config/www/rest
     - /config
 
+######################################
 # Frontend setup
 frontend:
   themes: !include_dir_merge_named themes
 
+######################################
 # Default includes
 automation: !include automations.yaml
 script: !include scripts.yaml
 scene: !include scenes.yaml
 
-# Addons without configuration
+######################################
+# Integrations without configuration
 python_script:
 wake_on_lan:
 
+######################################
 # Configurations
 binary_sensor: !include_dir_merge_list configurations/binary_sensor
-#browser_mod: !include configurations/browser_mod.yaml
-# climate: !include_dir_merge_list configurations/climate
 conversation: !include configurations/conversation.yaml
 device_tracker: !include configurations/device_tracker.yaml
 google: !include configurations/google.yaml
@@ -47,13 +52,13 @@ influxdb: !include configurations/influx.yaml
 intent_script: !include_dir_merge_named configurations/intent_script
 landroid_cloud: !include configurations/landroid_cloud.yaml
 media_player: !include_dir_merge_list configurations/media_player
+powercalc: !include configurations/powercalc.yaml
 proximity: !include_dir_named configurations/proximity
 pyscript: !include configurations/pyscript.yaml
 recorder: !include configurations/recorder.yaml
 rest: !include_dir_merge_list configurations/rest
 sensor: !include_dir_merge_list configurations/sensor
 shell_command: !include configurations/shell_commands.yaml
-# sonos: !include configurations/sonos.yaml
 sonos_cloud: !include configurations/sonos_cloud.yaml
 switch: !include_dir_merge_list configurations/switch
 tts: !include configurations/tts.yaml

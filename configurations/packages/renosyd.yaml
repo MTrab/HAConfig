@@ -1,3 +1,7 @@
+###########################################
+# Get waste collection dates from RenoSyd #
+###########################################
+
 rest:
   - resource: http://skanderborg.netdialog.renosyd.dk/service/Restservice.svc/json/commonapp1/address/123844/containers
     username: !secret renosyd_username

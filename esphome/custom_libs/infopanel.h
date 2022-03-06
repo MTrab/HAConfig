@@ -1,14 +1,4 @@
 /* Map days */
-std::map<std::string, std::string> dayMapWeather {
-    {"0", "Man"},
-    {"1", "Tir"},
-    {"2", "Ons"},
-    {"3", "Tor"},
-    {"4", "Fre"},
-    {"5", "Lør"},
-    {"6", "Søn"}
-};
-
 std::map<int, std::string> dayMapInt {
     {1, "Man"},
     {2, "Tir"},
@@ -33,23 +23,6 @@ std::map<std::string, std::string> monthMap {
     {"10", "Okt"},
     {"11", "Nov"},
     {"12", "Dec"}
-};
-
-/* Map weathericons */
-std::map<std::string, std::string> conditionMap {
-    {"sunny", "\U000F0599"},
-    {"partlycloudy", "\U000F0595"},
-    {"cloudy", "\U000F0590"},
-    {"clear-night", "\U000F0594"},
-    {"rainy", "\U000F0597"},
-    {"fog", "\U000F0591"},
-    {"hail", "\U000F0592"},
-    {"lightning", "\U000F0593"},
-    {"lightning-rainy", "\U000F067E"},
-    {"pouring", "\U000F0596"},
-    {"snowy-rainy", "\U000F067F"},
-    {"windy", "\U000F059D"},
-    {"windy-variant", "\U000F059E"}
 };
 
 std::string ExtractDateTime(std::string data, int index, char delim = ';') {

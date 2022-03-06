@@ -12,26 +12,23 @@
     state: home
   action:
   - type: turn_on
-    device_id: f2338eee06de11eba65eb3aa68dad3d5
+    device_id: 7298c1c5058d72f733c3e1bc167f6a31
     entity_id: light.vitrine
     domain: light
+    brightness_pct: 100
   mode: single
 - id: '1602155183627'
   alias: Light - Livingroom - Desktop Switch
   description: ''
   trigger:
-  - device_id: a4241273071711ebb5261fcfb2d6276f
-    domain: deconz
-    platform: device
-    type: remote_button_short_press
-    subtype: turn_on
+  - platform: state
+    entity_id: sensor.switch_desktop_click
     id: desktop_on
-  - device_id: a4241273071711ebb5261fcfb2d6276f
-    domain: deconz
-    platform: device
-    type: remote_button_short_press
-    subtype: turn_off
+    to: 'on'
+  - platform: state
+    entity_id: sensor.switch_desktop_click
     id: desktop_off
+    to: 'off'
   condition: []
   action:
   - choose:
@@ -53,44 +50,6 @@
         domain: light
     default: []
   mode: queued
-  max: 10
-- id: '1602158001584'
-  alias: Light - Livingroom - Wall Switch
-  description: ''
-  trigger:
-  - device_id: b8eb1abd095c11eb89301f478a9e0ae6
-    domain: deconz
-    platform: device
-    type: remote_button_short_press
-    subtype: turn_on
-    id: deathstar
-  - device_id: b8eb1abd095c11eb89301f478a9e0ae6
-    domain: deconz
-    platform: device
-    type: remote_button_short_press
-    subtype: turn_off
-    id: desktop
-  condition: []
-  action:
-  - choose:
-    - conditions:
-      - condition: trigger
-        id: deathstar
-      sequence:
-      - type: toggle
-        device_id: a0d3944505a411eb9a90dbc131472481
-        entity_id: light.dodsstjernen
-        domain: light
-    - conditions:
-      - condition: trigger
-        id: desktop
-      sequence:
-      - type: toggle
-        device_id: 1e97980e04e111eb800287a8184cbf3d
-        entity_id: light.skrivebord
-        domain: light
-    default: []
-  mode: parallel
   max: 10
 - id: '1602228352429'
   alias: Auto - Set TV volume
@@ -136,159 +95,19 @@
     state: below_horizon
   action:
   - type: turn_on
-    device_id: f2338eee06de11eba65eb3aa68dad3d5
+    device_id: 7298c1c5058d72f733c3e1bc167f6a31
     entity_id: light.vitrine
     domain: light
+    brightness_pct: 100
   - type: turn_on
-    device_id: 61cb33c506d640e6fe3c3671320ecebc
+    device_id: 008fa23255e5932cab33819bdbd02707
     entity_id: light.outside
     domain: light
     brightness_pct: 100
   - service: switch.turn_on
     target:
       entity_id: switch.store_stearinlys
-  mode: single
-- id: '1604828109538'
-  alias: Light - Diningroom - Diningtable
-  description: ''
-  trigger:
-  - device_id: 8bfa641737a1fa5ecaf45de0848366df
-    domain: deconz
-    platform: device
-    type: remote_button_short_press
-    subtype: turn_on
-    id: turn_on
-  - device_id: 8bfa641737a1fa5ecaf45de0848366df
-    domain: deconz
-    platform: device
-    type: remote_button_short_press
-    subtype: turn_off
-    id: turn_off
-  condition: []
-  action:
-  - choose:
-    - conditions:
-      - condition: trigger
-        id: turn_on
-      sequence:
-      - type: turn_on
-        device_id: 5e2dcf9304e111eb9a30e3199109ec3d
-        entity_id: light.spisebord
-        domain: light
-    - conditions:
-      - condition: trigger
-        id: turn_off
-      sequence:
-      - type: turn_off
-        device_id: 5e2dcf9304e111eb9a30e3199109ec3d
-        entity_id: light.spisebord
-        domain: light
-    default: []
-  mode: queued
-  max: 10
-- id: '1604828285058'
-  alias: Light - Dimmer - Brighten - Diningtable
-  description: ''
-  trigger:
-  - device_id: 8bfa641737a1fa5ecaf45de0848366df
-    domain: deconz
-    platform: device
-    type: remote_button_long_press
-    subtype: turn_on
-  condition: []
-  action:
-  - service: script.turn_on
-    data:
-      variables:
-        entity: light.spisebord
-    entity_id: script.dimmer_brighten_light
-  - wait_for_trigger:
-    - device_id: 8bfa641737a1fa5ecaf45de0848366df
-      domain: deconz
-      platform: device
-      type: remote_button_long_release
-      subtype: turn_on
-  - service: script.turn_off
     data: {}
-    entity_id: script.dimmer_brighten_light
-  mode: single
-- id: '1604829939677'
-  alias: Light - Dimmer - Dim - Diningtable
-  description: ''
-  trigger:
-  - device_id: 8bfa641737a1fa5ecaf45de0848366df
-    domain: deconz
-    platform: device
-    type: remote_button_long_press
-    subtype: turn_off
-  condition: []
-  action:
-  - service: script.turn_on
-    data:
-      variables:
-        entity: light.spisebord
-    entity_id: script.dimmer_dim_light
-  - wait_for_trigger:
-    - device_id: 8bfa641737a1fa5ecaf45de0848366df
-      domain: deconz
-      platform: device
-      type: remote_button_long_release
-      subtype: turn_off
-  - service: script.turn_off
-    data: {}
-    entity_id: script.dimmer_brighten_light
-  mode: single
-- id: '1604851759294'
-  alias: Light - Dimmer - Brighten - Desktop
-  description: ''
-  trigger:
-  - device_id: a4241273071711ebb5261fcfb2d6276f
-    domain: deconz
-    platform: device
-    type: remote_button_long_press
-    subtype: turn_on
-  condition: []
-  action:
-  - service: script.turn_on
-    data:
-      variables:
-        entity: light.skrivebord
-    entity_id: script.dimmer_brighten_light
-  - wait_for_trigger:
-    - device_id: a4241273071711ebb5261fcfb2d6276f
-      domain: deconz
-      platform: device
-      type: remote_button_long_release
-      subtype: turn_on
-  - service: script.turn_off
-    data: {}
-    entity_id: script.dimmer_brighten_light
-  mode: single
-- id: '1604851828202'
-  alias: Light - Dimmer - Dim - Desktop
-  description: ''
-  trigger:
-  - device_id: a4241273071711ebb5261fcfb2d6276f
-    domain: deconz
-    platform: device
-    type: remote_button_long_press
-    subtype: turn_off
-  condition: []
-  action:
-  - service: script.turn_on
-    data:
-      variables:
-        entity: light.skrivebord
-    entity_id: script.dimmer_dim_light
-  - wait_for_trigger:
-    - device_id: a4241273071711ebb5261fcfb2d6276f
-      domain: deconz
-      platform: device
-      type: remote_button_long_release
-      subtype: turn_off
-  - service: script.turn_off
-    data: {}
-    entity_id: script.dimmer_dim_light
   mode: single
 - id: '1605100832268'
   alias: State - Toggle away mode
@@ -371,30 +190,28 @@
   description: ''
   trigger:
   - platform: time
-    at: 02:00:00
+    at: 02:00
   condition: []
   action:
-  - type: turn_off
-    device_id: f2338eee06de11eba65eb3aa68dad3d5
-    entity_id: light.vitrine
-    domain: switch
-  - service: light.turn_off
+  - service: homeassistant.turn_off
     target:
-      entity_id: switch.store_stearinlys
+      entity_id:
+      - switch.store_stearinlys
+      - light.vitrine
+      - light.outside
+    data: {}
   mode: single
 - id: '1608025961275'
   alias: Alert - Doorbell
   description: Afspil lyd i Sonos, ved tryk på dørklokke knappen
   trigger:
-  - device_id: 528fb92806e011eb9d4123731768269e
-    domain: deconz
-    platform: device
-    type: remote_button_short_press
-    subtype: turn_on
+  - platform: state
+    entity_id: sensor.switch_doorbell_click
+    to: 'on'
   condition:
   - condition: time
     after: 06:00:00
-    before: '22:00:00'
+    before: '22:00'
   action:
   - choose:
     - conditions:
@@ -436,22 +253,22 @@
   trigger:
   - type: motion
     platform: device
-    device_id: 428aa5df06eb11eb9eb8df222c7bc012
-    entity_id: binary_sensor.motion_sensor_kitchen
+    device_id: 2642707e9101945dd6ea4c464ad271fb
+    entity_id: binary_sensor.motion_kitchen_occupancy
     domain: binary_sensor
   condition:
   - type: is_illuminance
     condition: device
-    device_id: 428aa5df06eb11eb9eb8df222c7bc012
-    entity_id: sensor.motion_sensor_kitchen
+    device_id: 2642707e9101945dd6ea4c464ad271fb
+    entity_id: sensor.motion_kitchen_illuminance_lux
     domain: sensor
     below: 45
   action:
   - choose:
     - conditions:
       - condition: time
-        after: '23:00:00'
-        before: 05:00:00
+        after: '23:00'
+        before: 05:00
         weekday:
         - mon
         - tue
@@ -459,124 +276,105 @@
         - thu
       sequence:
       - type: turn_on
-        device_id: da89b94b1e892760a93f1ae3dc80367c
+        device_id: 4a227f89647f36e7186f52cf6145e2a5
         entity_id: light.kitchen
         domain: light
         brightness_pct: 20
       - wait_for_trigger:
         - type: no_motion
           platform: device
-          device_id: 428aa5df06eb11eb9eb8df222c7bc012
-          entity_id: binary_sensor.motion_sensor_kitchen
+          device_id: 2642707e9101945dd6ea4c464ad271fb
+          entity_id: binary_sensor.motion_kitchen_occupancy
           domain: binary_sensor
     - conditions:
       - condition: time
         weekday:
         - fri
-        after: '23:59:59'
-        before: 05:00:00
+        after: '23:59'
+        before: 05:00
       sequence:
       - type: turn_on
-        device_id: da89b94b1e892760a93f1ae3dc80367c
+        device_id: 4a227f89647f36e7186f52cf6145e2a5
         entity_id: light.kitchen
         domain: light
         brightness_pct: 20
       - wait_for_trigger:
         - type: no_motion
           platform: device
-          device_id: 428aa5df06eb11eb9eb8df222c7bc012
-          entity_id: binary_sensor.motion_sensor_kitchen
+          device_id: 2642707e9101945dd6ea4c464ad271fb
+          entity_id: binary_sensor.motion_kitchen_occupancy
           domain: binary_sensor
     - conditions:
       - condition: time
-        after: '23:59:59'
-        before: 07:00:00
+        after: '23:59'
+        before: 07:00
         weekday:
         - sat
       sequence:
       - type: turn_on
-        device_id: da89b94b1e892760a93f1ae3dc80367c
+        device_id: 4a227f89647f36e7186f52cf6145e2a5
         entity_id: light.kitchen
         domain: light
         brightness_pct: 20
       - wait_for_trigger:
         - type: no_motion
           platform: device
-          device_id: 428aa5df06eb11eb9eb8df222c7bc012
-          entity_id: binary_sensor.motion_sensor_kitchen
+          device_id: 2642707e9101945dd6ea4c464ad271fb
+          entity_id: binary_sensor.motion_kitchen_occupancy
           domain: binary_sensor
     - conditions:
       - condition: time
-        after: '23:00:00'
-        before: 07:00:00
+        after: '23:00'
+        before: 07:00
         weekday:
         - sun
       sequence:
       - type: turn_on
-        device_id: da89b94b1e892760a93f1ae3dc80367c
+        device_id: 4a227f89647f36e7186f52cf6145e2a5
         entity_id: light.kitchen
         domain: light
         brightness_pct: 20
       - wait_for_trigger:
         - type: no_motion
           platform: device
-          device_id: 428aa5df06eb11eb9eb8df222c7bc012
-          entity_id: binary_sensor.motion_sensor_kitchen
+          device_id: 2642707e9101945dd6ea4c464ad271fb
+          entity_id: binary_sensor.motion_kitchen_occupancy
           domain: binary_sensor
     default:
     - type: turn_on
-      device_id: da89b94b1e892760a93f1ae3dc80367c
+      device_id: 4a227f89647f36e7186f52cf6145e2a5
       entity_id: light.kitchen
       domain: light
       brightness_pct: 100
     - wait_for_trigger:
       - type: no_motion
         platform: device
-        device_id: 428aa5df06eb11eb9eb8df222c7bc012
-        entity_id: binary_sensor.motion_sensor_kitchen
+        device_id: 2642707e9101945dd6ea4c464ad271fb
+        entity_id: binary_sensor.motion_kitchen_occupancy
         domain: binary_sensor
         for:
           hours: 0
           minutes: 13
           seconds: 0
-          milliseconds: 0
   - type: turn_off
-    device_id: da89b94b1e892760a93f1ae3dc80367c
+    device_id: 4a227f89647f36e7186f52cf6145e2a5
     entity_id: light.kitchen
     domain: light
   mode: restart
-- id: '1610442793326'
-  alias: Alert - Main UPS - below 50% battery
-  description: ''
-  trigger:
-  - type: battery_level
-    platform: device
-    device_id: 9db5d52b1d2fa58e19207f4c6e5dd887
-    entity_id: sensor.main_ups_battery_charge
-    domain: sensor
-    below: 50
-  condition:
-  - condition: template
-    value_template: '{{ trigger.event.data.notify_type != ''COMMBAD'' }}'
-  action:
-  - service: notify.mobile_app_mtopnord2
-    data:
-      message: Main UPS batteri under 50%
-  mode: single
 - id: '1611133656102'
   alias: Light - Dartskab
   description: ''
   trigger:
   - type: not_opened
     platform: device
-    device_id: 004578eeafa9e3fdd0039464bd17671f
-    entity_id: binary_sensor.dartskab
+    device_id: 7f52f701942c349294baa275140379da
+    entity_id: binary_sensor.dw_dartskab_contact_2
     domain: binary_sensor
     id: 'off'
   - type: opened
     platform: device
-    device_id: 004578eeafa9e3fdd0039464bd17671f
-    entity_id: binary_sensor.dartskab
+    device_id: 7f52f701942c349294baa275140379da
+    entity_id: binary_sensor.dw_dartskab_contact_2
     domain: binary_sensor
     id: 'on'
   condition: []
@@ -587,18 +385,17 @@
         id: 'off'
       sequence:
       - type: turn_off
-        device_id: bf1238818f42616acdc2f3e434b8cc3b
-        entity_id: light.dartskab
+        device_id: 4ad8b54946a4396c55e39e47011bfde3
+        entity_id: light.dartskab_2
         domain: light
     - conditions:
       - condition: trigger
         id: 'on'
       sequence:
       - type: turn_on
-        device_id: bf1238818f42616acdc2f3e434b8cc3b
-        entity_id: light.dartskab
+        device_id: 4ad8b54946a4396c55e39e47011bfde3
+        entity_id: light.dartskab_2
         domain: light
-        brightness_pct: 100
     default: []
   mode: restart
 - id: '1611135152192'
@@ -679,7 +476,7 @@
     state: home
   action:
   - type: turn_on
-    device_id: 61cb33c506d640e6fe3c3671320ecebc
+    device_id: 008fa23255e5932cab33819bdbd02707
     entity_id: light.outside
     domain: light
     brightness_pct: 10
@@ -689,14 +486,14 @@
   description: ''
   trigger:
   - platform: time
-    at: 05:00:00
+    at: 05:00
   condition:
   - condition: state
     entity_id: group.any_home
     state: home
   action:
   - type: turn_on
-    device_id: 61cb33c506d640e6fe3c3671320ecebc
+    device_id: 008fa23255e5932cab33819bdbd02707
     entity_id: light.outside
     domain: light
     brightness_pct: 10
@@ -707,25 +504,24 @@
   trigger:
   - type: motion
     platform: device
-    device_id: dbabcecdf25c0ce9cfdb7811e9ee1506
-    entity_id: binary_sensor.motion_sensor_outdoor
+    device_id: 0eef5c198c5181734a12c9f75118782d
+    entity_id: binary_sensor.motion_outside_occupancy
     domain: binary_sensor
     id: 'on'
   - type: no_motion
     platform: device
-    device_id: dbabcecdf25c0ce9cfdb7811e9ee1506
-    entity_id: binary_sensor.motion_sensor_outdoor
+    device_id: 0eef5c198c5181734a12c9f75118782d
+    entity_id: binary_sensor.motion_outside_occupancy
     domain: binary_sensor
     id: 'off'
     for:
       hours: 0
       minutes: 3
       seconds: 0
-      milliseconds: 0
   condition:
   - condition: device
     type: is_on
-    device_id: 61cb33c506d640e6fe3c3671320ecebc
+    device_id: 008fa23255e5932cab33819bdbd02707
     entity_id: light.outside
     domain: light
   action:
@@ -735,7 +531,7 @@
         id: 'on'
       sequence:
       - type: turn_on
-        device_id: 61cb33c506d640e6fe3c3671320ecebc
+        device_id: 008fa23255e5932cab33819bdbd02707
         entity_id: light.outside
         domain: light
         brightness_pct: 100
@@ -744,7 +540,7 @@
         id: 'off'
       sequence:
       - type: turn_on
-        device_id: 61cb33c506d640e6fe3c3671320ecebc
+        device_id: 008fa23255e5932cab33819bdbd02707
         entity_id: light.outside
         domain: light
         brightness_pct: 10
@@ -759,7 +555,7 @@
   condition: []
   action:
   - type: turn_off
-    device_id: 61cb33c506d640e6fe3c3671320ecebc
+    device_id: 008fa23255e5932cab33819bdbd02707
     entity_id: light.outside
     domain: light
   mode: single
@@ -915,14 +711,14 @@
   trigger:
   - type: motion
     platform: device
-    device_id: eefb5fea06ec11eba7df65196ef7855b
-    entity_id: binary_sensor.motion_sensor_hall
+    device_id: 2730e60e031583ecdf5f9955fecd93c1
+    entity_id: binary_sensor.motion_hall_occupancy
     domain: binary_sensor
   condition:
   - type: is_illuminance
     condition: device
-    device_id: eefb5fea06ec11eba7df65196ef7855b
-    entity_id: sensor.motion_sensor_hall
+    device_id: 2730e60e031583ecdf5f9955fecd93c1
+    entity_id: sensor.motion_hall_illuminance_lux
     domain: sensor
     below: 130
   action:
@@ -932,16 +728,15 @@
     data:
       transition: 5
   - wait_for_trigger:
-    - type: no_motion
+    - type: motion
       platform: device
-      device_id: eefb5fea06ec11eba7df65196ef7855b
-      entity_id: binary_sensor.motion_sensor_hall
+      device_id: 2730e60e031583ecdf5f9955fecd93c1
+      entity_id: binary_sensor.motion_hall_occupancy
       domain: binary_sensor
       for:
         hours: 0
         minutes: 1
         seconds: 0
-        milliseconds: 0
   - type: turn_off
     device_id: aa1e532da567f3e46f9253fc839e7ec2
     entity_id: light.gang_loftlys
@@ -953,25 +748,25 @@
   trigger:
   - type: motion
     platform: device
-    device_id: bbf26e5345851c3da0c0bcaf344ddabc
-    entity_id: binary_sensor.motion_bathroom
+    device_id: 81ea100cddbc37e859b313545da9a019
+    entity_id: binary_sensor.motion_bathroom_occupancy
     domain: binary_sensor
   condition: []
   action:
   - service: switch.turn_on
     target:
       entity_id: switch.toilet
+    data: {}
   - wait_for_trigger:
     - type: no_motion
       platform: device
-      device_id: bbf26e5345851c3da0c0bcaf344ddabc
-      entity_id: binary_sensor.motion_bathroom
+      device_id: 81ea100cddbc37e859b313545da9a019
+      entity_id: binary_sensor.motion_bathroom_occupancy
       domain: binary_sensor
       for:
         hours: 0
         minutes: 5
         seconds: 0
-        milliseconds: 0
   - choose:
     - conditions:
       - condition: state
@@ -992,6 +787,7 @@
   - service: switch.turn_off
     target:
       entity_id: switch.toilet
+    data: {}
   mode: restart
 - id: '1618482575007'
   alias: Auto - Heating - Window open detection
@@ -1040,29 +836,6 @@
           entity_id: climate.bedroom
     default: []
   mode: restart
-- id: '1629485297130'
-  alias: Alert - Gateway UPS - below 50% battery
-  description: ''
-  trigger:
-  - type: value
-    platform: device
-    device_id: 3bf52cb950d8b0416e8df4ddcc1672a0
-    entity_id: sensor.gwups_load
-    domain: sensor
-    below: 50
-    for:
-      hours: 0
-      minutes: 1
-      seconds: 0
-      milliseconds: 0
-  condition:
-  - condition: template
-    value_template: '{{ trigger.event.data.notify_type != ''COMMBAD'' }}'
-  action:
-  - service: notify.mobile_app_mtopnord2
-    data:
-      message: Gateway UPS batteri under 50%
-  mode: single
 - id: '1632209322025'
   alias: Auto - Detect low battery and notify
   description: ''
@@ -1104,28 +877,23 @@
     to: home
   condition:
   - condition: time
-    after: 00:00:00
+    after: 00:00
     before: '21:00'
   action:
   - wait_for_trigger:
     - type: opened
       platform: device
-      device_id: 22fbec51c6ceb7c4a5bad76c3ce22273
-      entity_id: binary_sensor.dor
+      device_id: ec95542199d8f7d4a19d1f246c15a2ef
+      entity_id: binary_sensor.dw_frontdoor_contact
       domain: binary_sensor
     continue_on_timeout: false
     timeout: 00:05:00
   - wait_for_trigger:
-    - type: not_opened
+    - type: motion
       platform: device
-      device_id: 22fbec51c6ceb7c4a5bad76c3ce22273
-      entity_id: binary_sensor.dor
+      device_id: 2642707e9101945dd6ea4c464ad271fb
+      entity_id: binary_sensor.motion_kitchen_occupancy
       domain: binary_sensor
-      for:
-        hours: 0
-        minutes: 0
-        seconds: 5
-        milliseconds: 0
     continue_on_timeout: false
     timeout: 00:05:00
   - service: script.do_speech
@@ -1177,8 +945,8 @@
   condition:
   - type: is_open
     condition: device
-    device_id: 22fbec51c6ceb7c4a5bad76c3ce22273
-    entity_id: binary_sensor.dor
+    device_id: ec95542199d8f7d4a19d1f246c15a2ef
+    entity_id: binary_sensor.dw_frontdoor_contact
     domain: binary_sensor
   action:
   - service: media_player.volume_mute
@@ -1253,21 +1021,6 @@
         entity_id: input_boolean.is_home
       data: {}
   mode: single
-- id: '1637158027563'
-  alias: Auto - Kia Niro - Turn off heater when battery is low
-  description: ''
-  trigger:
-  - platform: template
-    value_template: '{{ states(''sensor.webasto_battery'') < states(''input_number.webasto_low_battery'')
-      }}'
-  condition: []
-  action:
-  - service: shell_command.webasto_off
-  - service: notify.mobile_app_mtopnord2
-    data_template:
-      message: Webasto blev slukket da spændingen faldt under {{ states("input_number.webasto_low_battery")
-        }}v
-  mode: single
 - id: '1637178851136'
   alias: Alert - WAN and VPN connections statechange
   description: ''
@@ -1330,24 +1083,24 @@
         vibrationPattern: 50, 500, 50, 500, 50, 500, 50, 500
   mode: single
 - id: '1638190307088'
-  alias: Notification - Medical reminder
+  alias: Notification - Medical reminder - Morning
   description: ''
   use_blueprint:
     path: Aohzan/medication_reminder.yaml
     input:
-      logbook_message_no_answer: No Medication Answer Time Out
+      logbook_message_no_answer: No Morning Medication Answer Time Out
       reminder_time: 06:30:00
       notify_device: 5a203dc793181fba91d8220b160558c1
-      input_boolean: input_boolean.husket_medicin
+      input_boolean: input_boolean.husket_medicin_morgen
       notification_title: Husk medicin
       notification_message: Det er tid til at tage din medicin
       notification_action_taken: Taget
       notification_action_later: Spørg senere
       notification_action_skip: Spring over
-      logbook_message_remind: Medication Reminder Sent
-      logbook_message_taken: Medication Taken
-      logbook_message_later: Postpone Medication Reminder
-      logbook_message_skip: Medication Reminder Skipped
+      logbook_message_remind: Morning Medication Reminder Sent
+      logbook_message_taken: Morning Medication Taken
+      logbook_message_later: Postpone Morning Medication Reminder
+      logbook_message_skip: Morning Medication Reminder Skipped
       ask_later_wait_time: 60
 - id: '1638363003788'
   alias: Auto - Webasto - Turn Off When Getting Near Zone
@@ -1583,10 +1336,10 @@
     entity_id: input_boolean.charge_time_override
     state: 'on'
   action:
-  - service: tts.google_cloud_say
+  - service: script.do_speech
     data:
-      message: Så er det tid at tage afsted
-      entity_id: media_player.nesthub8311
+      device: kitchen
+      call_departure: 1
   mode: single
 - id: '1645621979465'
   alias: Infopanel - Update events
@@ -1602,4 +1355,132 @@
   - service: pyscript.infopanel_get_calendar_event
     data:
       count: 3
+  mode: single
+- id: '1645947896203'
+  alias: Notification - Camera detected motion
+  description: ''
+  trigger:
+  - type: motion
+    platform: device
+    device_id: a40396ecc491285e9371780fcecc164d
+    entity_id: binary_sensor.door_person_motion
+    domain: binary_sensor
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 2
+  condition:
+  - condition: template
+    value_template: '{% set lastChange = as_timestamp(states.binary_sensor.dw_frontdoor_contact.last_changed,
+      0) %}
+
+      {{ (now() - timedelta(minutes=2)).timestamp() > lastChange }}'
+  action:
+  - service: notify.mobile_app_mtopnord2
+    data:
+      message: Person registreret
+      title: Der blev registreret en person ved døren
+      data:
+        image: /api/camera_proxy/camera.door_person
+        ttl: 0
+        clickAction: /frontdoor-cam/0
+  mode: single
+- id: '1646049336210'
+  alias: Notification - Medical reminder - Evening
+  description: ''
+  use_blueprint:
+    path: Aohzan/medication_reminder.yaml
+    input:
+      logbook_message_no_answer: No Evening Medication Answer Time Out
+      reminder_time: '17:30:00'
+      notify_device: 5a203dc793181fba91d8220b160558c1
+      input_boolean: input_boolean.husket_medicin_aften
+      notification_title: Husk medicin
+      notification_message: Det er tid til at tage din medicin
+      notification_action_taken: Taget
+      notification_action_later: Spørg senere
+      notification_action_skip: Spring over
+      logbook_message_remind: Evening Medication Reminder Sent
+      logbook_message_taken: Evening Medication Taken
+      logbook_message_later: Postpone Evening Medication Reminder
+      logbook_message_skip: Evening Medication Reminder Skipped
+      ask_later_wait_time: 60
+- id: '1646160179333'
+  alias: Light - Livingroom - Wallswitch
+  description: ''
+  trigger:
+  - platform: device
+    domain: mqtt
+    device_id: d505e0f192b8babfc01e577a91b55f74
+    type: action
+    subtype: 'on'
+    discovery_id: 0xccccccfffe56b58e action_on
+    id: 'on'
+  - platform: device
+    domain: mqtt
+    device_id: d505e0f192b8babfc01e577a91b55f74
+    type: action
+    subtype: 'off'
+    discovery_id: 0xccccccfffe56b58e action_off
+    id: 'off'
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: 'off'
+      sequence:
+      - service: light.toggle
+        data: {}
+        target:
+          entity_id: light.skrivebord
+    - conditions:
+      - condition: trigger
+        id: 'on'
+      sequence:
+      - type: toggle
+        device_id: c5d3112ba73f80cd24bab7d6f3aad278
+        entity_id: light.deathstar
+        domain: light
+    default: []
+  mode: parallel
+  max: 5
+- id: '1646161061514'
+  alias: Light - Diningroom
+  description: ''
+  trigger:
+  - platform: device
+    domain: mqtt
+    device_id: 2874b894e4c1bdce32ee9699888d16f3
+    type: click
+    subtype: 'on'
+    discovery_id: 0xccccccfffea4ba3b click_on
+    id: 'on'
+  - platform: device
+    domain: mqtt
+    device_id: 2874b894e4c1bdce32ee9699888d16f3
+    type: click
+    subtype: 'off'
+    discovery_id: 0xccccccfffea4ba3b click_off
+    id: 'off'
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: 'on'
+      sequence:
+      - service: light.turn_on
+        data: {}
+        target:
+          entity_id: light.spisebord
+    - conditions:
+      - condition: trigger
+        id: 'off'
+      sequence:
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.spisebord
+    default: []
   mode: single

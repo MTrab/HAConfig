@@ -1,3 +1,7 @@
+#######################
+# Fetch OK list price #
+#######################
+
 automation:
   - alias: Auto - OK Price - Parsehub - Update State
     id: okUpdateState

@@ -1,3 +1,11 @@
+################################
+#  Monitor certificate expiry  #
+#                              #
+# When about to expire, notify #
+# mobile device belonging to   #
+# Morten                       #
+################################
+
 sensor:
   - platform: template
     sensors:

@@ -1,0 +1,3 @@
+enable_autodiscovery: true
+create_utility_meters: true
+scan_interval: 00:00:30

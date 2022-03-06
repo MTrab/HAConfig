@@ -1,3 +1,9 @@
+####################################
+#    W.I.P USG Bandwith metering   #
+#                                  #
+# Values are currently not correct #
+####################################
+
 sensor:
   - platform: snmp
     name: "USG WAN in"

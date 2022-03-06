@@ -1,0 +1,45 @@
+# Sengelys
+- platform: powercalc
+  unique_id: bedlightPowercalc
+  create_group: sengelys
+  entities:
+    - entity_id: light.bedside_1
+    - entity_id: light.bedside_2
+
+# Loftlys i soveværelse
+- platform: powercalc
+  unique_id: bedroomCeilingPowercalc
+  create_group: bedroom_ceiling
+  entities:
+    - entity_id: light.bedroom_ceiling_1
+    - entity_id: light.bedroom_ceiling_2
+
+# Loftlys i gangen
+- platform: powercalc
+  unique_id: hallCeilingPowercalc
+  entity_id: light.gang_loftlys
+  power_sensor_id: sensor.loftlys_power
+
+# Loftlys i køkken
+- platform: powercalc
+  unique_id: kitchenCeiling1
+  entity_id: light.kitchen_1
+  manufacturer: ikea
+  model: LED1537R6
+- platform: powercalc
+  unique_id: kitchenCeiling2
+  entity_id: light.kitchen_2
+  manufacturer: ikea
+  model: LED1537R6
+- platform: powercalc
+  unique_id: kitchenCeiling3
+  entity_id: light.kitchen_3
+  manufacturer: ikea
+  model: LED1537R6
+- platform: powercalc
+  unique_id: kitchenCeilingPowercalc
+  create_group: kitchen
+  entities:
+    - entity_id: light.kitchen_1
+    - entity_id: light.kitchen_2
+    - entity_id: light.kitchen_3

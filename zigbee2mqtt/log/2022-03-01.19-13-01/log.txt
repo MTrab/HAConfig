@@ -1,0 +1,17 @@
+warn  2022-03-01 19:13:04: `permit_join` set to  `true` in configuration.yaml.
+warn  2022-03-01 19:13:04: Allowing new devices to join.
+warn  2022-03-01 19:13:04: Set `permit_join` to `false` once you joined all devices.
+error 2022-03-01 19:17:24: Failed to execute LQI for 'Vitrine'
+error 2022-03-01 19:50:21: Failed to configure 'Switch Livingroom', attempt 1 (Error: Bind 0xccccccfffe56b58e/1 genOnOff from '0x00212effff0527cc/1' failed (waiting for response TIMEOUT)
+    at DeconzAdapter.bind (/app/node_modules/zigbee-herdsman/src/adapter/deconz/adapter/deconzAdapter.ts:761:19)
+    at Endpoint.bind (/app/node_modules/zigbee-herdsman/src/controller/model/endpoint.ts:567:13)
+    at Object.configureRemote [as configure] (/app/node_modules/zigbee-herdsman-converters/devices/ikea.js:43:5)
+    at Configure.configure (/app/lib/extension/configure.ts:115:13)
+    at Configure.onMQTTMessage (/app/lib/extension/configure.ts:55:21))
+error 2022-03-01 19:52:57: Failed to execute LQI for 'Vitrine'
+error 2022-03-01 20:00:18: Failed to execute LQI for 'Vitrine'
+error 2022-03-01 20:01:40: Publish 'set' 'state' to 'Vitrine' failed: 'Error: Command 0x60a423fffe6ecfc6/1 genOnOff.on({}, {"sendWhen":"immediate","timeout":10000,"disableResponse":false,"disableRecovery":false,"disableDefaultResponse":false,"direction":0,"srcEndpoint":null,"reservedBits":0,"manufacturerCode":null,"transactionSequenceNumber":null,"writeUndiv":false}) failed (no response received)'
+error 2022-03-01 20:02:15: Publish 'set' 'state' to 'Vitrine' failed: 'Error: Command 0x60a423fffe6ecfc6/1 genOnOff.on({}, {"sendWhen":"immediate","timeout":10000,"disableResponse":false,"disableRecovery":false,"disableDefaultResponse":false,"direction":0,"srcEndpoint":null,"reservedBits":0,"manufacturerCode":null,"transactionSequenceNumber":null,"writeUndiv":false}) failed (no response received)'
+error 2022-03-01 20:25:42: Source device 'Switch Livingroom/' does not exist
+error 2022-03-01 20:30:11: Request 'zigbee2mqtt/bridge/request/device/remove' failed with error: 'Failed to remove device 'Switch Livingroom' (block: false, force: false) (Error: waiting for response TIMEOUT)'
+error 2022-03-01 20:34:14: Publish 'set' 'state' to 'Deathstar' failed: 'Error: Command 0x001788010302044a/11 genOnOff.off({}, {"sendWhen":"immediate","timeout":10000,"disableResponse":false,"disableRecovery":false,"disableDefaultResponse":false,"direction":0,"srcEndpoint":null,"reservedBits":0,"manufacturerCode":null,"transactionSequenceNumber":null,"writeUndiv":false}) failed (no response received)'

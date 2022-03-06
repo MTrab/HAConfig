@@ -1,0 +1,8 @@
+- platform: google_keep
+  name: Keep Notes
+  username: !secret google_account
+  password: !secret google_apppwd
+  labels:
+    - HomeAssistant
+    - Huskere
+    - Transformation

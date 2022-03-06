@@ -1,0 +1,16 @@
+'1':
+  friendly_name: kitchen
+  devices:
+    - 0x588e81fffe75a9ad/1
+    - 0x588e81fffe648705/1
+    - 0x588e81fffe7621bb/1
+'2':
+  friendly_name: sengelys
+  devices:
+    - 0x588e81fffe359d3b/1
+    - 0x680ae2fffefbf71d/1
+'3':
+  friendly_name: bedroom_ceiling
+  devices:
+    - 0x0017880108b4fafe/11
+    - 0x0017880108bcee5b/11

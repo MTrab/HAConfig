@@ -1,3 +1,9 @@
+###########################################
+# Fetch CBB usage data from personal site #
+#                                         #
+# Depending on ParseHub calls             #
+###########################################
+
 automation:
   - alias: Auto - CBB - Parsehub - Update State
     id: cbbUpdateState

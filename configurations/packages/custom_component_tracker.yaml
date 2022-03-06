@@ -1,0 +1,15 @@
+#######################################
+# Track usage of my custom_components #
+#######################################
+
+rest:
+  - resource: https://analytics.home-assistant.io/custom_integrations.json
+    scan_interval: 60000
+    sensor:
+      - name: My Components - Danfoss Ally
+        value_template: >
+          {{ value_json.danfoss_ally.get("total") }}
+        unit_of_measurement: "installs"
+        json_attributes_path: "$.danfoss_ally"
+        json_attributes:
+          - "versions"

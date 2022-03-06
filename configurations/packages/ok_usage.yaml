@@ -1,3 +1,9 @@
+######################################
+# Fetch OK usage from my OK overview #
+#                                    #
+# Depending on OK ParseHub calls     #
+######################################
+
 automation:
   - alias: Auto - OK Usage - Parsehub - Update State
     id: okUsageUpdateState

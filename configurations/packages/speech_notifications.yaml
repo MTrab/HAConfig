@@ -171,6 +171,14 @@ script:
               ] | random }}
             {% endmacro %}
 
+            {%- macro departure() %}
+              {{ [
+                'Det er tid til at tage afsted.',
+                'Du skal afsted nu.',
+                'Du skal afsted nu for at nå frem til tiden.'
+              ] | random }}
+            {% endmacro %}
+
             {%- macro custom() %}
               {{ custom_text }}
             {% endmacro %}
@@ -256,6 +264,10 @@ script:
 
               {% if call_bedtime_recurring == 1 %}
                 {{ bedtime_recurring() }}
+              {% endif %}
+
+              {% if call_departure == 1 %}
+                {{ departure() }}
               {% endif %}
 
               {% if call_custom == 1 %}

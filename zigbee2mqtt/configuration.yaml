@@ -1,0 +1,53 @@
+external_converters: []
+devices:
+  - devices.yaml
+groups:
+  - groups.yaml
+homeassistant:
+  status_topic: homeassistant/status
+permit_join: false
+mqtt:
+  base_topic: zigbee2mqtt
+  user: zigbee2mqtt
+  password: 9f7cEsSe6UH3TK7oayRZxGH62TzrDV
+  client_id: z2m
+  server: mqtt://core-mosquitto:1883
+  keepalive: 60
+  reject_unauthorized: true
+  version: 4
+  include_device_information: true
+serial:
+  port: >-
+    /dev/serial/by-id/usb-dresden_elektronik_ingenieurtechnik_GmbH_ConBee_II_DE2141754-if00
+  adapter: deconz
+advanced:
+  log_level: warn
+  pan_id: 56761
+  channel: 25
+  network_key:
+    - 31
+    - 37
+    - 34
+    - 36
+    - 35
+    - 34
+    - 33
+    - 33
+    - 36
+    - 34
+    - 66
+    - 39
+    - 37
+    - 33
+    - 32
+    - 65
+  availability_blocklist: []
+  availability_passlist: []
+device_options: {}
+blocklist: []
+passlist: []
+queue: {}
+frontend:
+  port: 8099
+experimental: {}
+availability: true

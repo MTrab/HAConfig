@@ -1,3 +1,8 @@
+################################
+# Calculate cheapest timeframe #
+# for charging the car (PHEV)  #
+################################
+
 template:
   - trigger:
       - platform: time_pattern
