@@ -43,11 +43,11 @@ automation:
           entity_id: media_player.sovevaerelse_2
       - service: media_player.play_media
         data:
-          media_content_id: https://home.trab.dk/local/doorbell/jetsons.mp3
+          media_content_id: https://home.trab.dk/local/alarm/wakeup.wav
           media_content_type: music
         target:
           entity_id: media_player.sovevaerelse_2
-      - delay: '00:00:05'
+      - delay: '00:00:10'
       - service: sonos.restore
         data:
           entity_id: media_player.sovevaerelse_2

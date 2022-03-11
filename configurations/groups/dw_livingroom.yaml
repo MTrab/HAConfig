@@ -1,0 +1,7 @@
+dw_livingroom:
+  name: DW Livingroom
+  all: false
+  icon: mdi:window-open
+  entities:
+    - binary_sensor.dw_livingroom_2_2_2_contact
+    - binary_sensor.dw_livingroom_3_2_1_contact

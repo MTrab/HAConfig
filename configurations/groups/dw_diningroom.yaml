@@ -1,0 +1,6 @@
+dw_diningroom:
+  name: DW Diningroom
+  all: false
+  icon: mdi:window-open
+  entities:
+    - binary_sensor.dw_diningroom_2_2_contact

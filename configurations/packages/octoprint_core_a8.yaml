@@ -339,7 +339,7 @@ script:
       - service: mqtt.publish
         data:
           topic: octoprint/core_a8/hassControl/commands
-          payload: "G0 Z300"
+          payload: "G1 Z300 F1000"
 
   #Safe shutdown script
   3dp_core_a8_safe_shutdown:

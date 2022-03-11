@@ -130,14 +130,15 @@
           - switch.schedule_normal_heating
           - switch.schedule_normal_heating_when_working_from_home
           - switch.schedule_weekend_heating
-      - service: climate.set_preset_mode
+        data: {}
+      - service: climate.set_temperature
         data:
-          preset_mode: away
+          temperature: 18
         target:
-          entity_id:
-          - climate.kokken
-          - climate.spisestue
-          - climate.stue
+          device_id:
+          - dcda4e53071311eb96e5c56d002656e1
+          - dcdb16b4071311eb8ae06bbcb7b0ee4d
+          - eb8fa3cd070d11eb93e1f3123b152cc3
       - service: climate.set_temperature
         data:
           temperature: 18
@@ -153,27 +154,8 @@
       - service: input_boolean.turn_off
         target:
           entity_id: input_boolean.allow_auto_charge
+        data: {}
     default:
-    - service: climate.set_preset_mode
-      data:
-        preset_mode: home
-      target:
-        entity_id:
-        - climate.kokken
-        - climate.spisestue
-        - climate.stue
-    - service: climate.set_temperature
-      data:
-        temperature: 20
-      target:
-        entity_id: climate.bedroom
-    - service: climate.set_temperature
-      data:
-        temperature: 23
-      target:
-        entity_id:
-        - climate.hall
-        - climate.toilet
     - service: switch.turn_on
       target:
         entity_id:
@@ -181,9 +163,7 @@
         - switch.schedule_normal_heating
         - switch.schedule_normal_heating_when_working_from_home
         - switch.schedule_weekend_heating
-    - service: input_boolean.turn_on
-      target:
-        entity_id: input_boolean.allow_auto_charge
+      data: {}
   mode: single
 - id: '1606586819683'
   alias: Auto - Turn off lights if on after 02:00 AM
@@ -971,6 +951,9 @@
     entity_id: binary_sensor.workday_sensor
     to: 'off'
     id: wds
+  - platform: time
+    at: 00:00:00
+    id: time
   condition: []
   action:
   - choose:
@@ -1015,6 +998,37 @@
         target:
           entity_id: input_boolean.is_home
         data: {}
+    - conditions:
+      - condition: trigger
+        id: time
+      sequence:
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: calendar.work_from_home
+            state: 'on'
+          sequence:
+          - service: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.is_home
+            data: {}
+        - conditions:
+          - condition: state
+            entity_id: binary_sensor.workday_sensor
+            state: 'on'
+          - condition: state
+            entity_id: calendar.work_from_home
+            state: 'off'
+          sequence:
+          - service: input_boolean.turn_off
+            target:
+              entity_id: input_boolean.is_home
+            data: {}
+        default:
+        - service: input_boolean.turn_off
+          target:
+            entity_id: input_boolean.is_home
+          data: {}
     default:
     - service: input_boolean.turn_off
       target:
@@ -1233,8 +1247,8 @@
   - wait_for_trigger:
     - type: motion
       platform: device
-      device_id: eefb5fea06ec11eba7df65196ef7855b
-      entity_id: binary_sensor.motion_sensor_hall
+      device_id: 2730e60e031583ecdf5f9955fecd93c1
+      entity_id: binary_sensor.motion_hall_occupancy
       domain: binary_sensor
     timeout: 01:00:00
     continue_on_timeout: false
@@ -1347,10 +1361,7 @@
   trigger:
   - platform: time_pattern
     minutes: '30'
-  condition:
-  - condition: state
-    entity_id: binary_sensor.infopanel_connected
-    state: 'on'
+  condition: []
   action:
   - service: pyscript.infopanel_get_calendar_event
     data:
@@ -1360,28 +1371,27 @@
   alias: Notification - Camera detected motion
   description: ''
   trigger:
-  - type: motion
-    platform: device
-    device_id: a40396ecc491285e9371780fcecc164d
-    entity_id: binary_sensor.door_person_motion
-    domain: binary_sensor
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 2
+  - platform: mqtt
+    topic: frigate/events
   condition:
   - condition: template
     value_template: '{% set lastChange = as_timestamp(states.binary_sensor.dw_frontdoor_contact.last_changed,
       0) %}
 
       {{ (now() - timedelta(minutes=2)).timestamp() > lastChange }}'
+  - condition: template
+    value_template: '{{ trigger.payload_json[''after''][''camera''] == ''door'' }}'
+  - condition: template
+    value_template: '{{ trigger.payload_json[''after''][''top_score''] > 0.79 }}'
   action:
   - service: notify.mobile_app_mtopnord2
     data:
       message: Person registreret
       title: Der blev registreret en person ved døren
       data:
-        image: /api/camera_proxy/camera.door_person
+        image: /api/frigate/notifications/{{trigger.payload_json["after"]["id"]}}/thumbnail.jpg?format=android
+        tag: '{{trigger.payload_json["after"]["id"]}}'
+        when: '{{trigger.payload_json["after"]["start_time"]|int}}'
         ttl: 0
         clickAction: /frontdoor-cam/0
   mode: single
@@ -1484,3 +1494,177 @@
           entity_id: light.spisebord
     default: []
   mode: single
+- id: '1646572919441'
+  alias: Auto - Climate - Toggle Climate When Window Opens
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: group.dw_bedroom
+    id: bedroom
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  - platform: state
+    entity_id: binary_sensor.dw_toilet_window_contact
+    id: toilet
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  - platform: state
+    entity_id: binary_sensor.dw_frontdoor_contact
+    id: hall
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  - platform: state
+    entity_id: group.dw_kitchen
+    id: kitchen
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+  - platform: state
+    entity_id: group.dw_diningroom
+    id: diningroom
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+  - platform: state
+    entity_id: group.dw_livingroom
+    id: livingroom
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: livingroom
+      sequence:
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: group.dw_livingroom
+            state: 'on'
+          sequence:
+          - service: climate.turn_off
+            data: {}
+            target:
+              device_id: eb8fa3cd070d11eb93e1f3123b152cc3
+        default:
+        - service: climate.turn_on
+          data: {}
+          target:
+            device_id: eb8fa3cd070d11eb93e1f3123b152cc3
+    - conditions:
+      - condition: trigger
+        id: bedroom
+      sequence:
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: group.dw_bedroom
+            state: 'on'
+          sequence:
+          - service: climate.turn_off
+            data: {}
+            target:
+              entity_id: climate.bedroom
+        default:
+        - service: climate.turn_on
+          data: {}
+          target:
+            entity_id: climate.bedroom
+    - conditions:
+      - condition: trigger
+        id: toilet
+      sequence:
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: binary_sensor.dw_toilet_window_contact
+            state: 'on'
+          sequence:
+          - service: climate.turn_off
+            data: {}
+            target:
+              entity_id: climate.toilet
+        default:
+        - service: climate.turn_on
+          data: {}
+          target:
+            entity_id: climate.toilet
+    - conditions:
+      - condition: trigger
+        id: hall
+      sequence:
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: binary_sensor.dw_frontdoor_contact
+            state: 'on'
+          sequence:
+          - service: climate.turn_off
+            data: {}
+            target:
+              entity_id: climate.hall
+        default:
+        - service: climate.turn_on
+          data: {}
+          target:
+            entity_id: climate.hall
+    - conditions:
+      - condition: trigger
+        id: kitchen
+      sequence:
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: group.dw_kitchen
+            state: 'on'
+          sequence:
+          - service: climate.turn_off
+            data: {}
+            target:
+              device_id: dcda4e53071311eb96e5c56d002656e1
+        default:
+        - service: climate.turn_on
+          data: {}
+          target:
+            device_id: dcda4e53071311eb96e5c56d002656e1
+    - conditions:
+      - condition: trigger
+        id: diningroom
+      sequence:
+      - choose:
+        - conditions:
+          - condition: state
+            entity_id: group.dw_diningroom
+            state: 'on'
+          sequence:
+          - service: climate.turn_off
+            data: {}
+            target:
+              device_id: dcdb16b4071311eb8ae06bbcb7b0ee4d
+        default:
+        - service: climate.turn_on
+          data: {}
+          target:
+            device_id: dcdb16b4071311eb8ae06bbcb7b0ee4d
+    default: []
+  mode: queued
+- id: '1646753316288'
+  alias: Notification - Person detected
+  description: ''
+  use_blueprint:
+    path: hunterjm/frigate_notification.yaml
+    input:
+      camera: Door
+      notify_device: 5a203dc793181fba91d8220b160558c1
+      notify_group: FrontdoorCam

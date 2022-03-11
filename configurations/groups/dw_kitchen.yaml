@@ -1,0 +1,6 @@
+dw_kitchen:
+  name: DW Kitchen
+  all: false
+  icon: mdi:window-open
+  entities:
+    - binary_sensor.dw_kitchen_2_1_2_contact

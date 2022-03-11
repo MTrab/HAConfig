@@ -6,7 +6,7 @@
 template:
   - sensor:
       - name: Infopanel Calendar Events
-        state: ''
+        state: ""
       - name: Infopanel Date and Time
         state: >
           {% set month = now().strftime("%-m") %}
@@ -75,6 +75,7 @@ template:
           {% set wind = ((states.sensor.netatmo_public_wind_strength.state | float(0)) * 0.277777778) | round(0) | string %}
           {% set gust = ((states.sensor.netatmo_public_gust_strength.state | float(0)) * 0.277777778) | round(0) | string %}
           {% set currentCondition = states.sensor.hjemme_weather_condition.state %}
+          {% set bearing = state_attr("weather.hjem", "wind_bearing") %}
 
           {% if currentCondition == "sunny" %}
             {% set currentCondition = "\U000F0599" %}
@@ -104,6 +105,24 @@ template:
             {% set currentCondition = "\U000F059E" %}
           {% endif %}
 
+          {% if bearing > 337 or bearing < 23 %}
+            {% set bearing = "\U000F005D" %}
+          {% elif bearing > 23 and bearing < 68 %}
+            {% set bearing = "\U000F005C" %}
+          {% elif bearing > 68 and bearing < 113 %}
+            {% set bearing = "\U000F0054" %}
+          {% elif bearing > 113 and bearing < 158 %}
+            {% set bearing = "\U000F0043" %}
+          {% elif bearing > 158 and bearing < 203 %}
+            {% set bearing = "\U000F0045" %}
+          {% elif bearing > 203 and bearing < 248 %}
+            {% set bearing = "\U000F0042" %}
+          {% elif bearing > 248 and bearing < 293 %}
+            {% set bearing = "\U000F004D" %}
+          {% elif bearing > 293 and bearing < 337 %}
+            {% set bearing = "\U000F005B" %}
+          {% endif %}
+
           {{
             currentCondition + ";" +
             (states.sensor.netatmo_public_temperature.state)  | round(0) | string + ";" +
@@ -112,7 +131,8 @@ template:
             states.sensor.netatmo_public_rain_today.state + ";" +
             states.sensor.netatmo_public_rain_last_hour.state + ";" +
             wind + ";" +
-            gust
+            gust + ";" +
+            bearing
           }}
       - name: Infopanel Weather Forecast
         state: >

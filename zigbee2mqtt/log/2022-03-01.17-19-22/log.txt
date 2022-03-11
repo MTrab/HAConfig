@@ -1,9 +1,0 @@
-warn  2022-03-01 17:19:25: `permit_join` set to  `true` in configuration.yaml.
-warn  2022-03-01 17:19:25: Allowing new devices to join.
-warn  2022-03-01 17:19:25: Set `permit_join` to `false` once you joined all devices.
-error 2022-03-01 17:24:08: Update of 'Switch Desktop' failed (Device didn't respond to OTA request)
-error 2022-03-01 17:24:12: Update of 'Switch Diningroom' failed (Device didn't respond to OTA request)
-error 2022-03-01 17:47:22: Request 'zigbee2mqtt/bridge/request/group/remove' failed with error: 'Group 'default_bind_group' does not exist'
-error 2022-03-01 17:55:49: Failed to interview '0x60a423fffeaeb5b1', device has not successfully been paired
-error 2022-03-01 18:00:20: Failed to execute LQI for 'Vitrine'
-error 2022-03-01 18:00:41: Publish 'set' 'state' to 'Vitrine' failed: 'Error: Command 0x60a423fffe6ecfc6/1 genOnOff.on({}, {"sendWhen":"immediate","timeout":10000,"disableResponse":false,"disableRecovery":false,"disableDefaultResponse":false,"direction":0,"srcEndpoint":null,"reservedBits":0,"manufacturerCode":null,"transactionSequenceNumber":null,"writeUndiv":false}) failed (no response received)'

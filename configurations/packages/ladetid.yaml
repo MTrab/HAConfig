@@ -159,7 +159,19 @@ automation:
       - service: switch.turn_on
         target:
           entity_id: switch.car_charger
-      - delay: "00:10:00"
+    mode: single
+
+  - alias: Auto - Kia Niro - Switch off charger when done
+    id: niroChargeStop
+    trigger:
+      - platform: state
+        entity_id: switch.car_charger
+        from: "off"
+        to: "on"
+        id: "on"
+        for: 00:10:00
+    condition: []
+    action:
       - wait_template: '{{ (states("sensor.car_charger_power") | float(0)) < 5 }}'
       - service: switch.turn_off
         target:
