@@ -1,14 +1,14 @@
 # My Home Assistant configuration
 
-## Home Assistant version
+### Home Assistant version
 Home Assistant Supervised on Home Assistant OS 
 
-## Hardware
-ODroid N2+, 4GB RAM, 64GB eMMC
-Conbee II
+### Hardware
+ODroid N2+, 4GB RAM, 64GB eMMC<br>
+Conbee II<br>
 Aeotec Z-Wave stick gen5
 
-## Supervisor Add-Ons
+### Supervisor Add-Ons
 <ul>
   <li>Check Home Assistant Configuration</li>
   <li>ESPHome</li>
@@ -29,7 +29,7 @@ Aeotec Z-Wave stick gen5
   <li>Zigbee2MQTT</li>
 </ul>
 
-## Additional repositories
+### Additional repositories
 https://github.com/sabeechen/hassio-google-drive-backup<br>
 https://esphome.io<br>
 https://github.com/blakeblackshear/frigate-hass-addons<br>
@@ -37,22 +37,22 @@ https://github.com/zigbee2mqtt/hassio-zigbee2mqtt<br>
 https://addons.community<br>
 
 # Config specifics
-## Config files
+### Config files
 All config are seperated to different files located in /config/configurations<br>
 Recently I've moved more towards making packages of my different solutions, rather than seperate entity integrations - hence more and more of my configuration will be in /config/configurations/packages
 
-## Automations and scripts
+### Automations and scripts
 All automations not part of a package are found in /config/automations.yaml and /config/scripts.yaml - all of those a made in Home Assistant GUI.<br>
 If a automation or script have been merged as a part of a package, you'll find it in the respective files.
 
-# HACS
+## HACS
 I rely heavily on HACS for integrations and lovelace cards.
 
-## Custom repositories
+### Custom repositories
 https://github.com/Radioh/ha_twitch_helix<br>
 https://github.com/wxt9861/esxi_stats<br>
 
-## Integrations
+### Integrations
 <ul>
   <li>HACS</li>
   <li>nordpool</li>
@@ -74,7 +74,7 @@ https://github.com/wxt9861/esxi_stats<br>
   <li>Twitch Helix</li>
 </ul>
 
-## Frontend
+### Frontend
 <ul>
   <li>Battery Entity Row</li>
   <li>Bar Card</li>
