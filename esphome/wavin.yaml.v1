@@ -1,0 +1,65 @@
+substitutions:
+  node_name: wavin
+  device_verbose_name: "Wavin"
+  board: nodemcu
+  platform: ESP8266
+  log_level: DEBUG
+
+packages:
+  wifi: !include common/wifi.yaml
+  device_base: !include common/device_base.yaml
+  web: !include common/web.yaml
+  
+#esphome:
+#  includes:
+#    - custom_components/wavinAhc9000/wavinAhc9000.h
+
+external_components:
+  - source: github://heinekmadsen/esphome_components
+
+# Disable logger
+logger:
+  baud_rate: 0
+
+uart:
+  rx_pin: GPIO13
+  tx_pin: GPIO15
+  baud_rate: 38400
+  id: uart_modbus
+  stop_bits: 1
+    
+modbus:
+  uart_id: uart_modbus
+
+wavinAhc9000:
+  update_interval: 60s
+  rw_pin: GPIO5
+
+climate:
+  - platform: wavinAhc9000
+    channel: 1
+    name: "Toilet"
+    visual:
+      temperature_step: 0.5 °C
+    battery_level:
+      name: "Toilet Battery"
+    current_temp:
+      name: "Toilet Temperature"
+  - platform: wavinAhc9000
+    channel: 2
+    name: "Bedroom"
+    visual:
+      temperature_step: 0.5 °C
+    battery_level:
+      name: "Bedroom Battery"
+    current_temp:
+      name: "Bedroom Temperature"
+  - platform: wavinAhc9000
+    channel: 3
+    name: "Hall"
+    visual:
+      temperature_step: 0.5 °C
+    battery_level:
+      name: "Hall Battery"
+    current_temp:
+      name: "Hall Temperature"

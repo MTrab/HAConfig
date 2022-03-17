@@ -64,7 +64,7 @@ sonos_cloud: !include configurations/sonos_cloud.yaml
 switch: !include_dir_merge_list configurations/switch
 tts: !include configurations/tts.yaml
 
-# logger:
-#   default: info
-#   logs:
-#     custom_components.my_unifi: debug
+#logger:
+#  default: warning
+#  logs:
+#    custom_components.powercalc: debug

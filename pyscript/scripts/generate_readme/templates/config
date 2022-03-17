@@ -1,0 +1,21 @@
+# Config specifics
+### Config files
+All config are seperated to different files located in /config/configurations<br>
+Recently I've moved more towards making packages of my different solutions, rather than seperate entity integrations - hence more and more of my configuration will be in /config/configurations/packages
+
+### Automations and scripts
+All automations not part of a package are found in /config/automations.yaml and /config/scripts.yaml - all of those a made in Home Assistant GUI.<br>
+If a automation or script have been merged as a part of a package, you'll find it in the respective files.
+
+## HACS
+I rely heavily on HACS for integrations and lovelace cards.
+
+### Integrations
+<ul>
+{{integrations}}
+</ul>
+
+### Frontend
+<ul>
+{{frontends}}
+</ul>

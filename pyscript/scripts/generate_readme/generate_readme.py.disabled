@@ -1,0 +1,44 @@
+import json
+import sys
+
+from datetime import datetime
+from customhacs import loadHACS, genReadme
+
+@service
+def generate_readme():
+    """yaml
+name: generate_readme
+description: Autogenerate README.md file for GitHub repo.
+"""
+    if "/config/pyscript_modules" not in sys.path:
+        sys.path.append("/config/pyscript_modules")
+
+    log.warning("Start generating README.md")
+
+    hacs = _get_hacs()
+    getReadme(hacs['integrations'],hacs['frontends'])
+    
+def _get_hacs():
+    """Get installed HACS repos"""
+    integrations = []
+    frontends = []
+    repositories = json.load(loadHACS())
+
+    for repo in repositories['data']:
+        if repositories['data'][repo]['installed']:
+            r = {}
+            name = repositories['data'][repo]['name']
+            url = "https://github.com/" + repositories['data'][repo]['full_name']
+            if 'repository_manifest' in repositories['data'][repo]:
+                if 'name' in repositories['data'][repo]['repository_manifest']:
+                    name = repositories['data'][repo]['repository_manifest']['name']
+
+            r["name"] = name
+            r["url"] = url
+
+            if repositories['data'][repo]['category'] == 'integration':
+                integrations.append(r)
+            elif repositories['data'][repo]['category'] == 'plugin':
+                frontends.append(r)
+
+    return {'integrations': integrations, 'frontends': frontends}

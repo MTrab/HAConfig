@@ -6,3 +6,10 @@
     - HomeAssistant
     - Huskere
     - Transformation
+
+- platform: google_keep
+  name: 3D Print Ordrer
+  username: !secret google_account
+  password: !secret google_apppwd
+  labels:
+    - '3D Print Ordre'

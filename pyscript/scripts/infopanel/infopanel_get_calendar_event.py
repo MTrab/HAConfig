@@ -25,7 +25,7 @@ fields:
         log.debug("Reached max count - breaking loop")
         break
       cal = state.getattr("sensor.ical_all_events_event_" + str(i))
-      description = cal["summary"].replace("#heat","")
+      description = cal["summary"].replace("#heat","").replace("#dnd","")
 
       if not "Arbejder hjemme" in description:
         allday = cal["all_day"]

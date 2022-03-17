@@ -96,5 +96,3 @@
   homeassistant:
     contact:
       device_class: window
-'0x60a423fffe3e5caf':
-  friendly_name: test_lamp

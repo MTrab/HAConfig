@@ -77,3 +77,13 @@ sensor:
     device_class: voltage
     unit_of_measurement: V
     unique_id: amsl3voltage
+
+# Subtract cost-tracked entities from the total meter reading
+template:
+  - sensor:
+    - name: 'Kamstrup Meter Reading Without Sensors'
+      device_class: energy
+      state_class: total_increasing
+      unit_of_measurement: kWh
+      state: >
+        {{ (states.sensor.kamstrup_meter_reading.state | float(0)) - (expand('group.energy_sensors') | rejectattr('state','in',['unavailable','unknown','none']) | map(attribute='state') | map('float') | sum() | round(2)) }}

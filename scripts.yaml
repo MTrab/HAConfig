@@ -54,6 +54,20 @@ dimmer_dim_light:
 godnat_tts:
   alias: Godnat TTS
   sequence:
+  - wait_for_trigger:
+    - platform: device
+      device_id: c4c4fbcf04d711eb8dd3af05e9c1f865
+      domain: media_player
+      entity_id: media_player.sovevaerelse
+      type: playing
+    continue_on_timeout: false
+  - wait_for_trigger:
+    - platform: device
+      device_id: c4c4fbcf04d711eb8dd3af05e9c1f865
+      domain: media_player
+      entity_id: media_player.sovevaerelse
+      type: idle
+    continue_on_timeout: false
   - service: script.do_speech
     data:
       call_sleep: 1

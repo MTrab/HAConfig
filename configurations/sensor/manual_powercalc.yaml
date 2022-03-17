@@ -20,16 +20,12 @@
   entity_id: light.gang_loftlys
   power_sensor_id: sensor.loftlys_power
 
-# 3D printer bord
-#- platform: powercalc
-#  unique_id: 3dprintPowercalc
-#  power_sensor_id: sensor.3d_printer_power_power
-#  create_group: 3d_printer
-#  entities:
-#    - entity_id: switch.anycubic_photon_mains
-#    - entity_id: switch.core_a8_mains
-#    - entity_id: switch.3d_printer_power_switch_3
-#    - entity_id: switch.3d_printer_power_usb_sockets
+# Ude lys
+- platform: powercalc
+  unique_id: outsideLightPowercalc
+  entity_id: light.outside
+  manufacturer: tuya
+  model: TS0505A
 
 # Loftlys i køkken
 - platform: powercalc
@@ -54,3 +50,10 @@
     - entity_id: light.kitchen_1
     - entity_id: light.kitchen_2
     - entity_id: light.kitchen_3
+
+# 3D printer bord
+- platform: powercalc
+  unique_id: 3dprintPowercalc
+  power_sensor_id: sensor.3d_printer_power_power
+  entity_id: switch.core_a8_mains
+  name: 3D Printer

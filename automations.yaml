@@ -1668,3 +1668,38 @@
       camera: Door
       notify_device: 5a203dc793181fba91d8220b160558c1
       notify_group: FrontdoorCam
+- id: '1647420649275'
+  alias: Auto - Set DND mode on mobile phone
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: calendar.silence
+    id: 'on'
+    from: 'off'
+    to: 'on'
+  - platform: state
+    entity_id: calendar.silence
+    id: 'off'
+    from: 'on'
+    to: 'off'
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: 'on'
+      sequence:
+      - service: notify.mobile_app_mtopnord2
+        data:
+          message: command_dnd
+          title: total_silence
+    - conditions:
+      - condition: trigger
+        id: 'off'
+      sequence:
+      - service: notify.mobile_app_mtopnord2
+        data:
+          message: command_dnd
+          title: 'off'
+    default: []
+  mode: single

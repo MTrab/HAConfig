@@ -1,0 +1,27 @@
+### Supervisor Add-Ons
+<ul>
+  <li>Check Home Assistant Configuration</li>
+  <li>ESPHome</li>
+  <li>Frigate NVR</li>
+  <li>Glances</li>
+  <li>Grafana</li>
+  <li>Home Assistant Google Drive Backup</li>
+  <li>InfluxDB</li>
+  <li>Log viewer</li>
+  <li>MariaDB</li>
+  <li>Mosquitto broker</li>
+  <li>Nginx Proxy Manager</li>
+  <li>RPC Shutdown</li>
+  <li>Studio Code Server</li>
+  <li>Terminal & SSH</li>
+  <li>Traccar</li>
+  <li>Z-Wave JS to MQTT</li>
+  <li>Zigbee2MQTT</li>
+</ul>
+
+### Additional repositories
+https://github.com/sabeechen/hassio-google-drive-backup<br>
+https://esphome.io<br>
+https://github.com/blakeblackshear/frigate-hass-addons<br>
+https://github.com/zigbee2mqtt/hassio-zigbee2mqtt<br>
+https://addons.community<br>
