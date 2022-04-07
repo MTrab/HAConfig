@@ -1,5 +1,6 @@
 import aiohttp
 import asyncio
+import re
 
 @service
 def octoprint_send_to_print(url, key, entity_id, origin="local"):
@@ -39,8 +40,10 @@ fields:
         headers = { 'X-Api-Key': key, 'Content-Type': 'application/json' }
         data = ""
         json = '{"command": "select", "print": true}'
-        log.warning(json)
+        log.debug(json)
+        printFile = state.get(entity_id)
+        printFile = re.sub(r'([ \(\)0-9:]{5,15})$', '', printFile)
         async with aiohttp.ClientSession(headers=headers) as session:
-            async with session.post(url + "/" + origin + "/" + state.get(entity_id), data=json) as r:
+            async with session.post(url + "/" + origin + "/" + printFile, data=json) as r:
                 data = r
-                log.warning(data)
+                log.debug(data)

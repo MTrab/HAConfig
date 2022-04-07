@@ -36,18 +36,18 @@
       - condition: trigger
         id: desktop_on
       sequence:
-      - type: turn_on
-        device_id: 1e97980e04e111eb800287a8184cbf3d
-        entity_id: light.skrivebord
-        domain: light
+      - service: light.turn_on
+        data: {}
+        target:
+          entity_id: light.desktop
     - conditions:
       - condition: trigger
         id: desktop_off
       sequence:
-      - type: turn_off
-        device_id: 1e97980e04e111eb800287a8184cbf3d
-        entity_id: light.skrivebord
-        domain: light
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.desktop
     default: []
   mode: queued
   max: 10
@@ -366,7 +366,7 @@
       sequence:
       - type: turn_off
         device_id: 4ad8b54946a4396c55e39e47011bfde3
-        entity_id: light.dartskab_2
+        entity_id: light.dartskab
         domain: light
     - conditions:
       - condition: trigger
@@ -374,8 +374,9 @@
       sequence:
       - type: turn_on
         device_id: 4ad8b54946a4396c55e39e47011bfde3
-        entity_id: light.dartskab_2
+        entity_id: light.dartskab
         domain: light
+        brightness_pct: 100
     default: []
   mode: restart
 - id: '1611135152192'
@@ -410,22 +411,6 @@
   - choose:
     - conditions:
       - condition: trigger
-        id: 'off'
-      - type: is_power
-        condition: device
-        device_id: 9f58561065cf2d2e3cfa2f1c1fcee848
-        entity_id: sensor.pc_monitors_power
-        domain: sensor
-        below: 5
-      sequence:
-      - type: turn_off
-        device_id: 9f58561065cf2d2e3cfa2f1c1fcee848
-        entity_id: switch.pc_monitors
-        domain: switch
-    default: []
-  - choose:
-    - conditions:
-      - condition: trigger
         id: 'on'
       sequence:
       - service: switch.turn_on
@@ -439,8 +424,8 @@
         id: 'on'
       sequence:
       - type: turn_on
-        device_id: 9f58561065cf2d2e3cfa2f1c1fcee848
-        entity_id: switch.pc_monitors
+        device_id: d23fd4714c9b7008d771a5e948643bbc
+        entity_id: switch.skrivebord
         domain: switch
     default: []
   mode: single
@@ -565,10 +550,6 @@
       - condition: trigger
         id: 2min
       sequence:
-      - type: turn_off
-        device_id: 9f58561065cf2d2e3cfa2f1c1fcee848
-        entity_id: switch.pc_monitors
-        domain: switch
       - service: media_player.media_stop
         entity_id: all
         data: {}
@@ -622,8 +603,8 @@
         entity_id: automation.light_outside_morning_on
     default: []
   - type: turn_on
-    device_id: 9f58561065cf2d2e3cfa2f1c1fcee848
-    entity_id: switch.pc_monitors
+    device_id: d23fd4714c9b7008d771a5e948643bbc
+    entity_id: switch.skrivebord
     domain: switch
   - type: turn_on
     device_id: 8ae93b9b7711ca61eaa526e03b81f43f
@@ -768,53 +749,6 @@
     target:
       entity_id: switch.toilet
     data: {}
-  mode: restart
-- id: '1618482575007'
-  alias: Auto - Heating - Window open detection
-  description: ''
-  trigger:
-  - type: not_opened
-    platform: device
-    device_id: 3ebdecb53313643d823492add2a5f9d8
-    entity_id: binary_sensor.bedroom_middle_window
-    domain: binary_sensor
-    for:
-      hours: 0
-      minutes: 3
-      seconds: 0
-      milliseconds: 0
-    id: bedroom_close
-  - type: opened
-    platform: device
-    device_id: 3ebdecb53313643d823492add2a5f9d8
-    entity_id: binary_sensor.bedroom_middle_window
-    domain: binary_sensor
-    id: bedroom_open
-    for:
-      hours: 0
-      minutes: 3
-      seconds: 0
-      milliseconds: 0
-  condition: []
-  action:
-  - choose:
-    - conditions:
-      - condition: trigger
-        id: bedroom_close
-      sequence:
-      - service: climate.turn_on
-        target:
-          entity_id: climate.bedroom
-    default: []
-  - choose:
-    - conditions:
-      - condition: trigger
-        id: bedroom_open
-      sequence:
-      - service: climate.turn_off
-        target:
-          entity_id: climate.bedroom
-    default: []
   mode: restart
 - id: '1632209322025'
   alias: Auto - Detect low battery and notify
@@ -1264,7 +1198,7 @@
     target:
       entity_id:
       - switch.pc
-      - switch.pc_monitors
+      - switch.skrivebord
     data: {}
   - service: media_player.play_media
     data:
@@ -1443,7 +1377,7 @@
       - service: light.toggle
         data: {}
         target:
-          entity_id: light.skrivebord
+          entity_id: light.desktop
     - conditions:
       - condition: trigger
         id: 'on'
@@ -1572,13 +1506,15 @@
             entity_id: group.dw_bedroom
             state: 'on'
           sequence:
-          - service: climate.turn_off
-            data: {}
+          - service: climate.set_hvac_mode
+            data:
+              hvac_mode: 'off'
             target:
               entity_id: climate.bedroom
         default:
-        - service: climate.turn_on
-          data: {}
+        - service: climate.set_hvac_mode
+          data:
+            hvac_mode: auto
           target:
             entity_id: climate.bedroom
     - conditions:
@@ -1591,13 +1527,15 @@
             entity_id: binary_sensor.dw_toilet_window_contact
             state: 'on'
           sequence:
-          - service: climate.turn_off
-            data: {}
+          - service: climate.set_hvac_mode
+            data:
+              hvac_mode: 'off'
             target:
               entity_id: climate.toilet
         default:
-        - service: climate.turn_on
-          data: {}
+        - service: climate.set_hvac_mode
+          data:
+            hvac_mode: auto
           target:
             entity_id: climate.toilet
     - conditions:
@@ -1610,13 +1548,15 @@
             entity_id: binary_sensor.dw_frontdoor_contact
             state: 'on'
           sequence:
-          - service: climate.turn_off
-            data: {}
+          - service: climate.set_hvac_mode
+            data:
+              hvac_mode: 'off'
             target:
               entity_id: climate.hall
         default:
-        - service: climate.turn_on
-          data: {}
+        - service: climate.set_hvac_mode
+          data:
+            hvac_mode: auto
           target:
             entity_id: climate.hall
     - conditions:
@@ -1703,3 +1643,46 @@
           title: 'off'
     default: []
   mode: single
+- id: '1649146214519'
+  alias: Vacuum - Automate run and dock
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: group.any_home
+    to: not_home
+    from: home
+    for:
+      hours: 1
+      minutes: 0
+      seconds: 0
+    id: run
+  - platform: state
+    entity_id: group.any_home
+    from: not_home
+    to: home
+    id: dock
+  - platform: template
+    value_template: "{% set direction = trigger.to_state.attributes.dir_of_travel\
+      \ %}\n{% set distance = trigger.to_state.state %}\n\n{% if direction == towards\
+      \ and distance < 15 %}\n true\n{% else %}\n false\n{% endif %}"
+    id: dock
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: run
+      sequence:
+      - device_id: db6d034e17793357be5133ee64e87489
+        domain: vacuum
+        entity_id: vacuum.wall_e
+        type: clean
+    default:
+    - condition: trigger
+      id: dock
+    - device_id: db6d034e17793357be5133ee64e87489
+      domain: vacuum
+      entity_id: vacuum.wall_e
+      type: dock
+  mode: queued
+  max: 5

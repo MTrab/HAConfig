@@ -27,7 +27,7 @@ sensor:
     name: Kamstrup L1 PowerFactor
     state_topic: "kamstrup/meter/l1/powerfactor"
     device_class: power_factor
-    unit_of_measurement: '%'
+    unit_of_measurement: "%"
     unique_id: amsl1powerfactor
   - platform: mqtt
     name: Kamstrup L1 Current
@@ -45,7 +45,7 @@ sensor:
     name: Kamstrup L2 PowerFactor
     state_topic: "kamstrup/meter/l2/powerfactor"
     device_class: power_factor
-    unit_of_measurement: '%'
+    unit_of_measurement: "%"
     unique_id: amsl2powerfactor
   - platform: mqtt
     name: Kamstrup L2 Current
@@ -63,7 +63,7 @@ sensor:
     name: Kamstrup L3 PowerFactor
     state_topic: "kamstrup/meter/l3/powerfactor"
     device_class: power_factor
-    unit_of_measurement: '%'
+    unit_of_measurement: "%"
     unique_id: amsl3powerfactor
   - platform: mqtt
     name: Kamstrup L3 Current
@@ -81,9 +81,23 @@ sensor:
 # Subtract cost-tracked entities from the total meter reading
 template:
   - sensor:
-    - name: 'Kamstrup Meter Reading Without Sensors'
-      device_class: energy
-      state_class: total_increasing
-      unit_of_measurement: kWh
-      state: >
-        {{ (states.sensor.kamstrup_meter_reading.state | float(0)) - (expand('group.energy_sensors') | rejectattr('state','in',['unavailable','unknown','none']) | map(attribute='state') | map('float') | sum() | round(2)) }}
+      - name: "Kamstrup Meter Reading Without Sensors"
+        device_class: energy
+        state_class: total_increasing
+        unit_of_measurement: kWh
+        state: >
+          {% set old_state = states.sensor.kamstrup_meter_reading_without_sensors.state | float(0) %}
+          {% set new_state = (states.sensor.kamstrup_meter_reading.state | float(0)) - (expand('group.energy_sensors') | rejectattr('state','in',['unavailable','unknown','none']) | map(attribute='state') | map('float') | sum() | round(2)) %}
+          {% set diff = (new_state - old_state) %}
+
+          {% if (diff > 2 or diff < -1) and old_state > 0 %}
+            {{ old_state }}
+          {% else %}
+            {{ new_state }}
+          {% endif %}
+      - name: "Kamstrup Meter Reading Without Sensors - Diff"
+        unit_of_measurement: kWh
+        state: >
+          {% set old_state = states.sensor.kamstrup_meter_reading_without_sensors.state | float(0) %}
+          {% set new_state = (states.sensor.kamstrup_meter_reading.state | float(0)) - (expand('group.energy_sensors') | rejectattr('state','in',['unavailable','unknown','none']) | map(attribute='state') | map('float') | sum() | round(2)) %}
+          {{ (new_state - old_state) }}

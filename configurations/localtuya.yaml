@@ -1,0 +1,23 @@
+- host: 10.254.254.26
+  device_id: bfa7d0d1da99e0e1a3wrpz
+  local_key: 9ba579023eaefd7c
+  friendly_name: Wall-e
+  protocol_version: "3.3"
+  entities:
+    - platform: vacuum
+      friendly_name: Wall-e
+      id: 3
+      idle_status_value: "standby,sleep"
+      powergo_dp: 2
+      docked_status_value: "charging,charging_done"
+      returning_status_value: "chargego"
+      battery_dp: 6
+      mode_dp: 3
+      modes: "spiral,wall_follow,random,partial_bow"
+      return_mode: "chargego"
+      fan_speed_dp: 14
+      fan_speeds: "gentle,normal,strong"
+      clean_time_dp: 17
+      fault_dp: 18
+      paused_state: "standby"
+      stop_status: "standby"

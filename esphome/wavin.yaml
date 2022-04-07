@@ -52,6 +52,7 @@ packages:
     url: https://github.com/heinekmadsen/esphome_components
     ref: main
     files: 
+      - components/wavinahc9000v2/configs/basic.yaml
       - components/wavinahc9000v2/configs/channel_01.yaml 
       - components/wavinahc9000v2/configs/channel_02.yaml 
       - components/wavinahc9000v2/configs/channel_03.yaml 
@@ -72,6 +73,7 @@ uart:
 modbus:
   - id: ${device}_modbus
     uart_id: uart_${device}
+    flow_control_pin: GPIO5
 
 modbus_controller:
   id: ${device}_modbus_controller

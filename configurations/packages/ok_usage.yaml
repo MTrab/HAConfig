@@ -111,6 +111,9 @@ template:
     - name: "Kia Niro km/l"
       state: >
         {{ (((states.var.odo_calc_new.state | int(0)) - (states.var.odo_calc_old.state | int(0))) / (states.sensor.ok_antal_liter.state | float(0))) | round(2) }}
+    - name: "Kia Niro km på sidste tank"
+      state: >
+        {{ (states.var.odo_calc_new.state | int(0)) - (states.var.odo_calc_old.state | int(0)) }}
     - name: "OK Station"
       state: >
         {{ state_attr("sensor.ok_forbrug", "location") }}
@@ -134,5 +137,9 @@ homeassistant:
       icon: mdi:map-marker-distance
       unit_of_measurement: 'km/l'
       friendly_name: "Aktuelt Forbrug"
+    sensor.kia_niro_km_pa_sidste_tank:
+      icon: mdi:map-marker-distance
+      unit_of_measurement: 'km'
+      friendly_name: "Kørte km"
     sensor.ok_station:
       icon: mdi:map-marker

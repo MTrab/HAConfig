@@ -13,3 +13,10 @@ rest:
         json_attributes_path: "$.danfoss_ally"
         json_attributes:
           - "versions"
+      - name: My Components - Energi Data Service
+        value_template: >
+          {{ value_json.energidataservice.get("total") }}
+        unit_of_measurement: "installs"
+        json_attributes_path: "$.energidataservice"
+        json_attributes:
+          - "versions"

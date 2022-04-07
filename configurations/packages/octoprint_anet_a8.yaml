@@ -241,11 +241,11 @@ automation:
           entity_id: switch.anet_a8_connect_to_printer
     mode: single
 
-camera:
-  - platform: mjpeg
-    name: Anet A8
-    still_image_url: !secret octoprint_anet_a8_still
-    mjpeg_url: !secret octoprint_anet_a8_stream
+# camera:
+#   - platform: mjpeg
+#     name: Anet A8
+#     still_image_url: !secret octoprint_anet_a8_still
+#     mjpeg_url: !secret octoprint_anet_a8_stream
 
 script:
   #Safe shutdown script

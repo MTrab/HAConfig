@@ -38,6 +38,7 @@ scene: !include scenes.yaml
 
 ######################################
 # Integrations without configuration
+media_extractor:
 python_script:
 wake_on_lan:
 
@@ -52,6 +53,7 @@ home_connect: !include configurations/home_connect.yaml
 influxdb: !include configurations/influx.yaml
 intent_script: !include_dir_merge_named configurations/intent_script
 landroid_cloud: !include configurations/landroid_cloud.yaml
+# localtuya: !include configurations/localtuya.yaml
 media_player: !include_dir_merge_list configurations/media_player
 powercalc: !include configurations/powercalc.yaml
 proximity: !include_dir_named configurations/proximity
@@ -64,7 +66,8 @@ sonos_cloud: !include configurations/sonos_cloud.yaml
 switch: !include_dir_merge_list configurations/switch
 tts: !include configurations/tts.yaml
 
-#logger:
-#  default: warning
-#  logs:
-#    custom_components.powercalc: debug
+logger:
+  # default: info
+  # logs:
+  #   custom_components.google_home: debug
+    

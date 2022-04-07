@@ -127,3 +127,31 @@ go_to_bed_reminder:
     default: []
   mode: parallel
   max: 10
+working_home:
+  alias: Working at home
+  sequence:
+  - service: input_boolean.turn_on
+    data: {}
+    target:
+      entity_id: input_boolean.is_home
+  - type: turn_on
+    device_id: d23fd4714c9b7008d771a5e948643bbc
+    entity_id: switch.skrivebord
+    domain: switch
+  - type: turn_on
+    device_id: 3b6afdd5aff2138e80230367beebc215
+    entity_id: switch.kaffemaskine_power
+    domain: switch
+  - service: media_player.play_media
+    data:
+      media_content_id: http://live-icy.dr.dk/A/A14H.mp3
+      media_content_type: music
+    target:
+      entity_id: media_player.stue
+  - service: google.add_event
+    data:
+      calendar_id: morten.trab.1981@gmail.com
+      summary: Arbejder hjemme
+      start_date: '{{ now().strftime(''%Y-%m-%d'') }}'
+      end_date: '{{ now().strftime(''%Y-%m-%d'') }}'
+  mode: single

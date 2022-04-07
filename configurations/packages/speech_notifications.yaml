@@ -94,6 +94,17 @@ script:
               ] | random }}
             {% endmacro %}
 
+            {%- macro acknowledge() %}
+              {{ [
+                'Okay.',
+                'Javel.',
+                'I orden.',
+                'Super.',
+                'Naturligvis.',
+                'Modtaget!.'
+              ] | random }}
+            {% endmacro %}
+
             {%- macro morten_home() %}
               {{ [
                 'Velkommen hjem, Morten.',
@@ -268,6 +279,10 @@ script:
 
               {% if call_departure == 1 %}
                 {{ departure() }}
+              {% endif %}
+
+              {% if call_ack == 1 %}
+                {{ acknowledge() }}
               {% endif %}
 
               {% if call_custom == 1 %}

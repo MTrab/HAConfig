@@ -57,3 +57,29 @@
   power_sensor_id: sensor.3d_printer_power_power
   entity_id: switch.core_a8_mains
   name: 3D Printer
+
+# Lampe over skrivebord
+- platform: powercalc
+  name: Lampe over skrivebord
+  unique_id: desktopceilinglampPowercalc
+  create_group: desktop_ceiling
+  entities:
+    - entity_id: light.desktop
+      manufacturer: yeelight
+      model: YLDL01YL/downlight
+    - entity_id: light.desktop_ambilight
+      manufacturer: yeelight
+      model: YLDL01YL/ambilight
+
+# Lampe over spisebord
+- platform: powercalc
+  name: Lampe over spisebord
+  unique_id: diningtableceilinglampPowercalc
+  create_group: diningtable_ceiling
+  entities:
+    - entity_id: light.spisebord
+      manufacturer: yeelight
+      model: YLDL01YL/downlight
+    - entity_id: light.spisebord_ambilight
+      manufacturer: yeelight
+      model: YLDL01YL/ambilight

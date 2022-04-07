@@ -1,6 +1,0 @@
-- platform: mqtt
-  device_class: connectivity
-  name: "Foodplanner Online"
-  state_topic: "esphome/foodplanner/LWT"
-  payload_on: "online"
-  payload_off: "offline"

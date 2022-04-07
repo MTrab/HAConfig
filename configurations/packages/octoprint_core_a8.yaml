@@ -228,11 +228,11 @@ automation:
           payload_template: 'M220 S{{ states("input_number.core_a8_feedrate") }}'
     mode: single
 
-camera:
-  - platform: mjpeg
-    name: Core A8
-    still_image_url: !secret octoprint_core_a8_still
-    mjpeg_url: !secret octoprint_core_a8_stream
+# camera:
+#   - platform: mjpeg
+#     name: Core A8
+#     still_image_url: !secret octoprint_core_a8_still
+#     mjpeg_url: !secret octoprint_core_a8_stream
 
 script:
   # Reset UBL script

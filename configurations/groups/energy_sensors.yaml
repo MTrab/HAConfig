@@ -9,7 +9,9 @@ energy_sensors:
     - sensor.gang_loftlys_energy
     - sensor.kitchen_energy
     - sensor.outside_energy
-    - sensor.pc_monitors_energy
+    - sensor.skrivebord_energy
     - sensor.sengelys_energy
     - sensor.toilet_energy
     - sensor.toilet_fan_energy
+    - sensor.desktop_ceiling_energy
+    - sensor.diningtable_ceiling_energy

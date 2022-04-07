@@ -65,10 +65,41 @@ def findRecursive(data, origin = "local", subprocess = False):
     for file in data[src]:
         if file['origin'] == origin:
             if file['type'] == "machinecode":
+                fileStr = ""
                 if path != file['name'] and path != "":
-                    options.append("/" + path + "/" + file['name'])
+
+                    fileStr = "/" + path + "/" + file['name']
                 else:
-                    options.append(file['name'])
+                    fileStr = file['name']
+
+                if 'gcodeAnalysis' in file:
+                    if 'estimatedPrintTime' in file["gcodeAnalysis"]:
+                        time = file["gcodeAnalysis"]["estimatedPrintTime"]
+                        hour = time // 3600
+                        time %= 3600
+                        minutes = time // 60
+                        time %= 60
+                        seconds = time
+
+                        if len(str(int(hour))) == 1:
+                            strHour = "0" + str(int(hour))
+                        else:
+                            strHour = str(int(hour))
+
+                        if len(str(int(minutes))) == 1:
+                            strMinute = "0" + str(int(minutes))
+                        else:
+                            strMinute = str(int(minutes))
+
+                        if len(str(int(seconds))) == 1:
+                            strSecond = "0" + str(int(seconds))
+                        else:
+                            strSecond = str(int(seconds))
+
+                        timeStr = strHour + ":" + strMinute + ":" + strSecond
+                        fileStr = fileStr + " (" + timeStr + ")"
+
+                options.append(fileStr)
             elif file['type'] == "folder":
                 options = options + findRecursive(file, origin, True)
 
