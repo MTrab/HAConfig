@@ -114,14 +114,14 @@ class ICalSensor(Entity):
         return self._state
 
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         """Return the attributes of the event."""
         return self._event_attributes
 
     @property
     def available(self):
         """Return True if ZoneMinder is available."""
-        return self.device_state_attributes["start"] is not None
+        return self.extra_state_attributes["start"] is not None
 
     async def async_update(self):
         """Update the sensor."""
@@ -159,3 +159,15 @@ class ICalSensor(Entity):
             if not val.get("all_day"):
                 self._state += f" {start.strftime('%H:%M')}"
             # self._is_available = True
+        elif self._event_number >= len(event_list):
+            # No further events are found in the calendar
+            self._event_attributes = {
+                "summary": None,
+                "description": None,
+                "location": None,
+                "start": None,
+                "end": None,
+                "eta": None,
+            }
+            self._state = None
+            self._is_available = None

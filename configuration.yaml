@@ -66,7 +66,7 @@ sonos_cloud: !include configurations/sonos_cloud.yaml
 switch: !include_dir_merge_list configurations/switch
 tts: !include configurations/tts.yaml
 
-logger:
+# logger:
   # default: info
   # logs:
   #   custom_components.google_home: debug

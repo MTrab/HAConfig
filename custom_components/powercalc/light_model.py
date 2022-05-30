@@ -5,12 +5,8 @@ from typing import Optional
 
 from homeassistant.helpers.typing import HomeAssistantType
 
-from .const import (
-    MANUFACTURER_DIRECTORY_MAPPING,
-    MODE_FIXED,
-    MODE_LINEAR,
-    MODEL_DIRECTORY_MAPPING,
-)
+from .aliases import MANUFACTURER_DIRECTORY_MAPPING, MODEL_DIRECTORY_MAPPING
+from .const import MODE_FIXED, MODE_LINEAR
 from .errors import ModelNotSupported, UnsupportedMode
 
 _LOGGER = logging.getLogger(__name__)
@@ -36,6 +32,7 @@ class LightModel:
             self._model = model_parts[0]
             self._lut_subdirectory = model_parts[1]
 
+        self._model = self._model.replace("#slash#", "/")
         self._custom_model_directory = custom_model_directory
         self._hass = hass
         self._directory: str = None

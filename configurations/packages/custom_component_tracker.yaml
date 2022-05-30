@@ -20,3 +20,10 @@ rest:
         json_attributes_path: "$.energidataservice"
         json_attributes:
           - "versions"
+      - name: My Components - Landroid Cloud
+        value_template: >
+          {{ value_json.landroid_cloud.get("total") }}
+        unit_of_measurement: "installs"
+        json_attributes_path: "$.landroid_cloud"
+        json_attributes:
+          - "versions"

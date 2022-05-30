@@ -11,7 +11,7 @@ script:
           {% if device == 'kitchen' %}
             media_player.nesthub8311
           {% elif device == 'livingroom' %}
-            media_player.stue_2
+            mp.n
           {% elif device == 'bedroom' %}
             media_player.sovevaerelse
           {% else %}
@@ -105,10 +105,10 @@ script:
               ] | random }}
             {% endmacro %}
 
-            {%- macro morten_home() %}
+            {%- macro malene_home() %}
               {{ [
-                'Velkommen hjem, Morten.',
-                'Der var husets konge jo.',
+                'Velkommen hjem, Malene.',
+                'Der var husets dronning jo.',
                 'Jeg har savnet dig, velkommen hjem.'
               ] | random }}
             {% endmacro %}
@@ -165,12 +165,12 @@ script:
             {% endmacro %}
 
             {%- macro sleep() %}
-              {% set name = "Morten" %}
+              {% set name = "Malene" %}
               {% set you = "dig" %}
               {% set your = "din" %}
 
               {% if states("person.pia") == "home" %}
-                {% set name = "Morten og Pia" %}
+                {% set name = "Malene og Pia" %}
                 {% set you = "jer" %}
                 {% set your = "jeres" %}
               {% endif %}
@@ -254,7 +254,7 @@ script:
               {% endif %}
 
               {% if call_morten_home == 1 %}
-                {{ morten_home() }}
+                {{ malene_home() }}
               {% endif %}
 
               {% if call_dinner == 1 %}

@@ -1,0 +1,27 @@
+-== Watchman Report ==- 
+
+-== Congratulations, all 43 services from your config are available!
+
+-== Missing 12 entity(ies) from 199 found in your config:
++--------------------------------+---------+--------------------------------------------------------------+
+| Entity ID                      | State   | Location                                                     |
++--------------------------------+---------+--------------------------------------------------------------+
+| sensor.switch_doorbell_click   | missing | automations.yaml:189                                         |
+| person.gaest                   | unknown | configurations/groups/presence.yaml:4                        |
+| person.pia                     | unknown | configurations/groups/presence.yaml:6                        |
+| media_player.all_house         | missing | configurations/packages/speech_notifications.yaml:18,30,52   |
+| switch.core_a8_shutdown_system | unknown | configurations/packages/octoprint_core_a8.yaml:349           |
+| switch.adaptive_lighting_defau | missing | custom_components/adaptive_lighting/services.yaml:6,30       |
+| lt                             |         |                                                              |
+| binary_sensor.pfsense_localdom | missing | custom_components/pfsense/services.yaml:12,35,91,106,121,136 |
+| ain_pending_notices_present    |         | ,144,152                                                     |
+| switch.schedule_abcdef         | missing | custom_components/scheduler/services.yaml:8,29,94,154        |
+| light.my_lamp                  | missing | custom_components/scheduler/services.yaml:64,124             |
+| input_boolean.foo              | missing | custom_components/var/services.yaml:12                       |
+| input_boolean.bar              | missing | custom_components/var/services.yaml:15                       |
+| switch.is_on                   | missing | esphome/infopanel.yaml:47                                    |
++--------------------------------+---------+--------------------------------------------------------------+
+
+-== Report created on 17 May 2022 09:51:23
+-== Parsed 114 files in 1.75s., ignored 0 files 
+-== Generated in: 0.01s. Validated in: 0.00s.

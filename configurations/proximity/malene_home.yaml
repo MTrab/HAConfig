@@ -1,0 +1,4 @@
+zone: home
+devices:
+  - person.malene_trab
+tolerance: 200

@@ -144,6 +144,7 @@ input_boolean:
   charge_time_override:
     name: Start varmer ved manuel tidspunkt
     icon: mdi:clock-alert
+    initial: false
 
 automation:
   - alias: Auto - Kia Niro - Charge when cheapest

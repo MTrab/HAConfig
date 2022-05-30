@@ -2,5 +2,5 @@ any_home:
   name: Any At Home
   entities:
     - person.gaest
-    - person.morten_trab
+    - person.malene_trab
     - person.pia

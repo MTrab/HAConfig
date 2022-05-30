@@ -9,7 +9,7 @@
   "zeroconf": [],
   "homekit": {},
   "dependencies": [
-    "http"
+    "auth"
   ],
   "after_dependencies": [
     "media_source",
@@ -19,5 +19,5 @@
     "@jjlawren"
   ],
   "iot_class": "cloud_polling",
-  "version": "0.2.1"
+  "version": "0.2.2"
 }

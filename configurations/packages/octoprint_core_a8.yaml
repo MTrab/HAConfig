@@ -7,27 +7,27 @@
 
 template:
   - binary_sensor:
-    - name: "Core A8 Idle"
-      state: >
-        {% set idle = 'on' %}
-        {% if is_state("binary_sensor.core_a8_printing", "on") %}
-          {% set idle = 'off' %}
-        {% endif %}
-        {% if is_state("switch.core_a8_power", "off") %}
-          {% set idle = 'off' %}
-        {% endif %}
-        {% if is_state("switch.core_a8_mains", "off") %}
-          {% set idle = 'off' %}
-        {% endif %}
-        {{ idle }}
-    - name: "Core A8 Min Temp"
-      state: >
-        {% set min = 190 %}
-        {% if (states("sensor.core_a8_tool_0_temperature") | float(0)) > min and is_state("binary_sensor.core_a8_idle", "on") %}
-          on
-        {% else %}
-          off
-        {% endif %}
+      - name: "Core A8 Idle"
+        state: >
+          {% set idle = 'on' %}
+          {% if is_state("binary_sensor.core_a8_printing", "on") %}
+            {% set idle = 'off' %}
+          {% endif %}
+          {% if is_state("switch.core_a8_power", "off") %}
+            {% set idle = 'off' %}
+          {% endif %}
+          {% if is_state("switch.core_a8_mains", "off") %}
+            {% set idle = 'off' %}
+          {% endif %}
+          {{ idle }}
+      - name: "Core A8 Min Temp"
+        state: >
+          {% set min = 190 %}
+          {% if (states("sensor.core_a8_tool_0_temperature") | float(0)) > min and is_state("binary_sensor.core_a8_idle", "on") %}
+            on
+          {% else %}
+            off
+          {% endif %}
 
 switch:
   - platform: template
@@ -143,19 +143,19 @@ automation:
     trigger:
       - platform: state
         entity_id: input_boolean.core_a8_file_origin_local
-        to: 'on'
-        id: 'local'
+        to: "on"
+        id: "local"
       - platform: state
         entity_id: input_boolean.core_a8_file_origin_sd
-        to: 'on'
-        id: 'sd'
+        to: "on"
+        id: "sd"
       - platform: homeassistant
         event: start
-        id: 'local'
+        id: "local"
       - platform: state
         entity_id: sensor.core_a8_print_status
-        from: 'unavailable'
-        id: 'local'
+        from: "unavailable"
+        id: "local"
     action:
       - choose:
           - conditions:

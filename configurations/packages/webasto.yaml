@@ -32,6 +32,28 @@
 ###########################################
 
 automation:
+  - id: webastoOffNearingZone
+    alias: Auto - Webasto - Turn Off When Getting Near Zone
+    description: ""
+    trigger:
+      - platform: numeric_state
+        entity_id: proximity.malene_home
+        below: "15"
+    condition:
+      - condition: state
+        entity_id: proximity.malene_home
+        state: towards
+        attribute: dir_of_travel
+      - condition: state
+        entity_id: switch.webasto
+        state: "on"
+    action:
+      - service: shell_command.parsehub_run
+        data_template:
+          token: !secret token_webasto
+          command: "off"
+    mode: single
+
   - alias: Auto - Webasto - Parsehub - Update State
     id: webastoUpdateState
     description: Triggers update thru Parsehub
@@ -133,7 +155,7 @@ automation:
       - service: shell_command.parsehub_run
         data_template:
           token: !secret token_webasto
-          command: 'on'
+          command: "on"
     mode: single
 
 rest:
@@ -189,43 +211,43 @@ rest:
 
 template:
   - sensor:
-    - name: "Webasto Calculated Start"
-      state: >
-        {%- if now().strftime("%H:%M:00") > states("input_datetime.car_departure_time") %}
-          {%- set checkTime = (now() + timedelta(days=1)).strftime("%Y-%m-%d") + " " + states("input_datetime.car_departure_time") %}
-        {%- else %}
-          {%- set checkTime =  now().strftime("%Y-%m-%d") + " " + states("input_datetime.car_departure_time") %}
-        {%- endif %}
-        {% set startManual = strptime(((as_timestamp(checkTime, 0) - (states('sensor.calculated_run_time')|int(0)*60) - (20*60)))|timestamp_custom('%Y-%m-%d %H:%M:%S'), '%Y-%m-%d %H:%M:%S') %}
-        {% set startAuto = strptime(((as_timestamp(state_attr("calendar.heating","start_time"), 0) - (states('sensor.google_travel_time')|int(0)*60) - (states('sensor.calculated_run_time')|int(0)*60) - (20*60))) | timestamp_custom('%Y-%m-%d %H:%M:%S'), '%Y-%m-%d %H:%M:%S') %}
-        {% if states("input_boolean.charge_time_override") == "on" %}
-          {% if checkTime < state_attr("calendar.heating","start_time") %}
-            {{ startManual }}
+      - name: "Webasto Calculated Start"
+        state: >
+          {%- if now().strftime("%H:%M:00") > states("input_datetime.car_departure_time") %}
+            {%- set checkTime = (now() + timedelta(days=1)).strftime("%Y-%m-%d") + " " + states("input_datetime.car_departure_time") %}
+          {%- else %}
+            {%- set checkTime =  now().strftime("%Y-%m-%d") + " " + states("input_datetime.car_departure_time") %}
+          {%- endif %}
+          {% set startManual = strptime(((as_timestamp(checkTime, 0) - (states('sensor.calculated_run_time')|int(0)*60) - (20*60)))|timestamp_custom('%Y-%m-%d %H:%M:%S'), '%Y-%m-%d %H:%M:%S') %}
+          {% set startAuto = strptime(((as_timestamp(state_attr("calendar.heating","start_time"), 0) - (states('sensor.google_travel_time')|int(0)*60) - (states('sensor.calculated_run_time')|int(0)*60) - (20*60))) | timestamp_custom('%Y-%m-%d %H:%M:%S'), '%Y-%m-%d %H:%M:%S') %}
+          {% if states("input_boolean.charge_time_override") == "on" %}
+            {% if checkTime < state_attr("calendar.heating","start_time") %}
+              {{ startManual }}
+            {% else %}
+              {{ startAuto }}
+            {% endif %}
           {% else %}
             {{ startAuto }}
           {% endif %}
-        {% else %}
-          {{ startAuto }}
-        {% endif %}
 
   - sensor:
-    - name: "Next Scheduled Appointment"
-      state: '{{ state_attr("calendar.heating","start_time") }}'
+      - name: "Next Scheduled Appointment"
+        state: '{{ state_attr("calendar.heating","start_time") }}'
 
   - sensor:
-    - name: "Calculated run time"
-      unit_of_measurement: min
-      state: >
-        {% if (states('sensor.webasto_temperature') | float(0)) < (states('input_number.webasto_low_point') | float(0)) %}
-          {% set diff = (states('input_number.webasto_low_point') | float(0)) - (states('sensor.webasto_temperature') | float(0)) %}
-          {% set runTime = 0.05 * diff | round(1) %}
-          {% if runTime < 0.15 %}
+      - name: "Calculated run time"
+        unit_of_measurement: min
+        state: >
+          {% if (states('sensor.webasto_temperature') | float(0)) < (states('input_number.webasto_low_point') | float(0)) %}
+            {% set diff = (states('input_number.webasto_low_point') | float(0)) - (states('sensor.webasto_temperature') | float(0)) %}
             {% set runTime = 0.05 * diff | round(1) %}
-          {% endif %}
-          {{ ((60 * runTime) | int) }}
-        {%else%}
-          0
-        {%endif%}
+            {% if runTime < 0.15 %}
+              {% set runTime = 0.05 * diff | round(1) %}
+            {% endif %}
+            {{ ((60 * runTime) | int) }}
+          {%else%}
+            0
+          {%endif%}
 
 homeassistant:
   customize:
@@ -254,12 +276,12 @@ switch:
           service: shell_command.parsehub_run
           data_template:
             token: !secret token_webasto
-            command: 'on'
+            command: "on"
         turn_off:
           service: shell_command.parsehub_run
           data_template:
             token: !secret token_webasto
-            command: 'off'
+            command: "off"
 
 input_datetime:
   webasto_calculated_departure_time:

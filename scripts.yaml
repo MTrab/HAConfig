@@ -85,7 +85,10 @@ turn_on_webasto:
   - condition: state
     entity_id: switch.webasto
     state: 'off'
-  - service: shell_command.webasto_on
+  - service: shell_command.parsehub_run
+    data_template:
+      token: !secret token_webasto
+      command: 'on'
   mode: single
   icon: mdi:radiator
 staa_position:

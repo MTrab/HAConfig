@@ -4,32 +4,3 @@
       friendly_name: "Elpris tomorrow available"
       #AGR - Indsæt din nordpool sensor her for at vide om morgendagens priser er tilgængelige 
       value_template: "{{ state_attr('sensor.energi_data_service_west_of_the_great_belt', 'tomorrow_valid') }}"
-
-# - platform: nordpool
-#   VAT: True
-#   low_price_cutoff: 0.95
-#   region: "DK1"
-#   precision: 3 
-#   price_type: kWh
-#   friendly_name: "Nordpool Elpris"
-  # additional_costs: '{% set s = {
-  #   "trans_nettarif": 0.06125,
-  #   "systemtarif": 0.07625,
-  #   "balancetarif_forbrug": 0.002875,
-  #   "pso_tarif": 0.00,
-  #   "elafgift": 1.12875,
-  #   "nettarif_c_time_lavlast": 0.1315,
-  #   "nettarif_c_time_spidslast": 0.425,
-  #   "abonnement_net": 0.00,
-  #   "eltillaeg_ellev": 0.00,
-  #   "abonnement_ellev": 0.00
-  #   } %}
-  #   {% if now().month >= 10 or now().month <4 %}
-  #     {% if now().hour >=17 and now().hour <20 %}
-  #       {{s.trans_nettarif+s.systemtarif+s.balancetarif_forbrug+s.pso_tarif+s.elafgift+s.nettarif_c_time_spidslast+s.abonnement_net+s.eltillaeg_ellev+s.abonnement_ellev}}
-  #     {% else %}
-  #       {{s.trans_nettarif+s.systemtarif+s.balancetarif_forbrug+s.pso_tarif+s.elafgift+s.nettarif_c_time_lavlast+s.abonnement_net+s.eltillaeg_ellev+s.abonnement_ellev}}
-  #     {% endif %}
-  #   {% else %}
-  #       {{s.trans_nettarif+s.systemtarif+s.balancetarif_forbrug+s.pso_tarif+s.elafgift+s.nettarif_c_time_lavlast+s.abonnement_net+s.eltillaeg_ellev+s.abonnement_ellev}}
-  #   {% endif %}'

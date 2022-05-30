@@ -15,7 +15,7 @@ sensor:
         value_template: >
           {{ ((as_timestamp(states('sensor.cert_expiry_timestamp_home_trab_dk'), 0) - as_timestamp(states.sensor.date.last_updated, 0)) / 86400) | int }}
         icon_template: >-
-          {% if ((as_timestamp(states('sensor.cert_expiry_timestamp_home_trab_dk'), 0) - as_timestamp(states.sensor.date.last_updated), 0) / 86400) | int > 31 %}
+          {% if (as_timestamp(states('sensor.cert_expiry_timestamp_home_trab_dk'), 0) - as_timestamp(states.sensor.date.last_updated, 0) / 86400) | int > 31 %}
             mdi:check
           {% else %}
             mdi:alert-octagram
@@ -25,7 +25,7 @@ sensor:
         value_template: >
           {{ as_timestamp(states('sensor.cert_expiry_timestamp_home_trab_dk'), 0) | timestamp_custom('%d/%m-%Y') }}
         icon_template: >-
-          {% if ((as_timestamp(states('sensor.cert_expiry_timestamp_home_trab_dk'), 0) - as_timestamp(states.sensor.date.last_updated), 0) / 86400) | int > 31 %}
+          {% if (as_timestamp(states('sensor.cert_expiry_timestamp_home_trab_dk'), 0) - as_timestamp(states.sensor.date.last_updated, 0) / 86400) | int > 31 %}
             mdi:certificate
           {% else %}
             mdi:certificate-outline
@@ -37,7 +37,7 @@ sensor:
         value_template: >
           {{ ((as_timestamp(states('sensor.cert_expiry_timestamp_admin_trab_dk'), 0) - as_timestamp(states.sensor.date.last_updated, 0)) / 86400) | int }}
         icon_template: >-
-          {% if ((as_timestamp(states('sensor.cert_expiry_timestamp_admin_trab_dk'), 0) - as_timestamp(states.sensor.date.last_updated), 0) / 86400) | int > 31 %}
+          {% if (as_timestamp(states('sensor.cert_expiry_timestamp_admin_trab_dk'), 0) - as_timestamp(states.sensor.date.last_updated, 0) / 86400) | int > 31 %}
             mdi:check
           {% else %}
             mdi:alert-octagram
@@ -47,7 +47,7 @@ sensor:
         value_template: >
           {{ as_timestamp(states('sensor.cert_expiry_timestamp_admin_trab_dk'), 0) | timestamp_custom('%d/%m-%Y') }}
         icon_template: >-
-          {% if ((as_timestamp(states('sensor.cert_expiry_timestamp_admin_trab_dk'), 0) - as_timestamp(states.sensor.date.last_updated), 0) / 86400) | int > 31 %}
+          {% if (as_timestamp(states('sensor.cert_expiry_timestamp_admin_trab_dk'), 0) - as_timestamp(states.sensor.date.last_updated, 0) / 86400) | int > 31 %}
             mdi:certificate
           {% else %}
             mdi:certificate-outline

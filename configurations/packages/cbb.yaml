@@ -1,109 +1,109 @@
-###########################################
-# Fetch CBB usage data from personal site #
-#                                         #
-# Depending on ParseHub calls             #
-###########################################
+# ###########################################
+# # Fetch CBB usage data from personal site #
+# #                                         #
+# # Depending on ParseHub calls             #
+# ###########################################
 
-automation:
-  - alias: Auto - CBB - Parsehub - Update State
-    id: cbbUpdateState
-    description: Triggers update thru Parsehub
-    trigger:
-      - platform: time_pattern
-        hours: /1
-    action:
-      - service: shell_command.parsehub_run
-        data_template:
-          token: !secret token_cbb
-    mode: single
+# automation:
+#   - alias: Auto - CBB - Parsehub - Update State
+#     id: cbbUpdateState
+#     description: Triggers update thru Parsehub
+#     trigger:
+#       - platform: time_pattern
+#         hours: /1
+#     action:
+#       - service: shell_command.parsehub_run
+#         data_template:
+#           token: !secret token_cbb
+#     mode: single
 
-  - alias: Auto - CBB - Parsehub - Fetch JSON after run
-    id: cbbFetchState
-    description: Fetch JSON data after finished run
-    trigger:
-      - platform: webhook
-        webhook_id: !secret webhook_cbb
-    action:
-      - choose:
-          - conditions:
-              - condition: template
-                value_template: '{{ trigger.data.data_ready == "1" }}'
-            sequence:
-              - service: shell_command.parsehub_fetch
-                data_template:
-                  token: !secret token_cbb
-                  filename: 'cbb.json'
-    mode: restart
+#   - alias: Auto - CBB - Parsehub - Fetch JSON after run
+#     id: cbbFetchState
+#     description: Fetch JSON data after finished run
+#     trigger:
+#       - platform: webhook
+#         webhook_id: !secret webhook_cbb
+#     action:
+#       - choose:
+#           - conditions:
+#               - condition: template
+#                 value_template: '{{ trigger.data.data_ready == "1" }}'
+#             sequence:
+#               - service: shell_command.parsehub_fetch
+#                 data_template:
+#                   token: !secret token_cbb
+#                   filename: 'cbb.json'
+#     mode: restart
 
-sensor:
-  - platform: file
-    file_path: /config/www/rest/cbb.json
-    name: 'CBB Talk'
-    unit_of_measurement: 'min'
-    value_template: >
-      {% if 'Talk' in value_json %}
-        {% set Talk = value_json.Talk.replace(" time ","|").replace(" timer ","|").replace("min.","").split("|") %}
-        {% if (Talk | length) > 1 %}
-          {{ ((Talk[0] | int(false)) * 60) + (Talk[1] | int(false)) }}
-        {% else %}
-          {{ (Talk[0] | int(0)) }}
-        {% endif %}
-      {% else %}
-        {{ states("sensor.cbb_talk") }}
-      {% endif %}
+# sensor:
+#   - platform: file
+#     file_path: /config/www/rest/cbb.json
+#     name: 'CBB Talk'
+#     unit_of_measurement: 'min'
+#     value_template: >
+#       {% if 'Talk' in value_json %}
+#         {% set Talk = value_json.Talk.replace(" time ","|").replace(" timer ","|").replace("min.","").split("|") %}
+#         {% if (Talk | length) > 1 %}
+#           {{ ((Talk[0] | int(false)) * 60) + (Talk[1] | int(false)) }}
+#         {% else %}
+#           {{ (Talk[0] | int(0)) }}
+#         {% endif %}
+#       {% else %}
+#         {{ states("sensor.cbb_talk") }}
+#       {% endif %}
 
-  - platform: file
-    file_path: /config/www/rest/cbb.json
-    name: 'CBB Data DK'
-    unit_of_measurement: 'MB'
-    value_template: >
-      {% if 'DataDK' in value_json %}
-        {% if "Bytes" in value_json.DataDK %}
-          {{ ((value_json.DataDK.replace(",",".").replace("Bytes","") | float) / 1024 | round(2)) }}
-        {% elif "MB" in value_json.DataDK %}
-          {{ (value_json.DataDK.replace(",",".").replace("MB","") | float)}}
-        {% elif "GB" in value_json.DataDK %}
-          {{ (value_json.DataDK.replace(",",".").replace("GB","") | float) * 1024}}
-        {% endif %}
-      {% else %}
-        {{ states("sensor.cbb_data_dk") }}
-      {% endif %}
+#   - platform: file
+#     file_path: /config/www/rest/cbb.json
+#     name: 'CBB Data DK'
+#     unit_of_measurement: 'MB'
+#     value_template: >
+#       {% if 'DataDK' in value_json %}
+#         {% if "Bytes" in value_json.DataDK %}
+#           {{ ((value_json.DataDK.replace(",",".").replace("Bytes","") | float) / 1024 | round(2)) }}
+#         {% elif "MB" in value_json.DataDK %}
+#           {{ (value_json.DataDK.replace(",",".").replace("MB","") | float)}}
+#         {% elif "GB" in value_json.DataDK %}
+#           {{ (value_json.DataDK.replace(",",".").replace("GB","") | float) * 1024}}
+#         {% endif %}
+#       {% else %}
+#         {{ states("sensor.cbb_data_dk") }}
+#       {% endif %}
 
-  - platform: file
-    file_path: /config/www/rest/cbb.json
-    name: 'CBB Data EU'
-    unit_of_measurement: 'MB'
-    value_template: >
-      {% if 'DataEU' in value_json %}
-        {% if "Bytes" in value_json.DataEU %}
-          {{ ((value_json.DataEU.replace(",",".").replace("Bytes","") | float) / 1024 | round(2)) }}
-        {% elif "MB" in value_json.DataEU %}
-          {{ (value_json.DataEU.replace(",",".").replace("MB","") | float)}}
-        {% elif "GB" in value_json.DataEU %}
-          {{ (value_json.DataEU.replace(",",".").replace("GB","") | float) * 1024}}
-        {% endif %}
-      {% else %}
-        {{ states("sensor.cbb_data_eu") }}
-      {% endif %}
+#   - platform: file
+#     file_path: /config/www/rest/cbb.json
+#     name: 'CBB Data EU'
+#     unit_of_measurement: 'MB'
+#     value_template: >
+#       {% if 'DataEU' in value_json %}
+#         {% if "Bytes" in value_json.DataEU %}
+#           {{ ((value_json.DataEU.replace(",",".").replace("Bytes","") | float) / 1024 | round(2)) }}
+#         {% elif "MB" in value_json.DataEU %}
+#           {{ (value_json.DataEU.replace(",",".").replace("MB","") | float)}}
+#         {% elif "GB" in value_json.DataEU %}
+#           {{ (value_json.DataEU.replace(",",".").replace("GB","") | float) * 1024}}
+#         {% endif %}
+#       {% else %}
+#         {{ states("sensor.cbb_data_eu") }}
+#       {% endif %}
 
-  - platform: file
-    file_path: /config/www/rest/cbb.json
-    name: 'CBB Messages'
-    unit_of_measurement: 'stk'
-    value_template: >
-      {% if 'Messages' in value_json %}
-        {{ value_json.Messages.replace("stk.","") }}
-      {% else %}
-        {{ states("sensor.cbb_messages") }}
-      {% endif %}
+#   - platform: file
+#     file_path: /config/www/rest/cbb.json
+#     name: 'CBB Messages'
+#     unit_of_measurement: 'stk'
+#     value_template: >
+#       {% if 'Messages' in value_json %}
+#         {{ value_json.Messages.replace("stk.","") }}
+#       {% else %}
+#         {{ states("sensor.cbb_messages") }}
+#       {% endif %}
 
-  - platform: file
-    file_path: /config/www/rest/cbb.json
-    name: 'CBB Extra'
-    unit_of_measurement: 'kr'
-    value_template: >
-      {% if 'Extra' in value_json %}
-        {{ value_json.Extra.replace(",",".").replace("kr.","") }}
-      {% else %}
-        {{ states("sensor.cbb_extra") }}
-      {% endif %}
+#   - platform: file
+#     file_path: /config/www/rest/cbb.json
+#     name: 'CBB Extra'
+#     unit_of_measurement: 'kr'
+#     value_template: >
+#       {% if 'Extra' in value_json %}
+#         {{ value_json.Extra.replace(",",".").replace("kr.","") }}
+#       {% else %}
+#         {{ states("sensor.cbb_extra") }}
+#       {% endif %}

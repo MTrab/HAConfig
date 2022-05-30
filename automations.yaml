@@ -85,7 +85,7 @@
   trigger:
   - platform: state
     to: home
-    entity_id: person.morten_trab
+    entity_id: person.malene_trab
   - platform: state
     entity_id: device_tracker.kia_niro
     to: home
@@ -196,7 +196,7 @@
   - choose:
     - conditions:
       - condition: template
-        value_template: '{{ states(''person.morten_trab'') != ''home'' }}'
+        value_template: '{{ states(''person.malene_trab'') != ''home'' }}'
       sequence:
       - service: notify.mobile_app_mtopnord2
         data:
@@ -398,7 +398,7 @@
       - type: is_power
         condition: device
         device_id: 0d38e72afcf2f15fd920c0edcaa4b47d
-        entity_id: sensor.kaffemaskine_electric_w
+        entity_id: sensor.coffeemaker_switch_electric_consumption_w
         domain: sensor
         below: 2.5
       sequence:
@@ -618,12 +618,12 @@
   - type: smoke
     platform: device
     device_id: e322f928712824c67f5124a8f16de3ab
-    entity_id: binary_sensor.smoke_livingroom_smoke_alarm_smoke_detected
+    entity_id: binary_sensor.smoke_bedroom_smoke_alarm_smoke_detected
     domain: binary_sensor
   - type: smoke
     platform: device
     device_id: 159c7c744b771fc0d96223790acba2ff
-    entity_id: binary_sensor.smoke_bedroom_smoke_alarm_smoke_detected_2
+    entity_id: binary_sensor.smoke_livingroom_smoke_alarm_smoke_detected
     domain: binary_sensor
   condition: []
   action:
@@ -787,7 +787,7 @@
   description: ''
   trigger:
   - platform: state
-    entity_id: person.morten_trab
+    entity_id: person.malene_trab
     to: home
   condition:
   - condition: time
@@ -1050,24 +1050,6 @@
       logbook_message_later: Postpone Morning Medication Reminder
       logbook_message_skip: Morning Medication Reminder Skipped
       ask_later_wait_time: 60
-- id: '1638363003788'
-  alias: Auto - Webasto - Turn Off When Getting Near Zone
-  description: ''
-  trigger:
-  - platform: numeric_state
-    entity_id: proximity.morten_home
-    below: '15'
-  condition:
-  - condition: state
-    entity_id: proximity.morten_home
-    state: towards
-    attribute: dir_of_travel
-  - condition: state
-    entity_id: switch.webasto
-    state: 'on'
-  action:
-  - service: shell_command.webasto_off
-  mode: single
 - id: '1640077919167'
   alias: Notification - Prepare dinner
   description: ''
@@ -1247,7 +1229,7 @@
     entity_id: sensor.google_sovevaerelse_alarms
     state: unavailable
   - condition: state
-    entity_id: person.morten_trab
+    entity_id: person.malene_trab
     state: home
   - condition: state
     entity_id: binary_sensor.workday_tomorrow
@@ -1474,7 +1456,10 @@
       hours: 0
       minutes: 1
       seconds: 0
-  condition: []
+  condition:
+  - condition: state
+    entity_id: input_boolean.summer_mode
+    state: 'off'
   action:
   - choose:
     - conditions:
@@ -1648,12 +1633,13 @@
   description: ''
   trigger:
   - platform: state
-    entity_id: group.any_home
+    entity_id:
+    - group.any_home
     to: not_home
     from: home
     for:
-      hours: 1
-      minutes: 0
+      hours: 0
+      minutes: 30
       seconds: 0
     id: run
   - platform: state
@@ -1662,9 +1648,10 @@
     to: home
     id: dock
   - platform: template
-    value_template: "{% set direction = trigger.to_state.attributes.dir_of_travel\
-      \ %}\n{% set distance = trigger.to_state.state %}\n\n{% if direction == towards\
-      \ and distance < 15 %}\n true\n{% else %}\n false\n{% endif %}"
+    value_template: "{% if trigger %}\n  {% set direction = trigger.to_state.attributes.dir_of_travel\
+      \ %}\n  {% set distance = trigger.to_state.state %}\n\n  {% if direction ==\
+      \ towards and distance < 15 %}\n    true\n  {% else %}\n    false\n  {% endif\
+      \ %}\n{% endif %}"
     id: dock
   condition: []
   action:
@@ -1684,5 +1671,56 @@
       domain: vacuum
       entity_id: vacuum.wall_e
       type: dock
-  mode: queued
-  max: 5
+  mode: restart
+- id: '1653227679389'
+  alias: Climate - Summer Mode
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - input_boolean.summer_mode
+    from: 'off'
+    to: 'on'
+    id: 'on'
+  - platform: state
+    entity_id:
+    - input_boolean.summer_mode
+    from: 'on'
+    to: 'off'
+    id: 'off'
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: 'on'
+      sequence:
+      - service: climate.turn_off
+        data: {}
+        target:
+          entity_id:
+          - climate.kokken
+          - climate.spisestue
+          - climate.stue
+          - climate.bedroom
+          - climate.hall
+          - climate.toilet
+    - conditions:
+      - condition: trigger
+        id: 'off'
+      sequence:
+      - service: climate.set_hvac_mode
+        data:
+          hvac_mode: auto
+        target:
+          entity_id:
+          - climate.toilet
+          - climate.hall
+      - service: climate.turn_on
+        data: {}
+        target:
+          entity_id:
+          - climate.kokken
+          - climate.spisestue
+          - climate.stue
+  mode: single

@@ -1,10 +1,12 @@
 """Support for Energi Data Service sensor."""
+from __future__ import annotations
+
 from collections import namedtuple
 from datetime import datetime
 import logging
 
 from homeassistant.components import sensor
-from homeassistant.components.sensor import SensorStateClass
+from homeassistant.components.sensor import SensorEntity, SensorStateClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_NAME, DEVICE_CLASS_MONETARY
 from homeassistant.core import HomeAssistant, callback
@@ -16,8 +18,9 @@ from homeassistant.util import dt as dt_utils, slugify as util_slugify
 from jinja2 import pass_context
 
 from .const import (
-    AREA_MAP,
+    CENT_MULTIPLIER,
     CONF_AREA,
+    CONF_CURRENCY_IN_CENT,
     CONF_DECIMALS,
     CONF_PRICETYPE,
     CONF_TEMPLATE,
@@ -27,7 +30,6 @@ from .const import (
     UNIT_TO_MULTIPLIER,
     UPDATE_EDS,
 )
-from .entity import EnergidataserviceEntity
 from .utils.regionhandler import RegionHandler
 
 _LOGGER = logging.getLogger(__name__)
@@ -62,15 +64,20 @@ def _setup(hass, config: ConfigEntry, add_devices):
     _LOGGER.debug("Region: %s", region.name)
     _LOGGER.debug("Region description: %s", region.description)
     _LOGGER.debug("Region currency %s", region.currency.name)
+    _LOGGER.debug(
+        "Show in cent: %s", config.options.get(CONF_CURRENCY_IN_CENT) or False
+    )
     _LOGGER.debug("Domain %s", DOMAIN)
 
     if region.currency.name != hass.config.currency:
         _LOGGER.warning(
-            "Official currency for %s is %s but Home Assistant reports %s from config",
+            "Official currency for %s is %s but Home Assistant reports %s from config and will show prices in %s",  # pylint: disable=line-too-long
             region.country,
             region.currency.name,
             hass.config.currency,
+            hass.config.currency,
         )
+        region.set_region(area, hass.config.currency)
 
     sens = EnergidataserviceSensor(config, hass, region)
 
@@ -115,19 +122,19 @@ def _async_migrate_unique_id(hass: HomeAssistant, entity: str, new_id: str) -> N
         _LOGGER.debug("- Check didn't find anything")
 
 
-class EnergidataserviceSensor(EnergidataserviceEntity):
+class EnergidataserviceSensor(SensorEntity):
     """Representation of Energi Data Service data."""
 
     def __init__(
         self, config: ConfigEntry, hass: HomeAssistant, region: RegionHandler
     ) -> None:
         """Initialize Energidataservice sensor."""
+        self._attr_state_class = SensorStateClass.MEASUREMENT
         self._config = config
         self.region = region
         self._entry_id = config.entry_id
-        self._area = (
-            region.description
-        )  # config.options.get(CONF_AREA) or config.data.get(CONF_AREA)
+        self._cent = config.options.get(CONF_CURRENCY_IN_CENT) or False
+        self._area = region.description
         self._currency = hass.config.currency
         self._price_type = config.options.get(CONF_PRICETYPE) or config.data.get(
             CONF_PRICETYPE
@@ -195,7 +202,10 @@ class EnergidataserviceSensor(EnergidataserviceEntity):
             _LOGGER.debug("No sensor data found - calling update")
             await self._api.update()
             # self._api.today =
-            await self._hass.async_add_executor_job(self._format_list, self._api.today)
+            if not self._api.today is None:
+                await self._hass.async_add_executor_job(
+                    self._format_list, self._api.today
+                )
 
         if self.tomorrow_valid:
             if not self._api.tomorrow_calculated:
@@ -209,22 +219,23 @@ class EnergidataserviceSensor(EnergidataserviceEntity):
             self._tomorrow_raw = None
             self._api.tomorrow_calculated = False
 
-        if not self._api.today_calculated:
+        if not self._api.today_calculated and not self._api.today is None:
             await self._hass.async_add_executor_job(self._format_list, self._api.today)
 
         # Updates price for this hour.
         self._get_current_price()
 
         # Update attributes
-        self._today_raw = self._add_raw(self._api.today)
+        if self._api.today:
+            self._today_raw = self._add_raw(self._api.today)
 
-        self._today_min = self._get_specific("min", self._api.today)
-        self._today_max = self._get_specific("max", self._api.today)
-        self._tomorrow_min = self._get_specific("min", self._api.tomorrow)
-        self._tomorrow_max = self._get_specific("max", self._api.tomorrow)
-        self._today_mean = round(
-            self._get_specific("mean", self._api.today), self._decimals
-        )
+            self._today_min = self._get_specific("min", self._api.today)
+            self._today_max = self._get_specific("max", self._api.today)
+            self._today_mean = round(
+                self._get_specific("mean", self._api.today), self._decimals
+            )
+            self._tomorrow_min = self._get_specific("min", self._api.tomorrow)
+            self._tomorrow_max = self._get_specific("max", self._api.tomorrow)
 
         if self.tomorrow_valid:
             self._tomorrow_mean = round(
@@ -245,15 +256,20 @@ class EnergidataserviceSensor(EnergidataserviceEntity):
             .replace(minute=0)
             .isoformat()
         )
-        _LOGGER.debug(self._api.today)
+        # _LOGGER.debug(self._api.today)
         if self._api.today:
             for dataset in self._api.today:
                 if dataset.hour == current_state_time:
                     self._state = dataset.price
-                    _LOGGER.debug("Current price updated to %f", self._state)
+                    _LOGGER.debug(
+                        "Current price updated to %f for %s",
+                        self._state,
+                        self.region.region,
+                    )
                     break
         else:
-            _LOGGER.debug("No data found, can't update _state")
+            self._state = None
+            _LOGGER.debug("No data found for %s", self.region.region)
 
     async def async_added_to_hass(self):
         """Connect to dispatcher listening for entity data notifications."""
@@ -298,8 +314,8 @@ class EnergidataserviceSensor(EnergidataserviceEntity):
             "current_price": self.state,
             "unit": self.unit,
             "currency": self._currency,
-            "area": self._area,
-            "area_code": AREA_MAP[self._area],
+            "region": self._area,
+            "region_code": self.region.region,
             "tomorrow_valid": self.tomorrow_valid,
             "next_data_update": self._api.next_data_refresh,
             "today": self.today,
@@ -312,12 +328,17 @@ class EnergidataserviceSensor(EnergidataserviceEntity):
             "tomorrow_min": self.tomorrow_min,
             "tomorrow_max": self.tomorrow_max,
             "tomorrow_mean": self.tomorrow_mean,
+            "attribution": f"Data sourced from {self._api.source}",
         }
 
     @property
     def unit_of_measurement(self):
         """Return the unit of measurement."""
-        return f"{self.region.currency.name}/{self._price_type}"
+        return (
+            f"{self.region.currency.cent}/{self._price_type}"
+            if self._cent
+            else f"{self.region.currency.name}/{self._price_type}"
+        )
 
     @property
     def device_class(self):
@@ -329,7 +350,7 @@ class EnergidataserviceSensor(EnergidataserviceEntity):
         return {
             "identifiers": {(DOMAIN, self.unique_id)},
             "name": self.name,
-            "model": f"Area code: {AREA_MAP[self._area]}",
+            "model": f"Region code: {self.region.region}",
             "manufacturer": "Energi Data Service",
         }
 
@@ -339,8 +360,10 @@ class EnergidataserviceSensor(EnergidataserviceEntity):
         Returns:
             list: sorted list where today[0] is the price of hour 00.00 - 01.00
         """
-
-        return [i.price for i in self._api.today if i]
+        if not self._api.today is None:
+            return [i.price for i in self._api.today if i]
+        else:
+            return None
 
     @property
     def tomorrow(self) -> list:
@@ -374,6 +397,11 @@ class EnergidataserviceSensor(EnergidataserviceEntity):
     def raw_tomorrow(self):
         """Return the raw array with tomorrows prices."""
         return self._tomorrow_raw
+
+    @property
+    def state_class(self) -> str:
+        """Return the state class of the sensor."""
+        return self._attr_state_class
 
     @property
     def tomorrow_valid(self):
@@ -410,11 +438,6 @@ class EnergidataserviceSensor(EnergidataserviceEntity):
         """Return mean value for tomorrow."""
         return self._tomorrow_mean
 
-    @property
-    def state_class(self) -> SensorStateClass.MEASUREMENT:
-        """Return the state class of this entity."""
-        return SensorStateClass.MEASUREMENT
-
     def _calculate(self, value=None, fake_dt=None) -> float:
         """Do price calculations"""
         if value is None:
@@ -422,7 +445,7 @@ class EnergidataserviceSensor(EnergidataserviceEntity):
 
         # Convert currency from EUR
         if self._currency != "EUR":
-            value = self._api.converter.convert(value, self._currency)
+            value = self.region.currency.convert(value, self._currency)
 
         # Used to inject the current hour.
         # so template can be simplified using now
@@ -445,6 +468,9 @@ class EnergidataserviceSensor(EnergidataserviceEntity):
             price = template_value + value / UNIT_TO_MULTIPLIER[self._price_type] * (
                 float(1 + self._vat)
             )
+
+        if self._cent:
+            price = price * CENT_MULTIPLIER
 
         return round(price, self._decimals)
 
@@ -470,7 +496,12 @@ class EnergidataserviceSensor(EnergidataserviceEntity):
             self._api.today_calculated = True
             self._api.today = formatted_pricelist
 
-        _LOGGER.debug("Calculation for %s took %s seconds", _calc_for, _ttf)
+        _LOGGER.debug(
+            "Calculation for %s in %s took %s seconds",
+            _calc_for,
+            self.region.region,
+            _ttf,
+        )
 
     @staticmethod
     def _get_specific(datatype: str, data: list):

@@ -1,6 +1,6 @@
 - platform: statistics
   name: Køleskab Temperatur
-  entity_id: sensor.temperature_2
+  entity_id: sensor.temperature_fridge_temperature
   state_characteristic: mean
   max_age:
     minutes: 30
