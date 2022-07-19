@@ -6,13 +6,17 @@ from typing import Any
 
 import voluptuous as vol
 
+from homeassistant.components.application_credentials import (
+    ClientCredential,
+    async_import_client_credential,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_CLIENT_ID, CONF_CLIENT_SECRET
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import config_entry_oauth2_flow, config_validation as cv
 
-from . import api, config_flow
-from .const import DOMAIN, OAUTH2_AUTHORIZE, OAUTH2_TOKEN, PLAYERS, SESSION
+from .const import DOMAIN, PLAYERS, SESSION
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -39,16 +43,17 @@ async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
     if DOMAIN not in config:
         return True
 
-    config_flow.OAuth2FlowHandler.async_register_implementation(
+    await async_import_client_credential(
         hass,
-        api.CustomHeadersLocalOAuth2Implementation(
-            hass,
-            DOMAIN,
+        DOMAIN,
+        ClientCredential(
             config[DOMAIN][CONF_CLIENT_ID],
             config[DOMAIN][CONF_CLIENT_SECRET],
-            OAUTH2_AUTHORIZE,
-            OAUTH2_TOKEN,
         ),
+    )
+
+    _LOGGER.warning(
+        "Application Credentials have been imported and can be removed from configuration.yaml"
     )
 
     return True
@@ -67,12 +72,30 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     url = "https://api.ws.sonos.com/control/api/v1/households"
     result = await session.async_request("get", url)
+    if result.status >= 400:
+        body = await result.text()
+        _LOGGER.error(
+            "Household request failed (%s): %s",
+            result.status,
+            body,
+        )
+        raise ConfigEntryNotReady
+
     json = await result.json()
     households = json.get("households")
 
     async def async_get_available_players(household):
         url = f"https://api.ws.sonos.com/control/api/v1/households/{household}/groups"
         result = await session.async_request("get", url)
+        if result.status >= 400:
+            body = await result.text()
+            _LOGGER.error(
+                "Requesting devices failed (%s): %s",
+                result.status,
+                body,
+            )
+            raise ConfigEntryNotReady
+
         json = await result.json()
         _LOGGER.debug("Result: %s", json)
         all_players = json["players"]

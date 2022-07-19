@@ -1,0 +1,38 @@
+sensor:
+  - platform: statistics
+    name: Average energy price last 30d mean
+    entity_id: sensor.energi_data_service_west_of_the_great_belt
+    state_characteristic: mean
+    sampling_size: 760
+    max_age:
+      days: 30
+
+  - platform: statistics
+    name: Energy price last 30d (std)
+    entity_id: sensor.energi_data_service_west_of_the_great_belt
+    state_characteristic: standard_deviation
+    sampling_size: 512
+    max_age:
+      days: 30
+
+  - platform: statistics
+    name: Energy price last 30d (mean)
+    entity_id: sensor.energi_data_service_west_of_the_great_belt
+    state_characteristic: mean
+    sampling_size: 512
+    max_age:
+      days: 30
+
+template:
+  - sensor:
+    - name: Historic Energy Price Percentiles
+      unique_id: historic_energy_price_percentiles
+      state: OK
+      attributes:
+        25th: "{{ states('sensor.average_energy_price_last_30d_mean') | float + states('sensor.energy_price_last_30d_std') | float * -0.63 }}"
+        50th: "{{ states('sensor.average_energy_price_last_30d_mean') | float + states('sensor.energy_price_last_30d_std') | float * 0 }}"
+        75th: "{{ states('sensor.average_energy_price_last_30d_mean') | float + states('sensor.energy_price_last_30d_std') | float * 0.57 }}"
+        90th: "{{ states('sensor.average_energy_price_last_30d_mean') | float + states('sensor.energy_price_last_30d_std') | float * 1.29 }}"
+        95th: "{{ states('sensor.average_energy_price_last_30d_mean') | float + states('sensor.energy_price_last_30d_std') | float * 1.65 }}"
+        99th: "{{ states('sensor.average_energy_price_last_30d_mean') | float + states('sensor.energy_price_last_30d_std') | float * 2.33 }}"
+        100th: "{{ states('sensor.average_energy_price_last_30d_mean') | float + states('sensor.energy_price_last_30d_std') | float * 3.9 }}"

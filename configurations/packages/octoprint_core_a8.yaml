@@ -228,6 +228,19 @@ automation:
           payload_template: 'M220 S{{ states("input_number.core_a8_feedrate") }}'
     mode: single
 
+  - alias: "Auto - Core A8 - Set Flow Rate on power on"
+    id: coreA8SetFeedRate
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.core_a8_connected
+        to: 'on'
+    action:
+      - service: input_number.set_value
+        data:
+          entity_id: input_number.core_a8_flow
+          value: 100
+    mode: single
+
 # camera:
 #   - platform: mjpeg
 #     name: Core A8
@@ -235,6 +248,34 @@ automation:
 #     mjpeg_url: !secret octoprint_core_a8_stream
 
 script:
+  # Preheat PLA
+  3dp_core_a8_preheat_pla:
+    alias: 3DP - Core A8 - Preheat PLA
+    sequence:
+      # Set non-blocking bed temp
+      - service: mqtt.publish
+        data:
+          topic: octoprint/core_a8/hassControl/commands
+          payload: "M140 S60"
+      # Set non-blocking nozzle temp
+      - service: mqtt.publish
+        data:
+          topic: octoprint/core_a8/hassControl/commands
+          payload: "M104 S210"
+  # Preheat PETG
+  3dp_core_a8_preheat_petg:
+    alias: 3DP - Core A8 - Preheat PETG
+    sequence:
+      # Set non-blocking bed temp
+      - service: mqtt.publish
+        data:
+          topic: octoprint/core_a8/hassControl/commands
+          payload: "M140 S70"
+      # Set non-blocking nozzle temp
+      - service: mqtt.publish
+        data:
+          topic: octoprint/core_a8/hassControl/commands
+          payload: "M104 S230"
   # Reset UBL script
   3dp_core_a8_ubl:
     alias: 3DP - Core A8 - Reset UBL

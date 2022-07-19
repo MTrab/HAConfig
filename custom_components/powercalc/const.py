@@ -2,9 +2,16 @@
 
 from datetime import timedelta
 
+from homeassistant.backports.enum import StrEnum
 from homeassistant.components.utility_meter.const import DAILY, MONTHLY, WEEKLY
+from homeassistant.const import (
+    STATE_NOT_HOME,
+    STATE_OFF,
+    STATE_STANDBY,
+    STATE_UNAVAILABLE,
+)
 
-MIN_HA_VERSION = "2021.11"
+MIN_HA_VERSION = "2021.12"
 
 DOMAIN = "powercalc"
 DOMAIN_CONFIG = "config"
@@ -13,8 +20,9 @@ DATA_CALCULATOR_FACTORY = "calculator_factory"
 DATA_CONFIGURED_ENTITIES = "configured_entities"
 DATA_DISCOVERED_ENTITIES = "discovered_entities"
 DATA_DOMAIN_ENTITIES = "domain_entities"
+DATA_USED_UNIQUE_IDS = "used_unique_ids"
 
-DUMMY_ENTITY_ID = "dummy"
+DUMMY_ENTITY_ID = "sensor.dummy"
 
 CONF_AREA = "area"
 CONF_CALIBRATE = "calibrate"
@@ -31,6 +39,7 @@ CONF_ENERGY_SENSOR_ID = "energy_sensor_id"
 CONF_ENERGY_SENSOR_NAMING = "energy_sensor_naming"
 CONF_ENERGY_SENSOR_FRIENDLY_NAMING = "energy_sensor_friendly_naming"
 CONF_ENERGY_SENSOR_PRECISION = "energy_sensor_precision"
+CONF_ENERGY_SENSOR_UNIT_PREFIX = "energy_sensor_unit_prefix"
 CONF_FIXED = "fixed"
 CONF_GROUP = "group"
 CONF_GAMMA_CURVE = "gamma_curve"
@@ -58,7 +67,9 @@ CONF_VALUE = "value"
 CONF_VOLTAGE = "voltage"
 CONF_WLED = "wled"
 CONF_STATES_POWER = "states_power"
+CONF_START_TIME = "start_time"
 CONF_STANDBY_POWER = "standby_power"
+CONF_CALCULATION_ENABLED_CONDITION = "calculation_enabled_condition"
 CONF_DISABLE_STANDBY_POWER = "disable_standby_power"
 CONF_CUSTOM_MODEL_DIRECTORY = "custom_model_directory"
 CONF_UTILITY_METER_OFFSET = "utility_meter_offset"
@@ -75,6 +86,15 @@ ENERGY_INTEGRATION_METHODS = [
     ENERGY_INTEGRATION_METHOD_RIGHT,
     ENERGY_INTEGRATION_METHOD_TRAPEZODIAL,
 ]
+
+
+class UnitPrefix(StrEnum):
+    """Allowed unit prefixes."""
+
+    NONE = "none"
+    KILO = "k"
+    MEGA = "M"
+
 
 ENTITY_CATEGORY_CONFIG = "config"
 ENTITY_CATEGORY_DIAGNOSTIC = "diagnostic"
@@ -106,6 +126,8 @@ ATTR_IS_GROUP = "is_group"
 ATTR_SOURCE_ENTITY = "source_entity"
 ATTR_SOURCE_DOMAIN = "source_domain"
 
+SERVICE_RESET_ENERGY = "reset_energy"
+
 MODE_DAILY_FIXED_ENERGY = "daily_fixed_energy"
 MODE_LUT = "lut"
 MODE_LINEAR = "linear"
@@ -118,3 +140,5 @@ CALCULATION_MODES = [
     MODE_LUT,
     MODE_WLED,
 ]
+
+OFF_STATES = (STATE_OFF, STATE_NOT_HOME, STATE_STANDBY, STATE_UNAVAILABLE)

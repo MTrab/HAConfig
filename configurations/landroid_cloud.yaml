@@ -1,4 +1,0 @@
-- email: !secret landroid_email
-  password: !secret landroid_pass
-#- email: !secret test_landroid_email
-#  password: !secret test_landroid_pass

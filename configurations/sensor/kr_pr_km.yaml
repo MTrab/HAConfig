@@ -7,6 +7,6 @@
       unit_of_measurement: 'kr'
     kr_km_fuel:
       friendly_name: Kr. pr. km på benzin
-      value_template: '{{ ((states.sensor.ok_95.state.replace(",",".") | float(0)) / (states.sensor.kia_niro_km_l.state | float(0))) | round(2) }}'
+      value_template: '{{ ((states.sensor.ok_blyfri_95.state.replace(",",".") | float(0)) / (states.sensor.kia_niro_km_l.state | float(0))) | round(2) }}'
       device_class: monetary
       unit_of_measurement: 'kr'

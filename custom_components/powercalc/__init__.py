@@ -10,10 +10,12 @@ import voluptuous as vol
 from awesomeversion.awesomeversion import AwesomeVersion
 from homeassistant.components.light import DOMAIN as LIGHT_DOMAIN
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
+from homeassistant.components.switch import DOMAIN as SWITCH_DOMAIN
 from homeassistant.components.utility_meter import DEFAULT_OFFSET, max_28_days
 from homeassistant.components.utility_meter.const import METER_TYPES
 from homeassistant.const import (
     CONF_ENTITY_ID,
+    CONF_PLATFORM,
     CONF_SCAN_INTERVAL,
     CONF_UNIQUE_ID,
     EVENT_HOMEASSISTANT_STARTED,
@@ -33,6 +35,7 @@ from .const import (
     CONF_ENERGY_SENSOR_FRIENDLY_NAMING,
     CONF_ENERGY_SENSOR_NAMING,
     CONF_ENERGY_SENSOR_PRECISION,
+    CONF_ENERGY_SENSOR_UNIT_PREFIX,
     CONF_POWER_SENSOR_CATEGORY,
     CONF_POWER_SENSOR_FRIENDLY_NAMING,
     CONF_POWER_SENSOR_NAMING,
@@ -44,6 +47,7 @@ from .const import (
     DATA_CONFIGURED_ENTITIES,
     DATA_DISCOVERED_ENTITIES,
     DATA_DOMAIN_ENTITIES,
+    DATA_USED_UNIQUE_IDS,
     DEFAULT_ENERGY_INTEGRATION_METHOD,
     DEFAULT_ENERGY_NAME_PATTERN,
     DEFAULT_ENERGY_SENSOR_PRECISION,
@@ -59,9 +63,10 @@ from .const import (
     ENERGY_INTEGRATION_METHODS,
     ENTITY_CATEGORIES,
     MIN_HA_VERSION,
+    UnitPrefix,
 )
 from .errors import ModelNotSupported
-from .model_discovery import get_light_model, is_supported_for_autodiscovery
+from .model_discovery import get_light_model, has_manufacturer_and_model_information
 from .sensors.group import create_group_sensors
 from .strategy.factory import PowerCalculatorStrategyFactory
 
@@ -115,6 +120,9 @@ CONFIG_SCHEMA = vol.Schema(
                         CONF_POWER_SENSOR_PRECISION,
                         default=DEFAULT_POWER_SENSOR_PRECISION,
                     ): cv.positive_int,
+                    vol.Optional(
+                        CONF_ENERGY_SENSOR_UNIT_PREFIX, default=UnitPrefix.KILO
+                    ): vol.In([cls.value for cls in UnitPrefix]),
                     vol.Optional(CONF_CREATE_DOMAIN_GROUPS, default=[]): vol.All(
                         cv.ensure_list, [cv.string]
                     ),
@@ -144,6 +152,7 @@ async def async_setup(hass: HomeAssistantType, config: dict) -> bool:
         CONF_ENERGY_SENSOR_NAMING: DEFAULT_ENERGY_NAME_PATTERN,
         CONF_ENERGY_SENSOR_PRECISION: DEFAULT_ENERGY_SENSOR_PRECISION,
         CONF_ENERGY_SENSOR_CATEGORY: DEFAULT_ENTITY_CATEGORY,
+        CONF_ENERGY_SENSOR_UNIT_PREFIX: UnitPrefix.KILO,
         CONF_SCAN_INTERVAL: DEFAULT_SCAN_INTERVAL,
         CONF_CREATE_DOMAIN_GROUPS: [],
         CONF_CREATE_ENERGY_SENSORS: True,
@@ -159,6 +168,7 @@ async def async_setup(hass: HomeAssistantType, config: dict) -> bool:
         DATA_CONFIGURED_ENTITIES: {},
         DATA_DOMAIN_ENTITIES: {},
         DATA_DISCOVERED_ENTITIES: [],
+        DATA_USED_UNIQUE_IDS: [],
     }
 
     await autodiscover_entities(config, domain_config, hass)
@@ -194,20 +204,23 @@ async def autodiscover_entities(
         if entity_entry.disabled:
             continue
 
-        if entity_entry.domain != LIGHT_DOMAIN:
+        if not entity_entry.domain in (LIGHT_DOMAIN, SWITCH_DOMAIN):
             continue
 
-        if not await is_supported_for_autodiscovery(hass, entity_entry):
+        if not await has_manufacturer_and_model_information(hass, entity_entry):
             continue
+
+        manual_configuration = get_manual_configuration(config, entity_entry.entity_id)
 
         source_entity = await create_source_entity(entity_entry.entity_id, hass)
         try:
             light_model = await get_light_model(hass, {}, source_entity.entity_entry)
-            if not light_model.is_autodiscovery_allowed:
-                _LOGGER.debug(
-                    f"{entity_entry.entity_id}: Model found in database, but needs manual configuration"
-                )
-                continue
+            if light_model.is_additional_configuration_required:
+                if not manual_configuration:
+                    _LOGGER.warning(
+                        f"{entity_entry.entity_id}: Model found in database, but needs additional manual configuration to be loaded"
+                    )
+                    continue
         except ModelNotSupported:
             _LOGGER.debug(
                 "%s: Model not found in library, skipping auto configuration",
@@ -216,6 +229,9 @@ async def autodiscover_entities(
             continue
 
         if not light_model:
+            continue
+
+        if not light_model.is_entity_domain_supported(source_entity.domain):
             continue
 
         discovery_info = {
@@ -230,6 +246,16 @@ async def autodiscover_entities(
         )
 
     _LOGGER.debug("Done auto discovering entities")
+
+
+def get_manual_configuration(config: dict, entity_id: str) -> dict | None:
+    if not SENSOR_DOMAIN in config:
+        return None
+    sensor_config = config.get(SENSOR_DOMAIN)
+    for item in sensor_config:
+        if item.get(CONF_PLATFORM) == DOMAIN and item.get(CONF_ENTITY_ID) == entity_id:
+            return item
+    return None
 
 
 async def create_domain_groups(

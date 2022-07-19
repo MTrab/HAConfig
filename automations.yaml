@@ -456,6 +456,9 @@
   - condition: state
     entity_id: group.any_home
     state: home
+  - condition: sun
+    before: sunrise
+    before_offset: '60'
   action:
   - type: turn_on
     device_id: 008fa23255e5932cab33819bdbd02707
@@ -1723,4 +1726,35 @@
           - climate.kokken
           - climate.spisestue
           - climate.stue
+  mode: single
+- id: '1654064042994'
+  alias: Auto - Control SmartGarden
+  description: ''
+  trigger:
+  - platform: time
+    at: 06:00:00
+    id: 'on'
+  - platform: time
+    at: '22:00:00'
+    id: 'off'
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: 'on'
+      sequence:
+      - type: turn_on
+        device_id: 3fadc38d4900a7b2215ed0ad8038be2a
+        entity_id: switch.smartgarden
+        domain: switch
+    - conditions:
+      - condition: trigger
+        id: 'off'
+      sequence:
+      - type: turn_off
+        device_id: 3fadc38d4900a7b2215ed0ad8038be2a
+        entity_id: switch.smartgarden
+        domain: switch
+    default: []
   mode: single

@@ -29,6 +29,7 @@ api:
         - logger.log: 
             format: "Saving minimum height %i"
             args: [ 'id(position_min)' ]
+        - component.update: set_min
     - service: set_position_max
       then:
         - globals.set:
@@ -37,6 +38,7 @@ api:
         - logger.log: 
             format: "Saving maximum height %i"
             args: [ 'id(position_max)' ]
+        - component.update: set_max
     - service: set_position_m1
       variables:
         height: int
@@ -47,6 +49,7 @@ api:
         - globals.set:
             id: m1
             value: !lambda 'return (static_cast<float>(height)/100);'
+        - component.update: m1_position
     - service: set_position_m2
       variables:
         height: int
@@ -57,6 +60,7 @@ api:
         - globals.set:
             id: m2
             value: !lambda 'return (static_cast<float>(height)/100);'
+        - component.update: m2_position
 
 button:
   - platform: template
@@ -96,6 +100,14 @@ sensor:
     on_value:
       then:
         - component.update: height_pct
+        - component.update: height_cm
+  - platform: template
+    id: height_cm
+    unit_of_measurement: cm
+    name: "${device_verbose_name} Height in cm"
+    lambda: |-
+      return (int)((id(height).state-id(position_min))*100);
+
   - platform: template
     id: height_pct
     unit_of_measurement: '%'
@@ -103,6 +115,34 @@ sensor:
     lambda: |-
       return (int)(((id(height).state-id(position_min))/(id(position_max)-id(position_min)))*100);
   
+  - platform: template
+    id: set_min
+    unit_of_measurement: cm
+    name: "${device_verbose_name} Minimum height in cm"
+    lambda: |-
+      return (int)(id(position_min)*100);
+
+  - platform: template
+    id: set_max
+    unit_of_measurement: cm
+    name: "${device_verbose_name} Maximum height in cm"
+    lambda: |-
+      return (int)(id(position_max)*100);
+
+  - platform: template
+    id: m1_position
+    unit_of_measurement: cm
+    name: "${device_verbose_name} M1 Height"
+    lambda: |-
+      return (int)(id(m1)*100);
+
+  - platform: template
+    id: m2_position
+    unit_of_measurement: cm
+    name: "${device_verbose_name} M2 Height"
+    lambda: |-
+      return (int)(id(m2)*100);
+    
   - platform: debug
     free:
       name: "Heap Free"
@@ -241,6 +281,16 @@ binary_sensor:
           - OFF for at least 0.5s
         then:
           - switch.turn_off: down
+  - platform: template
+    name: "${device_verbose_name} moving"
+    lambda: |-
+      if (id(up).state or id(down).state) {
+        // Switch is in an active state, so table is moving
+        return true;
+      } else {
+        // Switch is in an inactive state, table not moving
+        return false;
+      }
 
 switch:
   - platform: gpio

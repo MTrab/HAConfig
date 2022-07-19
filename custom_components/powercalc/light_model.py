@@ -1,8 +1,10 @@
 import json
 import logging
 import os
+from enum import Enum
 from typing import Optional
 
+from homeassistant.components.light import DOMAIN as LIGHT_DOMAIN
 from homeassistant.helpers.typing import HomeAssistantType
 
 from .aliases import MANUFACTURER_DIRECTORY_MAPPING, MODEL_DIRECTORY_MAPPING
@@ -12,6 +14,11 @@ from .errors import ModelNotSupported, UnsupportedMode
 _LOGGER = logging.getLogger(__name__)
 
 CUSTOM_DATA_DIRECTORY = "powercalc-custom-models"
+
+
+class DeviceType(Enum):
+    LIGHT = "light"
+    SMART_SWITCH = "smart_switch"
 
 
 class LightModel:
@@ -116,6 +123,9 @@ class LightModel:
         )
 
     def get_lut_directory(self) -> str:
+        if self.linked_lut:
+            return os.path.join(os.path.dirname(__file__), "data", self.linked_lut)
+
         model_directory = self.get_directory()
         if self._lut_subdirectory:
             model_directory = os.path.join(model_directory, self._lut_subdirectory)
@@ -138,8 +148,20 @@ class LightModel:
         return self._json_data.get("standby_power") or 0
 
     @property
+    def standby_power_on(self) -> float:
+        return self._json_data.get("standby_power_on") or 0
+
+    @property
     def supported_modes(self) -> list:
         return self._json_data.get("supported_modes") or []
+
+    @property
+    def linked_lut(self) -> Optional[str]:
+        return self._json_data.get("linked_lut")
+
+    @property
+    def calculation_enabled_condition(self) -> Optional[str]:
+        return self._json_data.get("calculation_enabled_condition")
 
     @property
     def linear_mode_config(self) -> Optional[dict]:
@@ -157,9 +179,22 @@ class LightModel:
             )
         return self._json_data.get("fixed_config")
 
-    @property
-    def is_autodiscovery_allowed(self) -> bool:
-        return self._lut_subdirectory is None
-
     def is_mode_supported(self, mode: str) -> bool:
         return mode in self.supported_modes
+
+    @property
+    def is_additional_configuration_required(self) -> bool:
+        if self._lut_subdirectory is not None:
+            return True
+        return self._json_data.get("requires_additional_configuration") or False
+
+    @property
+    def device_type(self) -> str:
+        return self._json_data.get("device_type") or DeviceType.LIGHT
+
+    def is_entity_domain_supported(self, domain: str) -> bool:
+        """Check whether this power profile supports a given entity domain"""
+        if domain == LIGHT_DOMAIN and self.device_type != DeviceType.LIGHT:
+            return False
+
+        return True
