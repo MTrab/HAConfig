@@ -1,3 +1,5 @@
+# pylint: disable=import-outside-toplevel
+
 """ESXi commands for ESXi Stats component."""
 import logging
 from pyVim.connect import SmartConnect, SmartConnectNoSSL
@@ -12,27 +14,35 @@ def esx_connect(host, user, pwd, port, ssl):
     """Establish connection with host/vcenter."""
     service_instance = None
 
-    # connect depending on SSL_VERIFY setting
-    if ssl is False:
-        service_instance = SmartConnectNoSSL(host=host, user=user, pwd=pwd, port=port)
-        current_session = service_instance.content.sessionManager.currentSession.key
-        _LOGGER.debug("Logged in - session %s", current_session)
-    else:
-        service_instance = SmartConnect(host=host, user=user, pwd=pwd, port=port)
-        current_session = service_instance.content.sessionManager.currentSession.key
-        _LOGGER.debug("Logged in - session %s", current_session)
+    try:
+        # connect depending on SSL_VERIFY setting
+        if ssl is False:
+            service_instance = SmartConnectNoSSL(
+                host=host, user=user, pwd=pwd, port=port
+            )
+            current_session = service_instance.content.sessionManager.currentSession.key
+            _LOGGER.debug("Logged in - session %s", current_session)
+        else:
+            service_instance = SmartConnect(host=host, user=user, pwd=pwd, port=port)
+            current_session = service_instance.content.sessionManager.currentSession.key
+            _LOGGER.debug("Logged in - session %s", current_session)
+    except ConnectionRefusedError as error:
+        _LOGGER.debug("Not able to connect to %s - %s", host, error)
+        return False
 
     return service_instance
 
 
 def esx_disconnect(conn):
     """Kill connection from host/vcenter."""
-    current_session = conn.content.sessionManager.currentSession.key
-    try:
-        conn._stub.pool[0][0].sock.shutdown(2)  # pylint: disable=protected-access
-        _LOGGER.debug("Logged out - session %s", current_session)
-    except Exception as error:
-        _LOGGER.debug(error)
+
+    if conn:
+        current_session = conn.content.sessionManager.currentSession.key
+        try:
+            conn._stub.pool[0][0].sock.shutdown(2)  # pylint: disable=protected-access
+            _LOGGER.debug("Logged out - session %s", current_session)
+        except Exception as error:  # pylint: disable=broad-except
+            _LOGGER.debug(error)
 
 
 def check_license(lic):
@@ -98,6 +108,7 @@ def get_host_info(host):
     host_summary = host.summary
     host_state = host_summary.runtime.powerState
     host_name = host_summary.config.name.replace(" ", "_").lower()
+    host_capability = host.capability
 
     _LOGGER.debug("vmhost: %s state is %s", host_name, host_state)
 
@@ -141,6 +152,7 @@ def get_host_info(host):
         "memtotal_gb": host_mem_total,
         "memusage_gb": host_mem_usage,
         "maintenance_mode": host_mm_mode,
+        "shutdown_supported": host_capability.shutdownSupported,
         "power_policy": host_power_policy,
         "vms": host_vms,
     }
@@ -172,12 +184,12 @@ def get_datastore_info(datastore):
     return ds_data
 
 
-def get_vm_info(vm):
+def get_vm_info(virtual_machine):
     """Get VM information."""
-    vm_conf = vm.configStatus
-    vm_sum = vm.summary
-    vm_run = vm.runtime
-    vm_snap = vm.snapshot
+    vm_conf = virtual_machine.configStatus
+    vm_sum = virtual_machine.summary
+    vm_run = virtual_machine.runtime
+    vm_snap = virtual_machine.snapshot
 
     vm_name = vm_sum.config.name.replace(" ", "_").lower()
 
@@ -222,7 +234,13 @@ def get_vm_info(vm):
             vm_mem_usage = round(vm_sum.quickStats.hostMemoryUsage, 2)
         else:
             vm_mem_usage = "n/a"
-            _LOGGER.debug("Unable to return memory usage for %s", vm_name)
+            _LOGGER.debug("Unable to return host memory usage for %s", vm_name)
+
+        if vm_sum.quickStats.guestMemoryUsage:
+            vm_mem_active = round(vm_sum.quickStats.guestMemoryUsage, 2)
+        else:
+            vm_mem_active = "n/a"
+            _LOGGER.debug("Unable to return active memory usage")
 
         if vm_sum.quickStats.uptimeSeconds:
             vm_uptime = round(vm_sum.quickStats.uptimeSeconds / 3600, 1)
@@ -246,6 +264,7 @@ def get_vm_info(vm):
     else:
         vm_cpu_usage = "n/a"
         vm_mem_usage = "n/a"
+        vm_mem_active = "n/a"
         vm_ip = "n/a"
         vm_uptime = "n/a"
         vm_guest_os = vm_sum.config.guestFullName
@@ -259,12 +278,14 @@ def get_vm_info(vm):
         "cpu_use_pct": vm_cpu_usage,
         "memory_allocated_mb": vm_sum.config.memorySizeMB,
         "memory_used_mb": vm_mem_usage,
+        "memory_active_mb": vm_mem_active,
         "used_space_gb": vm_used_space,
         "tools_status": vm_tools_status,
         "guest_os": vm_guest_os,
         "guest_ip": vm_ip,
         "snapshots": vm_snapshots,
         "uuid": vm_sum.config.uuid,
+        "host_name": vm_run.host.name,
     }
 
     _LOGGER.debug(vm_data)
@@ -289,6 +310,49 @@ def list_snapshots(snapshots, tree=False):
     return snapshot_data
 
 
+def host_pwr(target_cmnd, conn_details, force):
+    """Host power commands."""
+    conn = esx_connect(**conn_details)
+    content = conn.RetrieveContent()
+    obj_view = content.viewManager.CreateContainerView(
+        content.rootFolder, [vim.HostSystem], True
+    )
+    esxi_hosts = obj_view.view
+    obj_view.Destroy()
+
+    if len(esxi_hosts) > 1:
+        _LOGGER.warning(
+            "Multiple hosts found. This likely indicates vCenter. "
+            "Shutdown command does not support vCenter, yet. Skipping..."
+        )
+        return True
+
+    try:
+        for esxi_host in esxi_hosts:
+            if target_cmnd == "shutdown":
+                esxi_host.ShutdownHost_Task(force)
+
+            if target_cmnd == "reboot":
+                esxi_host.RebootHost_Task(force)
+
+            _LOGGER.info(
+                "Sending %s command to %s (forced: %s)",
+                target_cmnd,
+                esxi_host.summary.config.name,
+                force,
+            )
+    except vmodl.MethodFault as error:
+        _LOGGER.info(error.msg)
+    except vmodl.HostConfigFault as error:
+        _LOGGER.info(str(error))
+    except vmodl.RuntimeFault as error:
+        _LOGGER.info(error.msg)
+    finally:
+        esx_disconnect(conn)
+
+    return True
+
+
 def host_pwr_policy(host, host_cmnd, conn_details):
     """Host power policy command."""
     conn = esx_connect(**conn_details)
@@ -301,9 +365,10 @@ def host_pwr_policy(host, host_cmnd, conn_details):
 
     if len(data) > 1:
         _LOGGER.warning(
-            "Multiple hosts found. This likely indicates vCenter. Skipping..."
+            "Multiple hosts found. This likely indicates vCenter. "
+            "Host Power Policy command does not support vCenter, yet. Skipping..."
         )
-        return
+        return True
 
     try:
         for vm_host in data:
@@ -398,7 +463,7 @@ def vm_pwr(
             )
     except vmodl.MethodFault as error:
         _LOGGER.info(error.msg)
-    except Exception as error:
+    except Exception as error:  # pylint: disable=broad-except
         _LOGGER.info(str(error))
     finally:
         esx_disconnect(conn)
@@ -462,7 +527,7 @@ def vm_snap_take(
             )
     except vmodl.MethodFault as error:
         _LOGGER.info(error.msg)
-    except Exception as error:
+    except Exception as error:  # pylint: disable=broad-except
         _LOGGER.info(str(error))
     finally:
         esx_disconnect(conn)
@@ -537,7 +602,7 @@ def vm_snap_remove(
             )
     except vmodl.MethodFault as error:
         _LOGGER.info(error.msg)
-    except Exception as error:
+    except Exception as error:  # pylint: disable=broad-except
         _LOGGER.info(str(error))
     finally:
         esx_disconnect(conn)

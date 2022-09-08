@@ -7,8 +7,8 @@ import homeassistant.helpers.device_registry as dr
 import homeassistant.helpers.entity_registry as er
 import voluptuous as vol
 from homeassistant.components.light import ATTR_SUPPORTED_COLOR_MODES
-from homeassistant.core import split_entity_id
-from homeassistant.helpers.typing import HomeAssistantType
+from homeassistant.core import HomeAssistant, split_entity_id
+from homeassistant.helpers.template import is_number
 
 from .const import DUMMY_ENTITY_ID
 
@@ -19,12 +19,12 @@ class SourceEntity(NamedTuple):
     domain: str
     unique_id: str | None = None
     name: str | None = None
-    supported_color_modes: list | None = None
+    supported_color_modes: list[str] | None = None
     entity_entry: er.RegistryEntry | None = None
     device_entry: dr.DeviceEntry | None = None
 
 
-async def create_source_entity(entity_id: str, hass: HomeAssistantType) -> SourceEntity:
+async def create_source_entity(entity_id: str, hass: HomeAssistant) -> SourceEntity:
     """Create object containing all information about the source entity"""
 
     if entity_id == DUMMY_ENTITY_ID:
@@ -79,3 +79,10 @@ def validate_name_pattern(value: str) -> str:
     if not regex.search(value):
         raise vol.Invalid("Naming pattern must contain {}")
     return value
+
+
+def validate_is_number(value: str) -> str:
+    """Validate value is a number."""
+    if is_number(value):
+        return value
+    raise vol.Invalid("Value is not a number")

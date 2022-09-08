@@ -1,6 +1,15 @@
 - platform: places
-  name: morten
+  name: Malene
   devicetracker_id: device_tracker.mtopnord2
+  options: street, street_number, postal_code, city, state, country
+  map_provider: google
+  map_zoom: 17
+  language: da
+  home_zone: zone.home
+
+- platform: places
+  name: Honda NC750x
+  devicetracker_id: device_tracker.honda_nc750x
   options: street, street_number, postal_code, city, state, country
   map_provider: google
   map_zoom: 17

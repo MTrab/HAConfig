@@ -55,8 +55,6 @@
   friendly_name: Bedroom Ceiling 2
 '0xccccccfffe56b58e':
   friendly_name: Switch Livingroom
-'0x680ae2fffe72ebba':
-  friendly_name: HiFi 1
 '0x00158d000408642c':
   friendly_name: Temperature Fridge
   temperature_precision: 1

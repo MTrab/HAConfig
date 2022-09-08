@@ -2,8 +2,6 @@
 from __future__ import annotations
 
 import asyncio
-import time
-from copy import deepcopy
 
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD, CONF_TYPE
@@ -69,7 +67,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await async_setup_entity_platforms(hass, entry, PLATFORMS_PRIMARY)
         # hass.config_entries.async_setup_platforms(entry, PLATFORMS_PRIMARY)
 
-    async_setup_services(hass)
+    await async_setup_services(hass)
 
     return result
 
@@ -126,7 +124,9 @@ async def _async_setup(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         cloud_type,
         cloud_email,
     )
-    cloud = WorxCloud(cloud_email, cloud_password, cloud_type.lower())
+    cloud = WorxCloud(
+        cloud_email, cloud_password, cloud_type.lower(), tz=hass.config.time_zone
+    )
     auth = False
 
     try:

@@ -1,0 +1,299 @@
+##################################
+# Custom API calls for OctoPrint #
+#                                #
+# Recreate this as a "NextGen"   #
+# custom_component?! To-Do!      #
+##################################
+
+pack_octoprint_anet_a8:
+  template:
+    - binary_sensor:
+      - name: "Anet A8 Idle"
+        state: >
+          {% set idle = 'on' %}
+          {% if is_state("binary_sensor.anet_a8_printing", "on") %}
+            {% set idle = 'off' %}
+          {% endif %}
+          {% if is_state("switch.anet_a8_mains", "off") %}
+            {% set idle = 'off' %}
+          {% endif %}
+          {% if is_state("binary_sensor.anet_a8_connected", "off") %}
+            {% set idle = 'off' %}
+          {% endif %}
+          {{ idle }}
+      - name: "Anet A8 Min Temp"
+        state: >
+          {% set min = 190 %}
+          {% if (states("sensor.anet_a8_tool_0_temperature") | float(0)) > min and is_state("binary_sensor.anet_a8_idle", "on") %}
+            on
+          {% else %}
+            off
+          {% endif %}
+
+  #switch:
+  #  - platform: template
+  #    switches:
+  #      anet_a8_power:
+  #        friendly_name: Anet A8 Power
+  #        value_template: >-
+  #          {% if is_state('sensor.anet_a8_print_status', 'Offline after error') or is_state('sensor.anet_a8_print_status', 'Offline') or is_state('sensor.anet_a8_print_status', 'unavailable')%}
+  #            off
+  #          {% else %}
+  #            on
+  #          {% endif %}
+  #        turn_on:
+  #          service: rest_command.anet_a8_turn_on
+  #        turn_off:
+  #          service: rest_command.anet_a8_turn_off
+
+  input_text:
+    anet_a8_custom_command:
+      name: GCode
+      initial: ""
+
+  input_boolean:
+    anet_a8_file_origin_local:
+      name: Local
+      icon: mdi:folder
+
+    anet_a8_file_origin_sd:
+      name: SD
+      icon: mdi:sd
+
+  input_number:
+    anet_a8_nozzle_temp:
+      name: Anet A8 Nozzle Temp
+      min: 0
+      max: 400
+      step: 1
+      mode: box
+      icon: mdi:printer-3d-nozzle-outline
+      unit_of_measurement: "°C"
+
+    anet_a8_bed_temp:
+      name: Anet A8 Bed Temp
+      min: 0
+      max: 100
+      step: 1
+      mode: box
+      icon: mdi:thermometer
+      unit_of_measurement: "°C"
+
+    anet_a8_flow:
+      name: Anet A8 Flow Rate
+      min: 50
+      max: 150
+      step: 1
+      initial: 100
+      icon: mdi:printer-3d-nozzle
+      unit_of_measurement: "%"
+
+    anet_a8_feedrate:
+      name: Anet A8 Feed Rate
+      min: 50
+      max: 300
+      step: 1
+      initial: 100
+      icon: mdi:fast-forward-outline
+      unit_of_measurement: "%"
+
+  input_select:
+    anet_a8_file_selector:
+      name: Anet A8 Filer
+      options:
+        - Ingen
+      initial: Ingen
+      icon: mdi:folder-open
+
+  automation:
+    - alias: "Auto - Anet A8 - Read Nozzle Temperature"
+      id: AnetA8SetNozzleTemp
+      trigger:
+        platform: state
+        entity_id: sensor.anet_a8_tool_0_target
+      action:
+        service: input_number.set_value
+        target:
+          entity_id: input_number.anet_a8_nozzle_temp
+        data:
+          value: >
+            {% if states('sensor.anet_a8_tool_0_target') != "unavailable" %}
+              {{ states("sensor.anet_a8_tool_0_target") }}
+            {% else %}
+              0
+            {% endif %}
+
+    - alias: "Auto - Anet A8 - Read Bed Temperature"
+      id: AnetA8SetBedTemp
+      trigger:
+        platform: state
+        entity_id: sensor.anet_a8_bed_target
+      action:
+        service: input_number.set_value
+        target:
+          entity_id: input_number.anet_a8_bed_temp
+        data:
+          value: >
+            {% if states('sensor.anet_a8_bed_target') != "unavailable" %}
+              {{ states("sensor.anet_a8_bed_target") }}
+            {% else %}
+              0
+            {% endif %}
+
+    - alias: "Auto - Anet A8 - Radio Button Functionality - Origin"
+      trigger:
+        - platform: state
+          entity_id: input_boolean.anet_a8_file_origin_local
+          to: 'on'
+          id: 'local'
+        - platform: state
+          entity_id: input_boolean.anet_a8_file_origin_sd
+          to: 'on'
+          id: 'sd'
+        - platform: homeassistant
+          event: start
+          id: 'local'
+        - platform: state
+          entity_id: sensor.anet_a8_print_status
+          from: 'unavailable'
+          id: 'local'
+      action:
+        - choose:
+            - conditions:
+                - condition: trigger
+                  id: local
+              sequence:
+                - service: input_boolean.turn_off
+                  target:
+                    entity_id: input_boolean.anet_a8_file_origin_sd
+                - service: pyscript.octoprint_get_files
+                  data:
+                    entity_id: input_select.anet_a8_file_selector
+                    url: !secret octoprint_anet_a8_api_files_command
+                    key: !secret octoprint_anet_a8_api_key
+                    origin: local
+        - choose:
+            - conditions:
+                - condition: trigger
+                  id: sd
+              sequence:
+                - service: input_boolean.turn_off
+                  target:
+                    entity_id: input_boolean.anet_a8_file_origin_local
+                - service: pyscript.octoprint_get_files
+                  data:
+                    entity_id: input_select.anet_a8_file_selector
+                    url: !secret octoprint_anet_a8_api_files_command
+                    key: !secret octoprint_anet_a8_api_key
+                    origin: sdcard
+      mode: restart
+
+    - alias: "Auto - Anet A8 - Send Custom GCode"
+      id: AnetA8SendCustomGCode
+      trigger:
+        - platform: state
+          entity_id: input_text.anet_a8_custom_command
+      action:
+        - service: mqtt.publish
+          data:
+            topic: octoprint/anet_a8/hassControl/commands
+            payload_template: '{{ states("input_text.anet_a8_custom_command") }}'
+        - service: input_text.set_value
+          target:
+            entity_id: input_text.anet_a8_custom_command
+          data:
+            value: ""
+      mode: queued
+
+    - alias: "Auto - Anet A8 - Set Flow Rate"
+      id: AnetA8SetFlowRate
+      trigger:
+        - platform: state
+          entity_id: input_number.anet_a8_flow
+      action:
+        - service: mqtt.publish
+          data:
+            topic: octoprint/anet_a8/hassControl/commands
+            payload_template: 'M221 S{{ states("input_number.anet_a8_flow") }}'
+      mode: single
+
+    - alias: "Auto - Anet A8 - Set Feed Rate"
+      id: AnetA8SetFeedRate
+      trigger:
+        - platform: state
+          entity_id: input_number.anet_a8_feedrate
+      action:
+        - service: mqtt.publish
+          data:
+            topic: octoprint/anet_a8/hassControl/commands
+            payload_template: 'M220 S{{ states("input_number.anet_a8_feedrate") }}'
+      mode: single
+
+    - alias: "Auto - Anet A8 - Connect printer on power on"
+      id: AnetA8ConnectOnPower
+      trigger:
+        - platform: state
+          entity_id: switch.anet_a8_mains
+          for: 00:00:05
+          to: 'on'
+      action:
+        - service: switch.turn_on
+          data:
+            entity_id: switch.anet_a8_connect_to_printer
+      mode: single
+
+  # camera:
+  #   - platform: mjpeg
+  #     name: Anet A8
+  #     still_image_url: !secret octoprint_anet_a8_still
+  #     mjpeg_url: !secret octoprint_anet_a8_stream
+
+  script:
+    #Safe shutdown script
+  #  3dp_anet_a8_safe_shutdown:
+  #    sequence:
+  #      - service: switch.turn_on
+  #        target:
+  #          entity_id: switch.anet_a8_shutdown_system
+  #      - wait_template:
+  #          "{{ is_state('sensor.anet_a8_print_status', 'unavailable')
+  #          }}"
+  #      - delay:
+  #          hours: 0
+  #          minutes: 1 # PLEASE MAKE SURE YOUR PI REACHES POWER OFF STATE BEFORE THIS DELAY ENDS!
+  #          seconds: 0
+  #          milliseconds: 0
+  #      - service: switch.turn_off
+  #        target:
+  #          entity_id: switch.anet_a8_mains
+  #    mode: single
+  #    alias: 3DP - Anet A8 - Safe Shutdown
+  #    icon: mdi:power-cycle
+
+    # Power up after safe shutdown
+    3dp_anet_a8_power_up:
+      alias: 3DP - Anet A8 - Power Up
+      sequence:
+        - service: switch.turn_on
+          target:
+            entity_id: switch.anet_a8_mains
+        - wait_template:
+            "{{ is_state('sensor.anet_a8_print_status', 'unavailable')
+            == false }}"
+  #      - service: switch.turn_on
+  #        target:
+  #          entity_id: switch.anet_a8_power
+      mode: single
+      icon: mdi:power
+
+  rest_command:
+    anet_a8_turn_on:
+      url: !secret octoprint_anet_a8_api_power_on
+
+    anet_a8_turn_off:
+      url: !secret octoprint_anet_a8_api_power_off
+
+  var:
+    anet_a8_terminal:
+      friendly_name: "Anet A8 Terminal"
+      icon: mdi:text-box

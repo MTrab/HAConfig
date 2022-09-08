@@ -1,160 +1,163 @@
 bedroom_enable_sleep_timer:
   alias: Enable Sleep Timer in Bedroom
   sequence:
-  - service: media_player.volume_set
-    data:
-      volume_level: 0.05
-    target:
-      entity_id: media_player.sovevaerelse_2
-  - service: media_player.play_media
-    data:
-      media_content_id: http://live-icy.dr.dk/A/A14H.mp3
-      media_content_type: music
-    target:
-      entity_id: media_player.sovevaerelse_2
-  - service: sonos.set_sleep_timer
-    data:
-      sleep_time: 7200
-      entity_id: media_player.sovevaerelse_2
+    - service: media_player.volume_set
+      data:
+        volume_level: 0.05
+      target:
+        entity_id: media_player.sovevaerelse_2
+    - service: media_player.play_media
+      data:
+        media_content_id: http://live-icy.dr.dk/A/A14H.mp3
+        media_content_type: music
+      target:
+        entity_id: media_player.sovevaerelse_2
+    - service: sonos.set_sleep_timer
+      data:
+        sleep_time: 7200
+        entity_id: media_player.sovevaerelse_2
   mode: single
 dimmer_brighten_light:
   alias: Dimmer - Brighten Light
   sequence:
-  - repeat:
-      while:
-      - condition: template
-        value_template: '{{ is_state(entity, ''on'') and state_attr(entity, ''brightness'')
-          < target_brightness | default(255) }}'
-      sequence:
-      - service: light.turn_on
-        data_template:
-          brightness_step: 30
-          transition: 1
-          entity_id: '{{ entity }}'
-      - delay: 00:00:01
+    - repeat:
+        while:
+          - condition: template
+            value_template:
+              "{{ is_state(entity, 'on') and state_attr(entity, 'brightness')
+              < target_brightness | default(255) }}"
+        sequence:
+          - service: light.turn_on
+            data_template:
+              brightness_step: 30
+              transition: 1
+              entity_id: "{{ entity }}"
+          - delay: 00:00:01
   mode: parallel
   max: 10
 dimmer_dim_light:
   alias: Dimmer - Dim Light
   sequence:
-  - repeat:
-      while:
-      - condition: template
-        value_template: '{{ is_state(entity, ''on'') and state_attr(entity, ''brightness'')
-          > target_brightness | default(20) }}'
-      sequence:
-      - service: light.turn_on
-        data_template:
-          brightness_step: -30
-          transition: 1
-          entity_id: '{{ entity }}'
-      - delay:
-          seconds: 1
+    - repeat:
+        while:
+          - condition: template
+            value_template:
+              "{{ is_state(entity, 'on') and state_attr(entity, 'brightness')
+              > target_brightness | default(20) }}"
+        sequence:
+          - service: light.turn_on
+            data_template:
+              brightness_step: -30
+              transition: 1
+              entity_id: "{{ entity }}"
+          - delay:
+              seconds: 1
   mode: single
 godnat_tts:
   alias: Godnat TTS
   sequence:
-  - wait_for_trigger:
-    - platform: device
-      device_id: c4c4fbcf04d711eb8dd3af05e9c1f865
-      domain: media_player
-      entity_id: media_player.sovevaerelse
-      type: playing
-    continue_on_timeout: false
-  - wait_for_trigger:
-    - platform: device
-      device_id: c4c4fbcf04d711eb8dd3af05e9c1f865
-      domain: media_player
-      entity_id: media_player.sovevaerelse
-      type: idle
-    continue_on_timeout: false
-  - service: script.do_speech
-    data:
-      call_sleep: 1
-      device: bedroom
+    - wait_for_trigger:
+        - platform: device
+          device_id: c4c4fbcf04d711eb8dd3af05e9c1f865
+          domain: media_player
+          entity_id: media_player.sovevaerelse
+          type: playing
+      continue_on_timeout: false
+    - wait_for_trigger:
+        - platform: device
+          device_id: c4c4fbcf04d711eb8dd3af05e9c1f865
+          domain: media_player
+          entity_id: media_player.sovevaerelse
+          type: idle
+      continue_on_timeout: false
+    - service: script.do_speech
+      data:
+        call_sleep: 1
+        device: bedroom
   mode: single
 turn_on_webasto:
   alias: Turn on Webasto
   sequence:
-  - condition: template
-    value_template: '{{ states(''sensor.webasto_temperature'') < states(''input_number.webasto_low_point'')
-      }}'
-  - condition: state
-    entity_id: input_boolean.is_home
-    state: 'off'
-  - condition: state
-    entity_id: switch.webasto
-    state: 'off'
-  - service: shell_command.parsehub_run
-    data_template:
-      token: !secret token_webasto
-      command: 'on'
+    - condition: template
+      value_template:
+        "{{ states('sensor.webasto_temperature') < states('input_number.webasto_low_point')
+        }}"
+    - condition: state
+      entity_id: input_boolean.is_home
+      state: "off"
+    - condition: state
+      entity_id: switch.webasto
+      state: "off"
+    - service: shell_command.parsehub_run
+      data_template:
+        token: !secret token_webasto
+        command: "on"
   mode: single
   icon: mdi:radiator
 staa_position:
   alias: Stå Position
   sequence:
-  - service: button.press
-    target:
-      entity_id: button.skrivebord_m2
+    - service: button.press
+      target:
+        entity_id: button.skrivebord_m2
   mode: single
   icon: mdi:account-arrow-up
 sidde_position:
   alias: Sidde Position
   sequence:
-  - service: button.press
-    target:
-      entity_id: button.skrivebord_m1
+    - service: button.press
+      target:
+        entity_id: button.skrivebord_m1
   mode: single
   icon: mdi:account-arrow-down
 go_to_bed_reminder:
   alias: Go To Bed Reminder
   sequence:
-  - service: script.do_speech
-    data:
-      device: livingroom
-      call_bedtime_recurring: 1
-  - delay:
-      hours: 0
-      minutes: 30
-      seconds: 0
-      milliseconds: 0
-  - choose:
-    - conditions:
-      - condition: state
-        entity_id: sensor.google_sovevaerelse_alarms
-        state: unavailable
-      sequence:
-      - service: script.go_to_bed_reminder
-        data: {}
-    default: []
+    - service: script.do_speech
+      data:
+        device: livingroom
+        call_bedtime_recurring: 1
+    - delay:
+        hours: 0
+        minutes: 30
+        seconds: 0
+        milliseconds: 0
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: sensor.google_sovevaerelse_alarms
+              state: unavailable
+          sequence:
+            - service: script.go_to_bed_reminder
+              data: {}
+      default: []
   mode: parallel
   max: 10
 working_home:
   alias: Working at home
   sequence:
-  - service: input_boolean.turn_on
-    data: {}
-    target:
-      entity_id: input_boolean.is_home
-  - type: turn_on
-    device_id: d23fd4714c9b7008d771a5e948643bbc
-    entity_id: switch.skrivebord
-    domain: switch
-  - type: turn_on
-    device_id: 3b6afdd5aff2138e80230367beebc215
-    entity_id: switch.kaffemaskine_power
-    domain: switch
-  - service: media_player.play_media
-    data:
-      media_content_id: http://live-icy.dr.dk/A/A14H.mp3
-      media_content_type: music
-    target:
-      entity_id: media_player.stue
-  - service: google.add_event
-    data:
-      calendar_id: morten.trab.1981@gmail.com
-      summary: Arbejder hjemme
-      start_date: '{{ now().strftime(''%Y-%m-%d'') }}'
-      end_date: '{{ now().strftime(''%Y-%m-%d'') }}'
+    - service: input_boolean.turn_on
+      data: {}
+      target:
+        entity_id: input_boolean.is_home
+    - type: turn_on
+      device_id: d23fd4714c9b7008d771a5e948643bbc
+      entity_id: switch.skrivebord
+      domain: switch
+    - type: turn_on
+      device_id: 3b6afdd5aff2138e80230367beebc215
+      entity_id: switch.kaffemaskine_power
+      domain: switch
+    - service: media_player.play_media
+      data:
+        media_content_id: http://live-icy.dr.dk/A/A14H.mp3
+        media_content_type: music
+      target:
+        entity_id: media_player.stue
+    - service: google.add_event
+      data:
+        calendar_id: morten.trab.1981@gmail.com
+        summary: Arbejder hjemme
+        start_date: "{{ now().strftime('%Y-%m-%d') }}"
+        end_date: "{{ now().strftime('%Y-%m-%d') }}"
   mode: single

@@ -1,0 +1,49 @@
+################
+# Lending data #
+################
+
+pack_loans:
+  sensor:
+    - platform: sql
+      db_url: !secret loans_db_url
+      queries:
+        - name: Loans Total Loans
+          query: "SELECT COUNT(*) as Total FROM PaidToClient"
+          column: "Total"
+          unit_of_measurement: ''
+        - name: Loans Total Active Loans
+          query: "SELECT COUNT(*) as Total FROM Active"
+          column: "Total"
+          unit_of_measurement: ''
+        - name: Loans Overdue
+          query: "SELECT COUNT(*) as Overdue FROM Overdue"
+          column: "Overdue"
+          unit_of_measurement: ''
+        - name: Loans Lost
+          query: "SELECT COUNT(*) as Lost FROM Lost"
+          column: "Lost"
+          unit_of_measurement: ''
+        - name: Loans Total Amount Paid To Client
+          query: "SELECT PaidToClient FROM AmountProfit"
+          column: "PaidToClient"
+          unit_of_measurement: "kr"
+        - name: Loans Total Amount To Be Repaid
+          query: "SELECT Total FROM AmountRepay"
+          column: "Total"
+          unit_of_measurement: "kr"
+        - name: Loans Total Outstanding Amount
+          query: "SELECT Total FROM AmountOutstanding"
+          column: "Total"
+          unit_of_measurement: "kr"
+        - name: Loans Total Overdue Amount
+          query: "SELECT Total FROM AmountOverdue"
+          column: "Total"
+          unit_of_measurement: "kr"
+        - name: Loans Total Profit
+          query: "SELECT Sum FROM AmountProfit"
+          column: "Sum"
+          unit_of_measurement: "kr"
+        - name: Loans Total Loss
+          query: "SELECT Total FROM AmountLost"
+          column: "Total"
+          unit_of_measurement: "kr"

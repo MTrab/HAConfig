@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import asyncio
 import json
+import pprint
+import time
 from datetime import timedelta
 from functools import partial
 from typing import Any
@@ -48,6 +50,8 @@ from .const import (
     ATTR_LATITUDE,
     ATTR_LONGITUDE,
     ATTR_MQTTCONNECTED,
+    ATTR_NEXT_SCHEDULE,
+    ATTR_PROGRESS,
     ATTR_RUNTIME,
     ATTR_SERVICE,
     ATTR_TORQUE,
@@ -88,6 +92,8 @@ SUPPORT_LANDROID_BASE = (
     | VacuumEntityFeature.STATE
     | VacuumEntityFeature.STATUS
 )
+
+SCAN_INTERVAL = timedelta(minutes=5)
 
 
 class LandroidCloudBaseEntity(LandroidLogger):
@@ -251,6 +257,7 @@ class LandroidCloudBaseEntity(LandroidLogger):
 
     async def async_update(self):
         """Default async_update"""
+        # self.log(LoggerType.DEVELOP, "Async_update was called", log_level=LogLevel.INFO)
         return
 
     @callback
@@ -343,6 +350,7 @@ class LandroidCloudBaseEntity(LandroidLogger):
         device: WorxCloud = self.api.device
 
         data = {}
+        old_data = self._attributes
 
         for key, value in ATTR_MAP.items():
             if hasattr(device, key):
@@ -379,6 +387,27 @@ class LandroidCloudBaseEntity(LandroidLogger):
             )
 
         self._attributes.update(data)
+
+        self._attributes.update(
+            {
+                ATTR_PROGRESS: device.schedules["daily_progress"]
+                if "daily_progress" in device.schedules
+                else (old_data[ATTR_PROGRESS] if ATTR_PROGRESS in old_data else None),
+                ATTR_NEXT_SCHEDULE: device.schedules["next_schedule_start"]
+                if "next_schedule_start" in device.schedules
+                else (
+                    old_data[ATTR_NEXT_SCHEDULE]
+                    if ATTR_NEXT_SCHEDULE in old_data
+                    else None
+                ),
+            }
+        )
+
+        if "daily_progress" in device.schedules:
+            device.schedules.pop("daily_progress")
+
+        if "daily_progress" in device.schedules:
+            device.schedules.pop("daily_progress")
 
         self._available = (
             device.online
@@ -695,7 +724,13 @@ class LandroidCloudMowerBase(LandroidCloudBaseEntity, StateVacuumEntity):
                 # Try calling safehome
                 await self.hass.async_add_executor_job(device.safehome)
                 # Ensure we are going home, in case the safehome wasn't successful
-                await self.hass.async_add_executor_job(device.home)
+                wait_start = time.time()
+                while time.time() < wait_start + 15:
+                    await asyncio.sleep(1)
+                    if self.state in [STATE_RETURNING, STATE_DOCKED]:
+                        break
+                if not self.state in [STATE_RETURNING, STATE_DOCKED]:
+                    await self.hass.async_add_executor_job(device.home)
             except MQTTException:
                 self.log(
                     LoggerType.SERVICE_CALL,

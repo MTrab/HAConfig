@@ -20,7 +20,7 @@ http:
 homeassistant:
   customize: !include customize.yaml
   #customize_glob: !include_dir_merge_named configurations/customize_glob
-  packages: !include_dir_named configurations/packages
+  packages: !include_dir_merge_named  configurations/packages/
   allowlist_external_dirs:
     - /config/www/rest
     - /config
@@ -48,9 +48,9 @@ binary_sensor: !include_dir_merge_list configurations/binary_sensor
 conversation: !include configurations/conversation.yaml
 device_tracker: !include configurations/device_tracker.yaml
 fuelprices_dk: !include configurations/fuelprices.yaml
-google: !include configurations/google.yaml
+# google: !include configurations/google.yaml
 group: !include_dir_merge_named configurations/groups
-home_connect: !include configurations/home_connect.yaml
+# home_connect: !include configurations/home_connect.yaml
 intent_script: !include_dir_merge_named configurations/intent_script
 media_player: !include_dir_merge_list configurations/media_player
 powercalc: !include configurations/powercalc.yaml
@@ -65,7 +65,7 @@ switch: !include_dir_merge_list configurations/switch
 tts: !include configurations/tts.yaml
 
 # logger:
-  # default: info
-  # logs:
-  #   custom_components.google_home: debug
+#   default: warning
+#   logs:
+#     custom_components.energidataservice: debug
     

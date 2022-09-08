@@ -1,0 +1,30 @@
+#######################################
+# Track usage of my custom_components #
+#######################################
+
+pack_custom_component_tracker:
+  rest:
+    - resource: https://analytics.home-assistant.io/custom_integrations.json
+      scan_interval: 60000
+      sensor:
+        - name: My Components - Danfoss Ally
+          value_template: >
+            {{ value_json.danfoss_ally.get("total") }}
+          unit_of_measurement: "installs"
+          json_attributes_path: "$.danfoss_ally"
+          json_attributes:
+            - "versions"
+        - name: My Components - Energi Data Service
+          value_template: >
+            {{ value_json.energidataservice.get("total") }}
+          unit_of_measurement: "installs"
+          json_attributes_path: "$.energidataservice"
+          json_attributes:
+            - "versions"
+        - name: My Components - Landroid Cloud
+          value_template: >
+            {{ value_json.landroid_cloud.get("total") }}
+          unit_of_measurement: "installs"
+          json_attributes_path: "$.landroid_cloud"
+          json_attributes:
+            - "versions"

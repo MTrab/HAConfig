@@ -123,13 +123,44 @@
         entity_id: input_boolean.away_mode
         state: 'on'
       sequence:
-      - service: switch.turn_off
+      - service: homeassistant.turn_off
         target:
           entity_id:
-          - switch.schedule_heat_floor_in_bedroom
           - switch.schedule_normal_heating
           - switch.schedule_normal_heating_when_working_from_home
           - switch.schedule_weekend_heating
+          - input_boolean.allow_auto_charge
+          - automation.alert_extra_wakeup_alarm
+          - automation.auto_toggle_climate_when_window_opens
+          - automation.auto_detect_low_battery_and_notify
+          - automation.light_outside_morning_on
+          - automation.light_dusk_outside_auto_on
+          - automation.auto_set_extra_wakeup_alarm_trigger
+          - automation.auto_standby_off
+          - automation.turn_on_vitrine_when_sun_goes_down
+          - automation.auto_turn_on_candles_when_sun_goes_down
+          - automation.auto_webasto_turn_on_at_calculated_start_time
+          - automation.light_motion_bathroom
+          - automation.light_motion_hall
+          - automation.notify_prepare_dinner
+          - automation.notification_remind_departure
+          - automation.tts_bedtime
+          - automation.tts_calendar_notification
+          - automation.tts_departure_time_reached
+          - automation.tts_dinner_reminder
+          - automation.tts_dj_skoge_stremer_new
+          - automation.tts_doren_er_aben_new
+          - automation.tts_greeting_when_coming_home
+          - automation.vacuum_automate_run_and_dock
+          area_id:
+          - gang
+          - 8868a58504c411eb945e45ca1102362e
+          - 8868a7e204c411eb899463fe073850fb
+          - 61bc22cd04e111eb9494c926e661f79b
+          - 8868a1b304c411eb9211dd814829b168
+          - toilet
+          - udendors
+          - unnamed_room
         data: {}
       - service: climate.set_temperature
         data:
@@ -151,18 +182,36 @@
           entity_id:
           - climate.hall
           - climate.toilet
-      - service: input_boolean.turn_off
-        target:
-          entity_id: input_boolean.allow_auto_charge
-        data: {}
     default:
-    - service: switch.turn_on
+    - service: homeassistant.turn_on
       target:
         entity_id:
-        - switch.schedule_heat_floor_in_bedroom
         - switch.schedule_normal_heating
         - switch.schedule_normal_heating_when_working_from_home
         - switch.schedule_weekend_heating
+        - input_boolean.allow_auto_charge
+        - automation.alert_extra_wakeup_alarm
+        - automation.auto_toggle_climate_when_window_opens
+        - automation.auto_detect_low_battery_and_notify
+        - automation.light_outside_morning_on
+        - automation.light_dusk_outside_auto_on
+        - automation.auto_set_extra_wakeup_alarm_trigger
+        - automation.auto_standby_off
+        - automation.turn_on_vitrine_when_sun_goes_down
+        - automation.auto_turn_on_candles_when_sun_goes_down
+        - automation.auto_webasto_turn_on_at_calculated_start_time
+        - automation.light_motion_bathroom
+        - automation.light_motion_hall
+        - automation.notify_prepare_dinner
+        - automation.notification_remind_departure
+        - automation.tts_bedtime
+        - automation.tts_calendar_notification
+        - automation.tts_departure_time_reached
+        - automation.tts_dinner_reminder
+        - automation.tts_dj_skoge_stremer_new
+        - automation.tts_doren_er_aben_new
+        - automation.tts_greeting_when_coming_home
+        - automation.vacuum_automate_run_and_dock
       data: {}
   mode: single
 - id: '1606586819683'
@@ -389,24 +438,39 @@
   - platform: time
     at: 05:00:00
     id: 'on'
-  condition: []
+  condition:
+  - condition: state
+    entity_id: input_boolean.away_mode
+    state: 'off'
   action:
   - choose:
     - conditions:
       - condition: trigger
         id: 'off'
-      - type: is_power
-        condition: device
-        device_id: 0d38e72afcf2f15fd920c0edcaa4b47d
-        entity_id: sensor.coffeemaker_switch_electric_consumption_w
-        domain: sensor
-        below: 2.5
       sequence:
-      - service: switch.turn_off
-        data: {}
-        target:
-          entity_id:
-          - switch.coffeemaker_switch
+      - choose:
+        - conditions:
+          - condition: numeric_state
+            entity_id: sensor.coffeemaker_switch_power
+            below: '3'
+          sequence:
+          - service: switch.turn_off
+            data: {}
+            target:
+              entity_id:
+              - switch.coffeemaker_switch
+        default: []
+      - choose:
+        - conditions:
+          - condition: numeric_state
+            entity_id: sensor.skrivebord_power
+            below: '100'
+          sequence:
+          - type: turn_off
+            device_id: d23fd4714c9b7008d771a5e948643bbc
+            entity_id: switch.skrivebord
+            domain: switch
+        default: []
     default: []
   - choose:
     - conditions:
@@ -416,17 +480,10 @@
       - service: switch.turn_on
         data: {}
         target:
-          entity_id: switch.coffeemaker_switch
-    default: []
-  - choose:
-    - conditions:
-      - condition: trigger
-        id: 'on'
-      sequence:
-      - type: turn_on
-        device_id: d23fd4714c9b7008d771a5e948643bbc
-        entity_id: switch.skrivebord
-        domain: switch
+          entity_id:
+          - switch.coffeemaker_switch
+          - switch.skrivebord
+          - switch.hifi
     default: []
   mode: single
 - id: '1612350036408'
@@ -528,7 +585,7 @@
     domain: light
   mode: single
 - id: '1612785517695'
-  alias: Auto - Leaving Home
+  alias: Auto - Come and go control
   description: ''
   trigger:
   - platform: state
@@ -546,6 +603,12 @@
       hours: 0
       minutes: 30
       seconds: 0
+  - platform: state
+    entity_id:
+    - group.any_home
+    from: not_home
+    to: home
+    id: arriving
   condition: []
   action:
   - choose:
@@ -559,60 +622,43 @@
       - service: light.turn_off
         entity_id: all
         data: {}
+      - choose:
+        - conditions:
+          - condition: numeric_state
+            entity_id: sensor.skrivebord_power
+            below: '100'
+          sequence:
+          - type: turn_off
+            device_id: d23fd4714c9b7008d771a5e948643bbc
+            entity_id: switch.skrivebord
+            domain: switch
+        default: []
     - conditions:
       - condition: trigger
         id: 30min
       sequence:
-      - service: switch.turn_off
+      - service: homeassistant.turn_off
         target:
           entity_id:
           - switch.coffeemaker_switch
+          - switch.hifi
         data: {}
-    default: []
-  mode: single
-- id: '1612785626004'
-  alias: Auto - Coming Home
-  description: Do specific stuff when coming home
-  trigger:
-  - platform: state
-    entity_id: group.any_home
-    from: not_home
-    to: home
-  condition: []
-  action:
-  - choose:
     - conditions:
-      - condition: state
-        entity_id: sun.sun
-        state: below_horizon
+      - condition: trigger
+        id: arriving
       sequence:
-      - service: automation.trigger
+      - service: input_boolean.turn_off
         data: {}
-        entity_id: automation.light_dusk_outside_auto_on
-      - service: automation.trigger
+        target:
+          entity_id: input_boolean.away_mode
+      - service: homeassistant.turn_on
         data: {}
-        entity_id: automation.turn_on_vitrine_when_sun_goes_down
+        target:
+          entity_id:
+          - switch.coffeemaker_switch
+          - switch.skrivebord
+          - switch.hifi
     default: []
-  - choose:
-    - conditions:
-      - condition: time
-        after: 05:00:00
-      - condition: sun
-        before: sunrise
-        after: sunset
-      sequence:
-      - service: automation.trigger
-        data: {}
-        entity_id: automation.light_outside_morning_on
-    default: []
-  - type: turn_on
-    device_id: d23fd4714c9b7008d771a5e948643bbc
-    entity_id: switch.skrivebord
-    domain: switch
-  - type: turn_on
-    device_id: 8ae93b9b7711ca61eaa526e03b81f43f
-    entity_id: switch.coffeemaker_switch
-    domain: switch
   mode: single
 - id: '1612814644449'
   alias: Alert - Smoke Detected
@@ -794,8 +840,8 @@
     to: home
   condition:
   - condition: time
-    after: 00:00
-    before: '21:00'
+    after: 09:00:00
+    before: '21:00:00'
   action:
   - wait_for_trigger:
     - type: opened
@@ -1010,10 +1056,10 @@
     target:
       entity_id: input_text.google_origin
     data:
-      value: "{% if states(\"device_tracker.mtopnord2\") == \"not_home\" %}\n  {{\
-        \ state_attr(\"device_tracker.mtopnord2\", \"latitude\") }}, {{state_attr(\"\
-        device_tracker.mtopnord2\", \"longitude\") }}\n{% else %}\n  {{ states(\"\
-        device_tracker.mtopnord2\") }}\n{% endif %}"
+      value: "{% if states(\"device_tracker.mtopnord2\") == \"not_home\" %}\n  {{
+        state_attr(\"device_tracker.mtopnord2\", \"latitude\") }}, {{state_attr(\"device_tracker.mtopnord2\",
+        \"longitude\") }}\n{% else %}\n  {{ states(\"device_tracker.mtopnord2\") }}\n{%
+        endif %}"
   mode: restart
 - id: '1637574947818'
   alias: Notification - Remind Departure
@@ -1651,10 +1697,10 @@
     to: home
     id: dock
   - platform: template
-    value_template: "{% if trigger %}\n  {% set direction = trigger.to_state.attributes.dir_of_travel\
-      \ %}\n  {% set distance = trigger.to_state.state %}\n\n  {% if direction ==\
-      \ towards and distance < 15 %}\n    true\n  {% else %}\n    false\n  {% endif\
-      \ %}\n{% endif %}"
+    value_template: "{% if trigger %}\n  {% set direction = trigger.to_state.attributes.dir_of_travel
+      %}\n  {% set distance = trigger.to_state.state %}\n\n  {% if direction == towards
+      and distance < 15 %}\n    true\n  {% else %}\n    false\n  {% endif %}\n{% endif
+      %}"
     id: dock
   condition: []
   action:
@@ -1667,6 +1713,11 @@
         domain: vacuum
         entity_id: vacuum.wall_e
         type: clean
+      - service: vacuum.set_fan_speed
+        data:
+          fan_speed: strong
+        target:
+          entity_id: vacuum.wall_e
     default:
     - condition: trigger
       id: dock
@@ -1757,4 +1808,28 @@
         entity_id: switch.smartgarden
         domain: switch
     default: []
+  mode: single
+- id: '1661776831305'
+  alias: Auto - Shutdown charger on high temperature
+  description: ''
+  trigger:
+  - type: temperature
+    platform: device
+    device_id: f2338eee06de11eba65eb3aa68dad3d5
+    entity_id: sensor.car_charger_device_temperature
+    domain: sensor
+    above: 55
+    for:
+      hours: 0
+      minutes: 9
+      seconds: 0
+  condition: []
+  action:
+  - type: turn_off
+    device_id: f2338eee06de11eba65eb3aa68dad3d5
+    entity_id: switch.car_charger
+    domain: switch
+  - service: notify.mobile_app_mtopnord2
+    data:
+      message: Shelly PlugS til billader er for varm og er blevet slukket automatisk!
   mode: single

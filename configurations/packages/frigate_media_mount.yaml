@@ -1,2 +1,0 @@
-shell_command:
-  mount_frigate: 'mkdir -p /media/frigate && mount -t cifs -o username=frigate,password=8PD69Bmr8nzyNe9vRVJv //172.16.30.6/frigate /media/frigate'

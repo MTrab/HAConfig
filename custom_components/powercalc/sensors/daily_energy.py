@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import decimal
 import logging
 from datetime import datetime, timedelta
 from decimal import Decimal
-from typing import Any
+from typing import Any, Callable
 
 import homeassistant.helpers.config_validation as cv
 import homeassistant.util.dt as dt_util
@@ -28,9 +29,10 @@ from homeassistant.helpers.entity import async_generate_entity_id
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.template import Template
+from homeassistant.helpers.typing import ConfigType
 
-from custom_components.powercalc.common import SourceEntity
-from custom_components.powercalc.const import (
+from ..common import SourceEntity
+from ..const import (
     CONF_DAILY_FIXED_ENERGY,
     CONF_ENERGY_SENSOR_CATEGORY,
     CONF_ENERGY_SENSOR_PRECISION,
@@ -43,12 +45,10 @@ from custom_components.powercalc.const import (
     CONF_VALUE,
     UnitPrefix,
 )
-from custom_components.powercalc.migrate import async_migrate_entity_id
-from custom_components.powercalc.sensors.power import create_virtual_power_sensor
-
+from ..migrate import async_migrate_entity_id
 from .abstract import generate_energy_sensor_entity_id, generate_energy_sensor_name
 from .energy import EnergySensor
-from .power import VirtualPowerSensor
+from .power import VirtualPowerSensor, create_virtual_power_sensor
 
 ENERGY_ICON = "mdi:lightning-bolt"
 ENTITY_ID_FORMAT = SENSOR_DOMAIN + ".{}"
@@ -72,25 +72,40 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def create_daily_fixed_energy_sensor(
-    hass: HomeAssistant, sensor_config: dict
+    hass: HomeAssistant,
+    sensor_config: ConfigType,
+    source_entity: SourceEntity | None = None,
 ) -> DailyEnergySensor:
-    mode_config: dict = sensor_config.get(CONF_DAILY_FIXED_ENERGY)
+    mode_config: ConfigType = sensor_config.get(CONF_DAILY_FIXED_ENERGY)
 
-    name = generate_energy_sensor_name(sensor_config, sensor_config.get(CONF_NAME))
-    entity_id = generate_energy_sensor_entity_id(hass, sensor_config)
-    old_entity_id = async_generate_entity_id(
-        ENTITY_ID_FORMAT, sensor_config.get(CONF_NAME), hass=hass
+    name = generate_energy_sensor_name(
+        sensor_config, sensor_config.get(CONF_NAME), source_entity
     )
-    async_migrate_entity_id(
-        hass, SENSOR_DOMAIN, old_entity_id=old_entity_id, new_entity_id=entity_id
+    unique_id = sensor_config.get(CONF_UNIQUE_ID) or None
+    entity_id = generate_energy_sensor_entity_id(
+        hass, sensor_config, unique_id=unique_id, source_entity=source_entity
     )
+    if not unique_id:
+        old_entity_id = async_generate_entity_id(
+            ENTITY_ID_FORMAT, sensor_config.get(CONF_NAME), hass=hass
+        )
+        async_migrate_entity_id(
+            hass, SENSOR_DOMAIN, old_entity_id=old_entity_id, new_entity_id=entity_id
+        )
 
     _LOGGER.debug(
         "Creating daily_fixed_energy energy sensor (name=%s, entity_id=%s, unique_id=%s)",
         name,
         entity_id,
-        sensor_config.get(CONF_UNIQUE_ID),
+        unique_id,
     )
+
+    if CONF_ON_TIME in mode_config:
+        on_time = mode_config.get(CONF_ON_TIME)
+        if not isinstance(on_time, timedelta):
+            on_time = timedelta(seconds=on_time)
+    else:
+        on_time = timedelta(days=1)
 
     return DailyEnergySensor(
         hass,
@@ -100,7 +115,7 @@ async def create_daily_fixed_energy_sensor(
         mode_config.get(CONF_UNIT_OF_MEASUREMENT),
         mode_config.get(CONF_UPDATE_FREQUENCY),
         sensor_config,
-        on_time=mode_config.get(CONF_ON_TIME),
+        on_time=on_time,
         start_time=mode_config.get(CONF_START_TIME),
         rounding_digits=sensor_config.get(CONF_ENERGY_SENSOR_PRECISION),
     )
@@ -134,7 +149,7 @@ async def create_daily_fixed_energy_power_sensor(
 
 class DailyEnergySensor(RestoreEntity, SensorEntity, EnergySensor):
     _attr_device_class = SensorDeviceClass.ENERGY
-    _attr_state_class = SensorStateClass.TOTAL_INCREASING
+    _attr_state_class = SensorStateClass.TOTAL
     _attr_should_poll = False
     _attr_icon = ENERGY_ICON
 
@@ -143,7 +158,7 @@ class DailyEnergySensor(RestoreEntity, SensorEntity, EnergySensor):
         hass: HomeAssistant,
         name: str,
         entity_id: str,
-        value: float,
+        value: float | Template,
         user_unit_of_measurement: str,
         update_frequency: int,
         sensor_config: dict[str, Any],
@@ -153,6 +168,7 @@ class DailyEnergySensor(RestoreEntity, SensorEntity, EnergySensor):
     ):
         self._hass = hass
         self._attr_name = name
+        self._state: Decimal = Decimal(0)
         self._attr_entity_category = sensor_config.get(CONF_ENERGY_SENSOR_CATEGORY)
         self._value = value
         self._user_unit_of_measurement = user_unit_of_measurement
@@ -163,11 +179,16 @@ class DailyEnergySensor(RestoreEntity, SensorEntity, EnergySensor):
         self._rounding_digits = rounding_digits
         self._attr_unique_id = sensor_config.get(CONF_UNIQUE_ID)
         self.entity_id = entity_id
+        self._last_updated: float = dt_util.utcnow().timestamp()
+        self._last_delta_calculate: float | None = None
         self.set_native_unit_of_measurement()
+        self._update_timer_removal: Callable[[], None] | None = None
 
     def set_native_unit_of_measurement(self):
         """Set the native unit of measurement"""
-        unit_prefix = self._sensor_config.get(CONF_ENERGY_SENSOR_UNIT_PREFIX)
+        unit_prefix = (
+            self._sensor_config.get(CONF_ENERGY_SENSOR_UNIT_PREFIX) or UnitPrefix.KILO
+        )
         if unit_prefix == UnitPrefix.KILO:
             self._attr_native_unit_of_measurement = ENERGY_KILO_WATT_HOUR
         elif unit_prefix == UnitPrefix.NONE:
@@ -179,11 +200,15 @@ class DailyEnergySensor(RestoreEntity, SensorEntity, EnergySensor):
         """Handle entity which will be added."""
 
         if state := await self.async_get_last_state():
-            self._state = Decimal(state.state)
-            delta = self.calculate_delta(
-                round(datetime.now().timestamp() - state.last_changed.timestamp())
-            )
-            self._state = self._state + delta
+            try:
+                self._state = Decimal(state.state)
+            except decimal.DecimalException:
+                _LOGGER.warning(
+                    f"{self.entity_id}: Cannot restore state: {state.state}"
+                )
+                self._state = Decimal(0)
+            self._last_updated = state.last_changed.timestamp()
+            self._state += self.calculate_delta()
             self.async_schedule_update_ha_state()
         else:
             self._state = Decimal(0)
@@ -191,36 +216,48 @@ class DailyEnergySensor(RestoreEntity, SensorEntity, EnergySensor):
         _LOGGER.debug(f"{self.entity_id}: Restoring state: {self._state}")
 
         @callback
-        def refresh(event_time=None):
+        def refresh(now: datetime):
             """Update the energy sensor state."""
-            self._state = self._state + self.calculate_delta(self._update_frequency)
-            _LOGGER.debug(
-                f"{self.entity_id}: Updating daily_fixed_energy sensor: {round(self._state, 4)}"
-            )
-            self.async_schedule_update_ha_state()
+            delta = self.calculate_delta(self._update_frequency)
+            if delta > 0:
+                self._state = self._state + delta
+                _LOGGER.debug(
+                    f"{self.entity_id}: Updating daily_fixed_energy sensor: {round(self._state, 4)}"
+                )
+                self.async_schedule_update_ha_state()
+                self._last_updated = dt_util.now().timestamp()
 
-        self._timer = async_track_time_interval(
+        self._update_timer_removal = async_track_time_interval(
             self.hass, refresh, timedelta(seconds=self._update_frequency)
         )
 
-    def calculate_delta(self, elapsedSeconds: int) -> Decimal:
+    def calculate_delta(self, elapsed_seconds: int = 0) -> Decimal:
+        if self._last_delta_calculate is None:
+            self._last_delta_calculate = self._last_updated
+
+        elapsed_seconds = (
+            self._last_delta_calculate - self._last_updated
+        ) + elapsed_seconds
+        self._last_delta_calculate = dt_util.utcnow().timestamp()
+
         value = self._value
         if isinstance(value, Template):
-            value = value.render()
+            value.hass = self.hass
+            value = value.async_render()
 
-        if self._user_unit_of_measurement == ENERGY_KILO_WATT_HOUR:
-            whPerDay = value * 1000
-        elif self._user_unit_of_measurement == POWER_WATT:
-            whPerDay = value * (self._on_time.total_seconds() / 3600)
+        if self._user_unit_of_measurement == POWER_WATT:
+            wh_per_day = value * (self._on_time.total_seconds() / 3600)
+        else:
+            wh_per_day = value * 1000
 
         # Convert Wh to the native measurement unit
-        energyPerDay = whPerDay
+        energy_per_day = wh_per_day
         if self._attr_native_unit_of_measurement == ENERGY_KILO_WATT_HOUR:
-            energyPerDay = whPerDay / 1000
+            energy_per_day = wh_per_day / 1000
         elif self._attr_native_unit_of_measurement == ENERGY_MEGA_WATT_HOUR:
-            energyPerDay = whPerDay / 1000000
+            energy_per_day = wh_per_day / 1000000
 
-        return Decimal((energyPerDay / 86400) * elapsedSeconds)
+        return Decimal((energy_per_day / 86400) * elapsed_seconds)
 
     @property
     def native_value(self):

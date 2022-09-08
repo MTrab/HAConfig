@@ -1,7 +1,0 @@
-- platform: mqtt
-  name: foodplan_stay_awake
-  command_topic: "esphome/foodplanner/stayawake"
-  state_topic: "esphome/foodplanner/stayawake"
-  payload_on: "ON"
-  payload_off: "OFF"
-  retain: true

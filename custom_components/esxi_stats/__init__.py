@@ -29,6 +29,7 @@ from .esxi import (
     get_datastore_info,
     get_license_info,
     get_vm_info,
+    host_pwr,
     host_pwr_policy,
     vm_pwr,
     vm_snap_take,
@@ -38,6 +39,7 @@ from .esxi import (
 from .const import (
     AVAILABLE_CMND_VM_SNAP,
     AVAILABLE_CMND_VM_POWER,
+    AVAILABLE_CMND_HOST_POWER,
     COMMAND,
     DEFAULT_OPTIONS,
     DOMAIN,
@@ -46,6 +48,7 @@ from .const import (
     REQUIRED_FILES,
     HOST,
     VM,
+    FORCE,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -55,8 +58,10 @@ HOST_PWR_SCHEMA = vol.Schema(
     {
         vol.Required(HOST): cv.string,
         vol.Required(COMMAND): cv.string,
+        vol.Required(FORCE): cv.boolean,
     }
 )
+
 VM_PWR_SCHEMA = vol.Schema(
     {
         vol.Required(HOST): cv.string,
@@ -124,7 +129,7 @@ async def async_setup_entry(hass, config_entry):
 
     # get global config
     _LOGGER.debug("Setting up host %s", config[DOMAIN].get(CONF_HOST))
-    hass.data[DOMAIN_DATA][entry]["client"] = esxiStats(hass, config, config_entry)
+    hass.data[DOMAIN_DATA][entry]["client"] = EsxiStats(hass, config, config_entry)
 
     lic = await hass.async_add_executor_job(connect, hass, config, entry)
 
@@ -156,22 +161,26 @@ def connect(hass, config, entry):
             "port": config[DOMAIN]["port"],
             "ssl": config[DOMAIN]["verify_ssl"],
         }
-        conn = esx_connect(**conn_details)
-        _LOGGER.debug("Product Line: %s", conn.content.about.productLineId)
 
-        # get license type and objects
-        lic = check_license(conn.RetrieveContent().licenseManager)
-        hass.data[DOMAIN_DATA][entry]["client"].update_data()
+        conn = esx_connect(**conn_details)
+        if conn:
+            _LOGGER.debug("Product Line: %s", conn.content.about.productLineId)
+
+            # get license type and objects
+            lic = check_license(conn.RetrieveContent().licenseManager)
+            hass.data[DOMAIN_DATA][entry]["client"].update_data()
+        else:
+            lic = "n/a"
     except Exception as exception:  # pylint: disable=broad-except
         _LOGGER.error(exception)
-        raise ConfigEntryNotReady
+        raise ConfigEntryNotReady from exception
     finally:
         esx_disconnect(conn)
 
     return lic
 
 
-class esxiStats:
+class EsxiStats:
     """This class handles communication, services, and stores the data."""
 
     def __init__(self, hass, config, config_entry=None):
@@ -295,7 +304,10 @@ def async_add_services(hass, config_entry):
     """Add ESXi Stats services."""
 
     # Set notify here - but there has to be a better way
-    notify = config_entry.options["notify"]
+    if config_entry.options["notify"]:
+        notify = config_entry.options["notify"]
+    else:
+        notify: True
 
     # Check that a host exists in HomeAssistant and get its credentials
     @callback
@@ -311,6 +323,21 @@ def async_add_services(hass, config_entry):
                 }
 
         raise ValueError("Host is not configured in HomeAssistant")
+
+    # Host shutdown service
+    async def host_power(call):
+        host = call.data["host"]
+        cmnd = call.data["command"]
+        forc = call.data["force"]
+
+        if cmnd in AVAILABLE_CMND_HOST_POWER:
+            try:
+                conn_details = async_get_conn_details(host)
+                await hass.async_add_executor_job(host_pwr, cmnd, conn_details, forc)
+            except Exception as error:  # pylint: disable=broad-except
+                _LOGGER.error(str(error))
+        else:
+            _LOGGER.error("host_power: '%s' is not a supported command", cmnd)
 
     @callback
     def async_get_vm_details(vm_name):
@@ -412,6 +439,9 @@ def async_add_services(hass, config_entry):
             _LOGGER.error("snap_remove: '%s' is not a supported command", cmnd)
 
     hass.services.async_register(DOMAIN, "vm_power", vm_power, schema=VM_PWR_SCHEMA)
+    hass.services.async_register(
+        DOMAIN, "host_power", host_power, schema=HOST_PWR_SCHEMA
+    )
     hass.services.async_register(
         DOMAIN, "create_snapshot", snap_create, schema=SNAP_CREATE_SCHEMA
     )

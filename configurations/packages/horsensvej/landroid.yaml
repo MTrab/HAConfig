@@ -1,0 +1,17 @@
+horsensvej_landroid:
+  template:
+    - sensor:
+        - name: Robert daily progress
+          unique_id: robert_daily_progress
+          unit_of_measurement: "%"
+          state: >
+            {{ state_attr("vacuum.robert","daily_progress") }}
+        - name: Robert next scheduled start
+          unique_id: robert_next_scheduled_start
+          state: >
+            {{ state_attr("vacuum.robert","next_scheduled_start") }}
+        - name: Robert battery state
+          unique_id: robert_battery_state
+          unit_of_measurement: "%"
+          state: >
+            {{ state_attr("vacuum.robert","battery")["percent"] }}

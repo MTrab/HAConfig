@@ -19,7 +19,9 @@ BASE_URL = (
 
 SOURCE_NAME = "Nord Pool"
 
-__all__ = ["REGIONS", "Connector"]
+DEFAULT_CURRENCY = "EUR"
+
+__all__ = ["REGIONS", "Connector", "DEFAULT_CURRENCY"]
 
 
 def prepare_data(indata, date, tz) -> list:  # pylint: disable=invalid-name
@@ -61,6 +63,7 @@ class Connector:
 
         res = await asyncio.gather(*jobs)
         raw = []
+
         for i in res:
             raw = raw + self._parse_json(i)
 
@@ -139,7 +142,7 @@ class Connector:
                     continue
 
                 value = self._conv_to_float(col["Value"])
-                if isinstance(value,type(None)):
+                if isinstance(value, type(None)):
                     continue
 
                 region_data.append(

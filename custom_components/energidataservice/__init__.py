@@ -9,6 +9,7 @@ from random import randint
 
 from aiohttp import ServerDisconnectedError
 from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
+from homeassistant.const import CONF_API_KEY, CONF_EMAIL
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.dispatcher import async_dispatcher_send
@@ -17,7 +18,8 @@ from homeassistant.loader import async_get_integration
 from pytz import timezone
 
 from .connectors import Connectors
-from .const import CONF_AREA, DOMAIN, STARTUP, UPDATE_EDS
+from .const import CONF_AREA, CONF_ENABLE_FORECAST, DOMAIN, STARTUP, UPDATE_EDS
+from .forecasts import Forecast
 from .utils.regionhandler import RegionHandler
 
 RANDOM_MINUTE = randint(0, 10)
@@ -25,6 +27,8 @@ RANDOM_SECOND = randint(0, 59)
 
 RETRY_MINUTES = 10
 MAX_RETRY_MINUTES = 120
+
+CARNOT_UPDATE = timedelta(minutes=30)
 
 _LOGGER = getLogger(__name__)
 
@@ -89,8 +93,7 @@ async def _setup(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     api = APIConnector(
         hass,
-        entry.options.get(CONF_AREA) or entry.data.get(CONF_AREA),
-        entry.entry_id,
+        entry,
     )
     hass.data[DOMAIN][entry.entry_id] = api
 
@@ -114,6 +117,14 @@ async def _setup(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await api.update()
         async_dispatcher_send(hass, UPDATE_EDS)
 
+    async def update_carnot(n):  # type: ignore pylint: disable=unused-argument, invalid-name
+        """Fetch new data from Carnot every 30 minutes."""
+        _LOGGER.debug("Getting latest Carnot forecast")
+        await api.update_carnot()
+
+        async_call_later(hass, CARNOT_UPDATE, update_carnot)
+        async_dispatcher_send(hass, UPDATE_EDS)
+
     # Handle dataset updates
     update_tomorrow = async_track_time_change(
         hass,
@@ -133,6 +144,8 @@ async def _setup(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     update_new_hour = async_track_time_change(hass, new_hour, minute=0, second=0)
 
+    async_call_later(hass, CARNOT_UPDATE, update_carnot)
+
     api.listeners.append(update_tomorrow)
     api.listeners.append(update_new_hour)
     api.listeners.append(update_new_day)
@@ -143,27 +156,37 @@ async def _setup(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 class APIConnector:
     """An object to store Energi Data Service data."""
 
-    def __init__(self, hass, region, entry_id) -> None:
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         """Initialize Energi Data Service Connector."""
         self._connectors = Connectors()
+        self._forecasts = Forecast()
         self.hass = hass
         self._last_tick = None
         self._tomorrow_valid = False
-        self._entry_id = entry_id
+        self._entry_id = entry.entry_id
 
         self.today = None
         self.tomorrow = None
+        self.predictions = None
         self.today_calculated = False
         self.tomorrow_calculated = False
+        self.predictions_calculated = False
+        self.connector_currency = "EUR"
+        self.forecast_currency = "EUR"
         self.listeners = []
 
         self.next_retry_delay = RETRY_MINUTES
         self.retry_count = 0
 
         self._client = async_get_clientsession(hass)
-        self._region = RegionHandler(region)
+        self._region = RegionHandler(
+            entry.options.get(CONF_AREA) or entry.data.get(CONF_AREA)
+        )
         self._tz = hass.config.time_zone
         self._source = None
+        self._forecast = entry.options.get(CONF_ENABLE_FORECAST) or False
+        self._carnot_user = entry.options.get(CONF_EMAIL) or None
+        self._carnot_apikey = entry.options.get(CONF_API_KEY) or None
 
     async def update(self, dt=None):  # type: ignore pylint: disable=unused-argument,invalid-name
         """Fetch latest prices from Energi Data Service API"""
@@ -173,6 +196,7 @@ class APIConnector:
             for endpoint in connectors:
                 module = import_module(endpoint.namespace, __name__)
                 api = module.Connector(self._region, self._client, self._tz)
+                self.connector_currency = module.DEFAULT_CURRENCY
                 await api.async_get_spotprices()
                 if api.today:
                     self.today = api.today
@@ -222,9 +246,30 @@ class APIConnector:
             else:
                 self.retry_count = 0
                 self._tomorrow_valid = True
+
         except ServerDisconnectedError:
-            _LOGGER.warning("Server disconnected.")
+            _LOGGER.warning("Err.")
             retry_update(self)
+
+    async def update_carnot(self, dt=None):  # type: ignore pylint: disable=unused-argument,invalid-name
+        """Update Carnot data if enabled."""
+        if self._forecast:
+            self.predictions_calculated = False
+            forecast_endpoint = self._forecasts.get_endpoint(self._region.region)
+            forecast_module = import_module(forecast_endpoint[0].namespace, __name__)
+            carnot = forecast_module.Connector(self._region, self._client, self._tz)
+            self.predictions_currency = forecast_module.DEFAULT_CURRENCY
+            self.predictions = await carnot.async_get_forecast(
+                self._carnot_apikey, self._carnot_user
+            )
+
+            if self._tomorrow_valid:
+                # Remove tomorrows predictions, as we have the actual values
+                self.predictions[:] = (
+                    value
+                    for value in self.predictions
+                    if value.hour.day != (datetime.now() + timedelta(days=1)).day
+                )
 
     @property
     def tomorrow_valid(self) -> bool:
@@ -233,7 +278,7 @@ class APIConnector:
 
     @property
     def source(self) -> str:
-        """Is tomorrows prices valid?"""
+        """Who was the source for the data?"""
         return self._source
 
     @property

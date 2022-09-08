@@ -11,7 +11,7 @@ from homeassistant.const import (
     STATE_UNAVAILABLE,
 )
 
-MIN_HA_VERSION = "2021.12"
+MIN_HA_VERSION = "2022.5"
 
 DOMAIN = "powercalc"
 DOMAIN_CONFIG = "config"
@@ -21,6 +21,7 @@ DATA_CONFIGURED_ENTITIES = "configured_entities"
 DATA_DISCOVERED_ENTITIES = "discovered_entities"
 DATA_DOMAIN_ENTITIES = "domain_entities"
 DATA_USED_UNIQUE_IDS = "used_unique_ids"
+DATA_PROFILE_LIBRARY = "profile_library"
 
 DUMMY_ENTITY_ID = "sensor.dummy"
 
@@ -41,8 +42,13 @@ CONF_ENERGY_SENSOR_FRIENDLY_NAMING = "energy_sensor_friendly_naming"
 CONF_ENERGY_SENSOR_PRECISION = "energy_sensor_precision"
 CONF_ENERGY_SENSOR_UNIT_PREFIX = "energy_sensor_unit_prefix"
 CONF_FIXED = "fixed"
+CONF_FORCE_UPDATE_FREQUENCY = "force_update_frequency"
 CONF_GROUP = "group"
+CONF_GROUP_POWER_ENTITIES = "group_power_entities"
+CONF_GROUP_ENERGY_ENTITIES = "group_energy_entities"
+CONF_GROUP_MEMBER_SENSORS = "group_member_sensors"
 CONF_GAMMA_CURVE = "gamma_curve"
+CONF_HIDE_MEMBERS = "hide_members"
 CONF_IGNORE_UNAVAILABLE_STATE = "ignore_unavailable_state"
 CONF_INCLUDE = "include"
 CONF_LINEAR = "linear"
@@ -58,17 +64,22 @@ CONF_POWER_SENSOR_FRIENDLY_NAMING = "power_sensor_friendly_naming"
 CONF_POWER_SENSOR_PRECISION = "power_sensor_precision"
 CONF_POWER = "power"
 CONF_POWER_SENSOR_ID = "power_sensor_id"
+CONF_POWER_TEMPLATE = "power_template"
 CONF_MIN_POWER = "min_power"
 CONF_MAX_POWER = "max_power"
 CONF_ON_TIME = "on_time"
 CONF_TEMPLATE = "template"
+CONF_SENSOR_TYPE = "sensor_type"
+CONF_SUB_PROFILE = "sub_profile"
 CONF_UPDATE_FREQUENCY = "update_frequency"
 CONF_VALUE = "value"
+CONF_VALUE_TEMPLATE = "value_template"
 CONF_VOLTAGE = "voltage"
 CONF_WLED = "wled"
 CONF_STATES_POWER = "states_power"
 CONF_START_TIME = "start_time"
 CONF_STANDBY_POWER = "standby_power"
+CONF_SUB_GROUPS = "sub_groups"
 CONF_CALCULATION_ENABLED_CONDITION = "calculation_enabled_condition"
 CONF_DISABLE_STANDBY_POWER = "disable_standby_power"
 CONF_CUSTOM_MODEL_DIRECTORY = "custom_model_directory"
@@ -107,7 +118,7 @@ ENTITY_CATEGORIES = [
     ENTITY_CATEGORY_SYSTEM,
 ]
 
-DEFAULT_SCAN_INTERVAL = timedelta(minutes=10)
+DEFAULT_UPDATE_FREQUENCY = timedelta(minutes=10)
 DEFAULT_POWER_NAME_PATTERN = "{} power"
 DEFAULT_POWER_SENSOR_PRECISION = 2
 DEFAULT_ENERGY_INTEGRATION_METHOD = ENERGY_INTEGRATION_METHOD_TRAPEZODIAL
@@ -117,9 +128,11 @@ DEFAULT_ENTITY_CATEGORY = ENTITY_CATEGORY_NONE
 DEFAULT_UTILITY_METER_TYPES = [DAILY, WEEKLY, MONTHLY]
 
 DISCOVERY_SOURCE_ENTITY = "source_entity"
-DISCOVERY_LIGHT_MODEL = "light_model"
+DISCOVERY_POWER_PROFILE = "power_profile"
+DISCOVERY_TYPE = "discovery_type"
 
 ATTR_CALCULATION_MODE = "calculation_mode"
+ATTR_ENERGY_SENSOR_ENTITY_ID = "energy_sensor_entity_id"
 ATTR_ENTITIES = "entities"
 ATTR_INTEGRATION = "integration"
 ATTR_IS_GROUP = "is_group"
@@ -127,18 +140,33 @@ ATTR_SOURCE_ENTITY = "source_entity"
 ATTR_SOURCE_DOMAIN = "source_domain"
 
 SERVICE_RESET_ENERGY = "reset_energy"
+SERVICE_CALIBRATE_UTILITY_METER = "calibrate_utility_meter"
 
-MODE_DAILY_FIXED_ENERGY = "daily_fixed_energy"
 MODE_LUT = "lut"
 MODE_LINEAR = "linear"
 MODE_FIXED = "fixed"
 MODE_WLED = "wled"
-CALCULATION_MODES = [
-    MODE_DAILY_FIXED_ENERGY,
-    MODE_FIXED,
-    MODE_LINEAR,
-    MODE_LUT,
-    MODE_WLED,
-]
 
 OFF_STATES = (STATE_OFF, STATE_NOT_HOME, STATE_STANDBY, STATE_UNAVAILABLE)
+
+
+class CalculationStrategy(StrEnum):
+    """Possible virtual power calculation strategies."""
+
+    LUT = "lut"
+    LINEAR = "linear"
+    FIXED = "fixed"
+    WLED = "wled"
+
+
+class SensorType(StrEnum):
+    """Possible modes for a number selector."""
+
+    DAILY_ENERGY = "daily_energy"
+    VIRTUAL_POWER = "virtual_power"
+    GROUP = "group"
+
+
+class PowercalcDiscoveryType(StrEnum):
+    DOMAIN_GROUP = "domain_group"
+    LIBRARY = "library"
