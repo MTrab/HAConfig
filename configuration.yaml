@@ -12,7 +12,7 @@ http:
   trusted_proxies:
     - 10.254.254.9
     - 172.30.33.0/24
-  ip_ban_enabled: true
+  ip_ban_enabled: false
   login_attempts_threshold: 5
 
 ######################################

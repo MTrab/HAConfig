@@ -10,6 +10,7 @@ from typing import Optional
 import homeassistant.helpers.device_registry as dr
 import homeassistant.helpers.entity_registry as er
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.typing import ConfigType
 
 from ..aliases import MANUFACTURER_ALIASES
 from ..const import CONF_CUSTOM_MODEL_DIRECTORY, CONF_MANUFACTURER, CONF_MODEL
@@ -54,10 +55,14 @@ async def get_power_profile(
 
 
 async def is_autoconfigurable(
-    hass: HomeAssistant, entry: er.RegistryEntry, sensor_config: dict = {}
+    hass: HomeAssistant, entry: er.RegistryEntry, sensor_config: ConfigType = None
 ) -> bool:
+    if sensor_config is None:
+        sensor_config = {}
     try:
         power_profile = await get_power_profile(hass, sensor_config, entry)
+        if not power_profile:
+            return False
         return bool(
             power_profile and not power_profile.is_additional_configuration_required
         )
@@ -80,7 +85,7 @@ async def autodiscover_model(
     device_registry = dr.async_get(hass)
     device_entry = device_registry.async_get(entity_entry.device_id)
     model_id = device_entry.model
-    if match := re.search("\(([^\(\)]+)\)$", str(device_entry.model)):
+    if match := re.search(r"\(([^\(\)]+)\)$", str(device_entry.model)):
         model_id = match.group(1)
 
     manufacturer = device_entry.manufacturer
@@ -112,7 +117,7 @@ async def has_manufacturer_and_model_information(
     if device_entry is None:
         return False
 
-    if device_entry.manufacturer is None or device_entry.model is None:
+    if len(str(device_entry.manufacturer)) == 0 or len(str(device_entry.model)) == 0:
         return False
 
     return True

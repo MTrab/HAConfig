@@ -94,3 +94,5 @@
   homeassistant:
     contact:
       device_class: window
+'0x00158d0007f01886':
+  friendly_name: ExtraFreezer

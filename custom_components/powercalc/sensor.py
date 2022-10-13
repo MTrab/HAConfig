@@ -32,7 +32,7 @@ from homeassistant.components.group import DOMAIN as GROUP_DOMAIN
 from homeassistant.components.light import DOMAIN as LIGHT_DOMAIN
 from homeassistant.components.sensor import DOMAIN as SENSOR_DOMAIN
 from homeassistant.components.sensor import PLATFORM_SCHEMA, SensorEntity
-from homeassistant.components.utility_meter import DEFAULT_OFFSET, max_28_days
+from homeassistant.components.utility_meter import max_28_days
 from homeassistant.components.utility_meter.const import METER_TYPES
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -59,6 +59,7 @@ from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from .common import (
     SourceEntity,
     create_source_entity,
+    get_merged_sensor_configuration,
     validate_is_number,
     validate_name_pattern,
 )
@@ -67,7 +68,6 @@ from .const import (
     CONF_CALCULATION_ENABLED_CONDITION,
     CONF_CALIBRATE,
     CONF_CREATE_ENERGY_SENSOR,
-    CONF_CREATE_ENERGY_SENSORS,
     CONF_CREATE_GROUP,
     CONF_CREATE_UTILITY_METERS,
     CONF_CUSTOM_MODEL_DIRECTORY,
@@ -235,7 +235,7 @@ def build_nested_configuration_schema(schema: dict, iteration: int = 0) -> dict:
 
 SENSOR_CONFIG = build_nested_configuration_schema(SENSOR_CONFIG)
 
-PLATFORM_SCHEMA: Final = vol.All(
+PLATFORM_SCHEMA: Final = vol.All(  # noqa: F811
     cv.has_at_least_one_key(
         CONF_ENTITY_ID, CONF_ENTITIES, CONF_INCLUDE, CONF_DAILY_FIXED_ENERGY
     ),
@@ -366,49 +366,12 @@ def convert_config_entry_to_sensor_config(config_entry: ConfigEntry) -> dict[str
 
         sensor_config[CONF_LINEAR] = linear_config
 
+    if CONF_CALCULATION_ENABLED_CONDITION in sensor_config:
+        sensor_config[CONF_CALCULATION_ENABLED_CONDITION] = Template(
+            sensor_config[CONF_CALCULATION_ENABLED_CONDITION]
+        )
+
     return sensor_config
-
-
-def get_merged_sensor_configuration(*configs: dict, validate: bool = True) -> dict:
-    """Merges configuration from multiple levels (sensor, group, global) into a single dict"""
-
-    exclude_from_merging = [
-        CONF_NAME,
-        CONF_ENTITY_ID,
-        CONF_UNIQUE_ID,
-        CONF_POWER_SENSOR_ID,
-    ]
-    num_configs = len(configs)
-
-    merged_config = {}
-    for i, config in enumerate(configs, 1):
-        config_copy = config.copy()
-        # Remove config properties which are only allowed on the deepest level
-        if i < num_configs:
-            for key in exclude_from_merging:
-                if key in config:
-                    config_copy.pop(key)
-
-        merged_config.update(config_copy)
-
-    if CONF_CREATE_ENERGY_SENSOR not in merged_config:
-        merged_config[CONF_CREATE_ENERGY_SENSOR] = merged_config.get(
-            CONF_CREATE_ENERGY_SENSORS
-        )
-
-    if CONF_DAILY_FIXED_ENERGY in merged_config and CONF_ENTITY_ID not in merged_config:
-        merged_config[CONF_ENTITY_ID] = DUMMY_ENTITY_ID
-
-    if (
-        validate
-        and CONF_CREATE_GROUP not in merged_config
-        and CONF_ENTITY_ID not in merged_config
-    ):
-        raise SensorConfigurationError(
-            "You must supply an entity_id in the configuration, see the README"
-        )
-
-    return merged_config
 
 
 async def create_sensors(
@@ -510,7 +473,7 @@ async def create_sensors(
             )
         elif not sensor_configs:
             raise SensorConfigurationError(
-                f"Could not resolve any entities for non-group sensor"
+                "Could not resolve any entities for non-group sensor"
             )
 
     # Create group sensors (power, energy, utility)
@@ -528,7 +491,7 @@ async def create_sensors(
     return EntitiesBucket(new=new_sensors, existing=existing_sensors)
 
 
-async def create_individual_sensors(
+async def create_individual_sensors(  # noqa: C901
     hass: HomeAssistant,
     sensor_config: dict,
     context: CreationContext,
@@ -718,7 +681,7 @@ def resolve_include_entities(
             entity_id: entity_reg.async_get(entity_id) for entity_id in entity_ids
         }
 
-    return entities.values()
+    return list(entities.values())
 
 
 @callback

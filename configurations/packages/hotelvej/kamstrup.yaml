@@ -112,7 +112,6 @@ pack_kamstrup:
           device_class: energy
           state_class: total_increasing
           unit_of_measurement: kWh
-          # state: ''
           state: >
             {% set ns = namespace(sensors=[],ok_sensors=(states.sensor | rejectattr('state','in',['unavailable','unknown','none']) | list)) %}
             {%- for sensor in ns.ok_sensors %}
