@@ -36,3 +36,4 @@ diyhue/
 unifi/
 zigbee2mqtt/
 zigbee2mqtt/database.db
+zigbee2mqtt/state.json

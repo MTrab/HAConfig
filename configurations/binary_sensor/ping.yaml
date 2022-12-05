@@ -13,3 +13,7 @@
 - platform: ping
   host: 172.16.100.1
   name: VPN Hetzner
+
+- platform: ping
+  host: 192.168.1.199
+  name: Fjernsyn Ping

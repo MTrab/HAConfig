@@ -620,8 +620,32 @@
         entity_id: all
         data: {}
       - service: light.turn_off
-        entity_id: all
         data: {}
+        target:
+          entity_id:
+          - light.dartskab
+          - light.digiclock_dots_lights
+          - light.digiclock_dots_lights
+          - light.digiclock_minutes_lights
+          - light.bedroom_ceiling_1
+          - light.bedroom_ceiling_2
+          - light.bedside_1
+          - light.bedside_2
+          - light.deathstar
+          - light.kitchen_1
+          - light.kitchen_2
+          - light.kitchen_3
+          - light.kitchen
+          - light.bedroom_ceiling
+          - light.gang_loftlys
+          - light.sengelys
+          - light.desktop
+          - light.spisebord
+          - light.toilet
+          - light.outside
+          - light.vitrine
+          - light.store_stearinlys
+          - light.spisebord
       - choose:
         - conditions:
           - condition: numeric_state
@@ -658,6 +682,9 @@
           - switch.coffeemaker_switch
           - switch.skrivebord
           - switch.hifi
+          - light.digiclock_dots_lights
+          - light.digiclock_hours_lights
+          - light.digiclock_minutes_lights
     default: []
   mode: single
 - id: '1612814644449'
@@ -1250,7 +1277,7 @@
     data: {}
   mode: single
 - id: '1642951260065'
-  alias: Auto - Core A8 - Turn off when job is done
+  alias: Auto - 3D Print - Turn off when job is done
   description: ''
   trigger:
   - platform: state
@@ -1261,12 +1288,38 @@
       hours: 0
       minutes: 10
       seconds: 0
+    id: core-a8
+  - platform: state
+    entity_id:
+    - binary_sensor.anet_a8_printing
+    id: anet-a8
+    from: 'on'
+    to: 'off'
+    for:
+      hours: 0
+      minutes: 10
+      seconds: 0
   condition: []
   action:
-  - service: switch.turn_off
-    target:
-      entity_id: switch.core_a8_power
-  mode: restart
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: core-a8
+      sequence:
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id: switch.core_a8_power
+    - conditions:
+      - condition: trigger
+        id: anet-a8
+      sequence:
+      - service: switch.turn_off
+        data: {}
+        target:
+          entity_id: switch.anet_a8_mains
+  mode: parallel
+  max: 5
 - id: '1644826763466'
   alias: TTS - Bedtime
   description: ''
@@ -1275,14 +1328,19 @@
     at: input_datetime.bedtime
   condition:
   - condition: state
-    entity_id: sensor.google_sovevaerelse_alarms
-    state: unavailable
-  - condition: state
     entity_id: person.malene_trab
     state: home
   - condition: state
     entity_id: binary_sensor.workday_tomorrow
     state: 'on'
+  - condition: or
+    conditions:
+    - condition: state
+      entity_id: sensor.google_sovevaerelse_alarms
+      state: unavailable
+    - condition: state
+      entity_id: sensor.google_sovevaerelse_alarms
+      state: unknown
   action:
   - service: script.do_speech
     data:
@@ -1815,21 +1873,21 @@
   trigger:
   - type: temperature
     platform: device
-    device_id: f2338eee06de11eba65eb3aa68dad3d5
-    entity_id: sensor.car_charger_device_temperature
+    device_id: 008d5a039a6e092ade04909a8299a89c
+    entity_id: sensor.extensioncord_device_temperature
     domain: sensor
-    above: 55
+    above: 50
     for:
       hours: 0
-      minutes: 9
+      minutes: 5
       seconds: 0
   condition: []
   action:
   - type: turn_off
-    device_id: f2338eee06de11eba65eb3aa68dad3d5
-    entity_id: switch.car_charger
+    device_id: 008d5a039a6e092ade04909a8299a89c
+    entity_id: switch.extensioncord
     domain: switch
   - service: notify.mobile_app_mtopnord2
     data:
-      message: Shelly PlugS til billader er for varm og er blevet slukket automatisk!
+      message: Kontakt til billader er for varm og er blevet slukket automatisk!
   mode: single

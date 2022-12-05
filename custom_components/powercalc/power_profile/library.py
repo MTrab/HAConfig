@@ -17,23 +17,25 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class ProfileLibrary:
-    def __init__(self, hass: HomeAssistant):
+    def __init__(self, hass: HomeAssistant, extra_data_directories: list = None):
         self._hass = hass
         self._data_directories: list[str] = [
-            dir
-            for dir in (
+            d
+            for d in (
                 os.path.join(hass.config.config_dir, CUSTOM_DATA_DIRECTORY),
                 os.path.join(os.path.dirname(__file__), "../custom_data"),
                 os.path.join(os.path.dirname(__file__), "../data"),
             )
-            if os.path.exists(dir)
+            if os.path.exists(d)
         ]
+        if extra_data_directories:
+            self._data_directories.extend(extra_data_directories)
         self._profiles: dict[str, list[PowerProfile]] = {}
 
     def factory(hass: HomeAssistant) -> ProfileLibrary:
         """
         Creates and loads the profile library
-        Makes sure it is only loaded once and instance is save in hass data registry
+        Makes sure it is only loaded once and instance is saved in hass data registry
         """
         if DOMAIN not in hass.data:
             hass.data[DOMAIN] = {}
@@ -81,7 +83,7 @@ class ProfileLibrary:
         for profile in profiles:
             if profile.supports(model_info.model):
                 if sub_profile:
-                    profile.load_sub_profile(sub_profile)
+                    profile.select_sub_profile(sub_profile)
                 return profile
 
         return None
@@ -95,7 +97,7 @@ class ProfileLibrary:
         Using the following lookup fallback mechanism:
          - check in user defined directory (config/powercalc-custom-models)
          - check in alternative user defined directory (config/custom_components/powercalc/custom_data)
-         - check in buildin directory (config/custom_components/powercalc/data)
+         - check in built-in directory (config/custom_components/powercalc/data)
         """
 
         if manufacturer in MANUFACTURER_DIRECTORY_MAPPING:
@@ -111,6 +113,8 @@ class ProfileLibrary:
             if not os.path.exists(manufacturer_dir):
                 continue
             for model in next(os.walk(manufacturer_dir))[1]:
+                if model[0] in [".", "@"]:
+                    continue
                 power_profile = await self._create_power_profile(
                     ModelInfo(manufacturer, model),
                     os.path.join(manufacturer_dir, model),
@@ -137,6 +141,10 @@ class ProfileLibrary:
                     directory=directory,
                     json_data=json_data,
                 )
+                # When the power profile supplies multiple sub profiles we select one by default
+                if not profile.sub_profile and profile.sub_profile_select:
+                    profile.select_sub_profile(profile.sub_profile_select.default)
+
         except FileNotFoundError:
             _LOGGER.error("model.json file not found in directory %s", directory)
             return None

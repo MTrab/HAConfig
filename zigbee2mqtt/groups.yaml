@@ -2,8 +2,8 @@
   friendly_name: kitchen
   retain: true
   devices:
-    - 0x588e81fffe75a9ad/1
     - 0x588e81fffe648705/1
+    - 0x588e81fffe75a9ad/1
     - 0x588e81fffe7621bb/1
 '2':
   friendly_name: sengelys

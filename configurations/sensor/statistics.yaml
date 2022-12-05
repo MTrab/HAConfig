@@ -2,5 +2,6 @@
   name: Køleskab Temperatur
   entity_id: sensor.temperature_fridge_temperature
   state_characteristic: mean
+  sampling_size: 20
   max_age:
     minutes: 30

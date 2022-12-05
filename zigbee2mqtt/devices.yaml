@@ -4,8 +4,6 @@
   friendly_name: Dartskab
 '0x00158d000404209b':
   friendly_name: DW Dartskab
-'0x588e81fffe75a9ad':
-  friendly_name: Kitchen_1
 '0x588e81fffe648705':
   friendly_name: Kitchen_2
 '0x588e81fffe7621bb':
@@ -96,3 +94,8 @@
       device_class: window
 '0x00158d0007f01886':
   friendly_name: ExtraFreezer
+'0x0015bc0037000857':
+  friendly_name: ExtensionCord
+  description: Extension cord used primarily for the car charger
+'0x588e81fffe75a9ad':
+  friendly_name: Kitchen_1

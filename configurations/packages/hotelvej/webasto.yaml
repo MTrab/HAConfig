@@ -104,7 +104,7 @@ pack_webasto:
             entity_id: input_datetime.webasto_next_departure_time
           data:
             datetime: >
-              {{ strptime(((as_timestamp(state_attr("calendar.heating","start_time")) - (states('sensor.google_travel_time')|int(0)*60) - (10*60)))|timestamp_local(default='0'), '%Y-%m-%d %H:%M:%S') }}
+              {{ as_datetime(((as_timestamp(state_attr("calendar.heating","start_time")) - (states('sensor.google_travel_time')|int(0)*60) - (10*60)))|timestamp_local(default='0')) }}
         - service: input_text.set_value
           target:
             entity_id: input_text.google_destination

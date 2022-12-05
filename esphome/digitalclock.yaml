@@ -196,7 +196,7 @@ light:
     id: led_strip
     name: "Led strip"
     internal: True
-    pin: GPIO3
+    pin: GPIO4
     num_leds: 30
     chipset: WS2812B
     rgb_order: GRB
@@ -222,7 +222,7 @@ light:
             {1,0,1,1,1,1,1}
           };
 
-          int ledOffsets[digitsCount] = {23 , 16, 7, 0};
+          int ledOffsets[digitsCount] = {0,7,16,23};
 
           auto time = id(sntp_time).now();
           int colors[4][3] = {

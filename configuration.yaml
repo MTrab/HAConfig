@@ -11,6 +11,7 @@ http:
   use_x_forwarded_for: true
   trusted_proxies:
     - 10.254.254.9
+    - 172.16.201.2
     - 172.30.33.0/24
   ip_ban_enabled: false
   login_attempts_threshold: 5
@@ -39,7 +40,6 @@ scene: !include scenes.yaml
 ######################################
 # Integrations without configuration
 media_extractor:
-#python_script:
 wake_on_lan:
 
 ######################################
@@ -48,9 +48,8 @@ binary_sensor: !include_dir_merge_list configurations/binary_sensor
 conversation: !include configurations/conversation.yaml
 device_tracker: !include configurations/device_tracker.yaml
 fuelprices_dk: !include configurations/fuelprices.yaml
-# google: !include configurations/google.yaml
+greentel: !include configurations/greentel.yaml
 group: !include_dir_merge_named configurations/groups
-# home_connect: !include configurations/home_connect.yaml
 intent_script: !include_dir_merge_named configurations/intent_script
 media_player: !include_dir_merge_list configurations/media_player
 powercalc: !include configurations/powercalc.yaml
@@ -60,7 +59,6 @@ recorder: !include configurations/recorder.yaml
 rest: !include_dir_merge_list configurations/rest
 sensor: !include_dir_merge_list configurations/sensor
 shell_command: !include configurations/shell_commands.yaml
-sonos_cloud: !include configurations/sonos_cloud.yaml
 switch: !include_dir_merge_list configurations/switch
 tts: !include configurations/tts.yaml
 

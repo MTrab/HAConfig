@@ -6,33 +6,36 @@ from typing import Any
 import voluptuous as vol
 from homeassistant import config_entries, core
 from homeassistant.const import (
+    ATTR_FRIENDLY_NAME,
     CONF_API_KEY,
     CONF_LATITUDE,
     CONF_LONGITUDE,
     CONF_NAME,
-    Platform,
 )
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import selector
 
 from .const import (
     CONF_DEVICETRACKER_ID,
+    CONF_DISPLAY_OPTIONS,
     CONF_EXTENDED_ATTR,
     CONF_HOME_ZONE,
     CONF_LANGUAGE,
     CONF_MAP_PROVIDER,
     CONF_MAP_ZOOM,
-    CONF_OPTIONS,
     CONF_SHOW_TIME,
+    CONF_USE_GPS,
+    DEFAULT_DISPLAY_OPTIONS,
     DEFAULT_EXTENDED_ATTR,
     DEFAULT_HOME_ZONE,
     DEFAULT_MAP_PROVIDER,
     DEFAULT_MAP_ZOOM,
-    DEFAULT_OPTION,
     DEFAULT_SHOW_TIME,
+    DEFAULT_USE_GPS,
     DOMAIN,
     HOME_LOCATION_DOMAINS,
     TRACKING_DOMAINS,
+    TRACKING_DOMAINS_NEED_LATLONG,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -53,25 +56,90 @@ def get_devicetracker_id_entities(
     hass: core.HomeAssistant, current_entity=None
 ) -> list[str]:
     """Get the list of valid entities. For sensors, only include ones with latitude and longitude attributes. For the devicetracker selector"""
-    clean_list = []
+    dt_list = []
     for dom in TRACKING_DOMAINS:
         # _LOGGER.debug("Geting entities for domain: " + str(dom))
         for ent in hass.states.async_all(dom):
-            if dom not in [Platform.SENSOR] or (
+            if dom not in TRACKING_DOMAINS_NEED_LATLONG or (
                 CONF_LATITUDE in hass.states.get(ent.entity_id).attributes
                 and CONF_LONGITUDE in hass.states.get(ent.entity_id).attributes
             ):
-                clean_list.append(str(ent.entity_id))
+                # _LOGGER.debug("Entity: " + str(ent))
+                dt_list.append(
+                    selector.SelectOptionDict(
+                        value=str(ent.entity_id),
+                        label=(
+                            str(ent.attributes.get(ATTR_FRIENDLY_NAME))
+                            + " ("
+                            + str(ent.entity_id)
+                            + ")"
+                        ),
+                    )
+                )
     # Optional: Include the current entity in the list as well.
     if current_entity is not None:
-        clean_list.append(current_entity)
-    clean_list = [*set(clean_list)]
-    clean_list.sort()
-    _LOGGER.debug(
-        "Devicetracker_id entities including sensors with lat/long: " +
-        str(clean_list)
-    )
-    return clean_list
+        # _LOGGER.debug("current_entity: " + str(current_entity))
+        dt_list_entities = [d["value"] for d in dt_list]
+        if current_entity not in dt_list_entities:
+            if (
+                current_entity in hass.states
+                and ATTR_FRIENDLY_NAME in hass.states.get(current_entity).attributes
+                and hass.states.get(current_entity).attributes.get(ATTR_FRIENDLY_NAME)
+                is not None
+            ):
+                current_name = hass.states.get(current_entity).attributes.get(
+                    ATTR_FRIENDLY_NAME
+                )
+                # _LOGGER.debug("current_name: " + str(current_name))
+                dt_list.append(
+                    selector.SelectOptionDict(
+                        value=str(current_entity),
+                        label=(str(current_name) + " (" + str(current_entity) + ")"),
+                    )
+                )
+            else:
+                dt_list.append(
+                    selector.SelectOptionDict(
+                        value=str(current_entity),
+                        label=(str(current_entity)),
+                    )
+                )
+    if dt_list:
+        dt_list_sorted = sorted(dt_list, key=lambda d: d["label"])
+    else:
+        dt_list_sorted = []
+
+    # _LOGGER.debug(
+    #    "Devicetracker_id name/entities including sensors with lat/long: "
+    #    + str(dt_list_sorted)
+    # )
+    return dt_list_sorted
+
+
+def get_home_zone_entities(hass: core.HomeAssistant) -> list[str]:
+    """Get the list of valid zones."""
+    zone_list = []
+    for dom in HOME_LOCATION_DOMAINS:
+        # _LOGGER.debug("Geting entities for domain: " + str(dom))
+        for ent in hass.states.async_all(dom):
+            # _LOGGER.debug("Entity: " + str(ent))
+            zone_list.append(
+                selector.SelectOptionDict(
+                    value=str(ent.entity_id),
+                    label=(
+                        str(ent.attributes.get(ATTR_FRIENDLY_NAME))
+                        + " ("
+                        + str(ent.entity_id)
+                        + ")"
+                    ),
+                )
+            )
+    if zone_list:
+        zone_list_sorted = sorted(zone_list, key=lambda d: d["label"])
+    else:
+        zone_list_sorted = []
+    # _LOGGER.debug("Zones: " + str(zone_list_sorted))
+    return zone_list_sorted
 
 
 async def validate_input(hass: core.HomeAssistant, data: dict) -> dict[str, Any]:
@@ -103,30 +171,33 @@ class PlacesConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             try:
                 info = await validate_input(self.hass, user_input)
-                _LOGGER.debug("[New Sensor] info: " + str(info))
+                # _LOGGER.debug("[New Sensor] info: " + str(info))
                 _LOGGER.debug("[New Sensor] user_input: " + str(user_input))
                 return self.async_create_entry(title=info["title"], data=user_input)
             except Exception as err:
                 _LOGGER.exception(
-                    "[config_flow async_step_user] Unexpected exception:" +
-                    str(err)
+                    "[config_flow async_step_user] Unexpected exception:" + str(err)
                 )
                 errors["base"] = "unknown"
         devicetracker_id_list = get_devicetracker_id_entities(self.hass)
+        zone_list = get_home_zone_entities(self.hass)
         # _LOGGER.debug(
         #    "Devicetracker entities with lat/long: " + str(devicetracker_id_list)
         # )
         DATA_SCHEMA = vol.Schema(
             {
                 vol.Required(CONF_NAME): str,
-                vol.Required(CONF_DEVICETRACKER_ID): selector.EntitySelector(
-                    selector.SingleEntitySelectorConfig(
-                        include_entities=devicetracker_id_list
+                vol.Required(CONF_DEVICETRACKER_ID): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=devicetracker_id_list,
+                        multiple=False,
+                        custom_value=False,
+                        mode=selector.SelectSelectorMode.DROPDOWN,
                     )
                 ),
                 vol.Optional(CONF_API_KEY): str,
                 vol.Optional(
-                    CONF_OPTIONS, default=DEFAULT_OPTION
+                    CONF_DISPLAY_OPTIONS, default=DEFAULT_DISPLAY_OPTIONS
                 ): selector.SelectSelector(
                     selector.SelectSelectorConfig(
                         options=STATE_OPTIONS,
@@ -137,9 +208,13 @@ class PlacesConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 ),
                 vol.Optional(
                     CONF_HOME_ZONE, default=DEFAULT_HOME_ZONE
-                ): selector.EntitySelector(
-                    selector.SingleEntitySelectorConfig(
-                        domain=HOME_LOCATION_DOMAINS)
+                ): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=zone_list,
+                        multiple=False,
+                        custom_value=False,
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                    )
                 ),
                 vol.Optional(
                     CONF_MAP_PROVIDER, default=DEFAULT_MAP_PROVIDER
@@ -167,6 +242,9 @@ class PlacesConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 vol.Optional(
                     CONF_SHOW_TIME, default=DEFAULT_SHOW_TIME
                 ): selector.BooleanSelector(selector.BooleanSelectorConfig()),
+                vol.Optional(
+                    CONF_USE_GPS, default=DEFAULT_USE_GPS
+                ): selector.BooleanSelector(selector.BooleanSelectorConfig()),
             }
         )
         # If there is no user input or there were errors, show the form again, including any errors that were found with the input.
@@ -183,8 +261,7 @@ class PlacesConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     async def async_step_import(self, import_config=None) -> FlowResult:
         """Import a config entry from configuration.yaml."""
 
-        _LOGGER.debug("[async_step_import] import_config: " +
-                      str(import_config))
+        # _LOGGER.debug("[async_step_import] import_config: " + str(import_config))
         return await self.async_step_user(import_config)
 
     @staticmethod
@@ -224,8 +301,7 @@ class PlacesOptionsFlowHandler(config_entries.OptionsFlow):
                 # )
                 if isinstance(user_input.get(m), str) and not user_input.get(m):
                     user_input.pop(m)
-            _LOGGER.debug(
-                "[Options Update] updated config: " + str(user_input))
+            # _LOGGER.debug("[Options Update] updated config: " + str(user_input))
 
             self.hass.config_entries.async_update_entry(
                 self.config_entry, data=user_input, options=self.config_entry.options
@@ -240,6 +316,7 @@ class PlacesOptionsFlowHandler(config_entries.OptionsFlow):
             if CONF_DEVICETRACKER_ID in self.config_entry.data
             else None,
         )
+        zone_list = get_home_zone_entities(self.hass)
         # _LOGGER.debug(
         #    "Devicetracker_id entities including sensors with lat/long: "
         #    + str(devicetracker_id_list)
@@ -254,9 +331,12 @@ class PlacesOptionsFlowHandler(config_entries.OptionsFlow):
                         if CONF_DEVICETRACKER_ID in self.config_entry.data
                         else None
                     ),
-                ): selector.EntitySelector(
-                    selector.SingleEntitySelectorConfig(
-                        include_entities=devicetracker_id_list
+                ): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=devicetracker_id_list,
+                        multiple=False,
+                        custom_value=False,
+                        mode=selector.SelectSelectorMode.DROPDOWN,
                     )
                 ),
                 vol.Optional(
@@ -269,12 +349,12 @@ class PlacesOptionsFlowHandler(config_entries.OptionsFlow):
                     },
                 ): str,
                 vol.Optional(
-                    CONF_OPTIONS,
-                    default=DEFAULT_OPTION,
+                    CONF_DISPLAY_OPTIONS,
+                    default=DEFAULT_DISPLAY_OPTIONS,
                     description={
-                        "suggested_value": self.config_entry.data[CONF_OPTIONS]
-                        if CONF_OPTIONS in self.config_entry.data
-                        else DEFAULT_OPTION
+                        "suggested_value": self.config_entry.data[CONF_DISPLAY_OPTIONS]
+                        if CONF_DISPLAY_OPTIONS in self.config_entry.data
+                        else DEFAULT_DISPLAY_OPTIONS
                     },
                 ): selector.SelectSelector(
                     selector.SelectSelectorConfig(
@@ -292,9 +372,13 @@ class PlacesOptionsFlowHandler(config_entries.OptionsFlow):
                         if CONF_HOME_ZONE in self.config_entry.data
                         else None
                     },
-                ): selector.EntitySelector(
-                    selector.SingleEntitySelectorConfig(
-                        domain=HOME_LOCATION_DOMAINS)
+                ): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=zone_list,
+                        multiple=False,
+                        custom_value=False,
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                    )
                 ),
                 vol.Optional(
                     CONF_MAP_PROVIDER,
@@ -352,11 +436,18 @@ class PlacesOptionsFlowHandler(config_entries.OptionsFlow):
                         else DEFAULT_SHOW_TIME
                     ),
                 ): selector.BooleanSelector(selector.BooleanSelectorConfig()),
+                vol.Optional(
+                    CONF_USE_GPS,
+                    default=(
+                        self.config_entry.data[CONF_USE_GPS]
+                        if CONF_USE_GPS in self.config_entry.data
+                        else DEFAULT_USE_GPS
+                    ),
+                ): selector.BooleanSelector(selector.BooleanSelectorConfig()),
             }
         )
 
-        _LOGGER.debug("[Options Update] initial config: " +
-                      str(self.config_entry.data))
+        # _LOGGER.debug("[Options Update] initial config: " + str(self.config_entry.data))
 
         return self.async_show_form(
             step_id="init",

@@ -1,2 +1,0 @@
-client_id: !secret sonos_cloud_id
-client_secret: !secret sonos_cloud_secret
