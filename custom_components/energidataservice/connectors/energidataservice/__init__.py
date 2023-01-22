@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
+import json
 from logging import getLogger
 
 import pytz
@@ -41,9 +42,10 @@ class Connector:
     """Energi Data Service API"""
 
     def __init__(
-        self, regionhandler, client, tz  # pylint: disable=invalid-name
+        self, regionhandler, client, tz, config  # pylint: disable=invalid-name
     ) -> None:
         """Init API connection to Energi Data Service"""
+        self.config = config
         self.regionhandler = regionhandler
         self.client = client
         self._result = {}
@@ -70,8 +72,11 @@ class Connector:
             res = await resp.json()
             self._result = res["records"]
 
-            _LOGGER.debug("Response for %s:", self.regionhandler.region)
-            _LOGGER.debug(self._result)
+            _LOGGER.debug(
+                "Response for %s:\n%s",
+                self.regionhandler.region,
+                json.dumps(self._result, indent=2, default=str),
+            )
         else:
             _LOGGER.error("API returned error %s", str(resp.status))
 

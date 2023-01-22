@@ -167,9 +167,9 @@
           temperature: 18
         target:
           device_id:
-          - dcda4e53071311eb96e5c56d002656e1
-          - dcdb16b4071311eb8ae06bbcb7b0ee4d
           - eb8fa3cd070d11eb93e1f3123b152cc3
+          - 87754886a3732e6076a5035700c54e72
+          - 6b1faa3363ae772e16cf4b7ada3ad64d
       - service: climate.set_temperature
         data:
           temperature: 18
@@ -451,18 +451,6 @@
       - choose:
         - conditions:
           - condition: numeric_state
-            entity_id: sensor.coffeemaker_switch_power
-            below: '3'
-          sequence:
-          - service: switch.turn_off
-            data: {}
-            target:
-              entity_id:
-              - switch.coffeemaker_switch
-        default: []
-      - choose:
-        - conditions:
-          - condition: numeric_state
             entity_id: sensor.skrivebord_power
             below: '100'
           sequence:
@@ -481,7 +469,6 @@
         data: {}
         target:
           entity_id:
-          - switch.coffeemaker_switch
           - switch.skrivebord
           - switch.hifi
     default: []
@@ -501,7 +488,7 @@
     device_id: 008fa23255e5932cab33819bdbd02707
     entity_id: light.outside
     domain: light
-    brightness_pct: 10
+    brightness_pct: 1
   mode: single
 - id: '1612426582410'
   alias: Auto - Outside Lights - Morning - On
@@ -521,7 +508,7 @@
     device_id: 008fa23255e5932cab33819bdbd02707
     entity_id: light.outside
     domain: light
-    brightness_pct: 10
+    brightness_pct: 1
   mode: single
 - id: '1612426754916'
   alias: Light - Outside - Motion
@@ -568,7 +555,7 @@
         device_id: 008fa23255e5932cab33819bdbd02707
         entity_id: light.outside
         domain: light
-        brightness_pct: 10
+        brightness_pct: 1
     default: []
   mode: single
 - id: '1612506618068'
@@ -664,7 +651,6 @@
       - service: homeassistant.turn_off
         target:
           entity_id:
-          - switch.coffeemaker_switch
           - switch.hifi
         data: {}
     - conditions:
@@ -679,7 +665,6 @@
         data: {}
         target:
           entity_id:
-          - switch.coffeemaker_switch
           - switch.skrivebord
           - switch.hifi
           - light.digiclock_dots_lights
@@ -693,13 +678,13 @@
   trigger:
   - type: smoke
     platform: device
-    device_id: e322f928712824c67f5124a8f16de3ab
+    device_id: 5f9049b189195fc239e08aa262d138b1
     entity_id: binary_sensor.smoke_bedroom_smoke_alarm_smoke_detected
     domain: binary_sensor
   - type: smoke
     platform: device
-    device_id: 159c7c744b771fc0d96223790acba2ff
-    entity_id: binary_sensor.smoke_livingroom_smoke_alarm_smoke_detected
+    device_id: 1b33e1a4f52e2156e2d876ba508bd59f
+    entity_id: binary_sensor.livingroom_smoke_smoke_alarm_smoke_detected
     domain: binary_sensor
   condition: []
   action:
@@ -765,7 +750,7 @@
     data:
       transition: 5
   - wait_for_trigger:
-    - type: motion
+    - type: no_motion
       platform: device
       device_id: 2730e60e031583ecdf5f9955fecd93c1
       entity_id: binary_sensor.motion_hall_occupancy
@@ -1664,12 +1649,14 @@
           - service: climate.turn_off
             data: {}
             target:
-              device_id: dcda4e53071311eb96e5c56d002656e1
+              device_id:
+              - 87754886a3732e6076a5035700c54e72
         default:
         - service: climate.turn_on
           data: {}
           target:
-            device_id: dcda4e53071311eb96e5c56d002656e1
+            device_id:
+            - 87754886a3732e6076a5035700c54e72
     - conditions:
       - condition: trigger
         id: diningroom
@@ -1811,12 +1798,12 @@
         data: {}
         target:
           entity_id:
-          - climate.kokken
-          - climate.spisestue
           - climate.stue
           - climate.bedroom
           - climate.hall
           - climate.toilet
+          - climate.shelly_trv_kitchen
+          - climate.shelly_trv_spisestue
     - conditions:
       - condition: trigger
         id: 'off'
@@ -1832,9 +1819,9 @@
         data: {}
         target:
           entity_id:
-          - climate.kokken
-          - climate.spisestue
           - climate.stue
+          - climate.shelly_trv_kitchen
+          - climate.shelly_trv_spisestue
   mode: single
 - id: '1654064042994'
   alias: Auto - Control SmartGarden
@@ -1890,4 +1877,78 @@
   - service: notify.mobile_app_mtopnord2
     data:
       message: Kontakt til billader er for varm og er blevet slukket automatisk!
+  mode: single
+- id: '1670269254038'
+  alias: Auto - Blinds - Close
+  description: ''
+  trigger:
+  - platform: sun
+    event: sunset
+    offset: 0
+    id: sunset
+  - platform: time
+    at: '17:00:00'
+    id: time
+  condition: []
+  action:
+  - if:
+    - condition: time
+      before: '17:00:00'
+      alias: Before 18:00 then wait until 18:00
+    then:
+    - wait_for_trigger:
+      - platform: time
+        at: '17:00:00'
+    alias: If before 17:00 then wait until 17:00
+  - if:
+    - condition: sun
+      before: sunset
+    then:
+    - wait_for_trigger:
+      - platform: sun
+        event: sunset
+        offset: 0
+    alias: Wait until sunset occurs
+  - service: cover.close_cover
+    data: {}
+    target:
+      entity_id: cover.alle_gardiner
+  mode: single
+- id: '1670270053658'
+  alias: Auto - Blinds - Open at 7:30
+  description: ''
+  trigger:
+  - platform: time
+    at: 07:30:00
+    id: time
+  condition: []
+  action:
+  - service: cover.open_cover
+    data: {}
+    target:
+      entity_id: cover.alle_gardiner
+  mode: single
+- id: '1672253327159'
+  alias: Notify - Update Kuma
+  description: ''
+  trigger:
+  - platform: event
+    event_type: call_service
+    event_data:
+      domain: notify
+      service: notify
+      service_data:
+        title: Uptime Kuma
+        data:
+          status: 0
+          name: Rust
+  condition: []
+  action:
+  - service: notify.persistent_notification
+    data:
+      message: Rust went down
+  - service: notify.mobile_app_mtopnord2
+    data:
+      message: Rust serveren gik ned
+      title: Rust er nede
   mode: single

@@ -23,22 +23,32 @@
                     "decimals": "Decimaler",
                     "pricetype": "Pris beregnes i",
                     "cost_template": "Skabelon til ekstra omkostninger",
-                    "in_cent": "Vis priser i øre"
+                    "in_cent": "Vis priser i øre",
+                    "fixed_value": "Angiv den ønskede pris - UDEN moms"
                 },
                 "description": "Set detaljer for {name} i {country}"
             },
-            "enable_forecast": {
-                "title": "Aktiver prognoser?",
+            "enable_extras": {
+                "title": "Aktiver ekstra services?",
                 "data": {
-                    "enable_forecast": "Aktiver prognoser"
+                    "enable_forecast": "AI prognoser fra Carnot",
+                    "enable_tariffs": "Automatisk hent af tariff data"
                 },
-                "description": "Skal {name} i {country} vise AI genererede prognoser?"
+                "description": "Skal {name} i {country} gøre brug af nogle ekstra services?"
             },
             "carnot_credentials": {
-                "title": "API bruger oplysninger til Carnot (https:\/\/www.carnot.dk\/)",
+                "title": "API bruger oplysninger til Carnot",
+                "description": "Se mere på https:\/\/www.carnot.dk",
                 "data": {
                     "email": "Email",
                     "api_key": "API-key"
+                }
+            },
+            "tariff_settings": {
+                "title": "Vælg net leverandør",
+                "description": "Hvis du er i tvivl kan du finde din leverandør her: https://greenpowerdenmark.dk/vejledning-teknik/nettilslutning/find-netselskab",
+                "data": {
+                    "tariff_charge_owner": "Vælg net leverandør"
                 }
             }
         }
@@ -51,6 +61,14 @@
             "already_configured": "Det angivede navn eksisterer allerede!"
         },
         "step": {
+            "user": {
+                "title": "Basis info",
+                "data": {
+                    "name": "Navn",
+                    "country": "Vælg land"
+                },
+                "description": "Indstil basis settings for sensoren"
+            },
             "region": {
                 "title": "Detaljerede oplysninger",
                 "data": {
@@ -59,22 +77,32 @@
                     "decimals": "Decimaler",
                     "pricetype": "Pris beregnes i",
                     "cost_template": "Skabelon til ekstra omkostninger",
-                    "in_cent": "Vis priser i øre"
+                    "in_cent": "Vis priser i øre",
+                    "fixed_value": "Angiv den ønskede pris - UDEN moms"
                 },
                 "description": "Set detaljer for {name} i {country}"
             },
-            "enable_forecast": {
-                "title": "Aktiver prognoser?",
+            "enable_extras": {
+                "title": "Aktiver ekstra services?",
                 "data": {
-                    "enable_forecast": "Aktiver prognoser"
+                    "enable_forecast": "AI prognoser fra Carnot",
+                    "enable_tariffs": "Automatisk hent af tariff data"
                 },
-                "description": "Skal {name} i {country} vise AI genererede prognoser?"
+                "description": "Skal {name} i {country} gøre brug af nogle ekstra services?"
             },
             "carnot_credentials": {
-                "title": "API bruger oplysninger til Carnot (https:\/\/www.carnot.dk\/)",
+                "title": "API bruger oplysninger til Carnot",
+                "description": "See https:\/\/www.carnot.dk",
                 "data": {
                     "email": "Email",
                     "api_key": "API-key"
+                }
+            },
+            "tariff_settings": {
+                "title": "Vælg el net leverandør",
+                "description": "Hvis du er i tvivl kan du finde din leverandør her: https://greenpowerdenmark.dk/vejledning-teknik/nettilslutning/find-netselskab",
+                "data": {
+                    "tariff_charge_owner": "Vælg leverandør"
                 }
             }
         }

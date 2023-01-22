@@ -49,8 +49,6 @@ pack_speech_notifications:
                 media_player.stue
               {% elif device == 'bedroom' %}
                 media_player.sovevaerelse
-              {% else %}
-                media_player.all_house
               {% endif %}
             message: >-
               {{ message }}
@@ -169,12 +167,6 @@ pack_speech_notifications:
                 {% set name = "Malene" %}
                 {% set you = "dig" %}
                 {% set your = "din" %}
-
-                {% if states("person.pia") == "home" %}
-                  {% set name = "Malene og Pia" %}
-                  {% set you = "jer" %}
-                  {% set your = "jeres" %}
-                {% endif %}
 
                 {{ [
                   'Godnat og sov godt.',

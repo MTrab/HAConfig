@@ -23,22 +23,32 @@
                     "decimals": "Decimals",
                     "pricetype": "Price calculated in",
                     "cost_template": "Template for additional costs",
-                    "in_cent": "Show prices in cent"
+                    "in_cent": "Show prices in cent",
+                    "fixed_value": "Insert price - WITHOUT VAT"
                 },
                 "description": "Set details for {name} in {country}"
             },
-            "enable_forecast": {
-                "title": "Enable forecasts?",
+            "enable_extras": {
+                "title": "Enable extra services?",
                 "data": {
-                    "enable_forecast": "Enable forecasts"
+                    "enable_forecast": "AI forecasts from Carnot",
+                    "enable_tariffs": "Automatically fetch tariff data"
                 },
-                "description": "Should {name} in {country} show AI predicted prices for the next 7 days?"
+                "description": "Should {name} in {country} make use of extra services?"
             },
             "carnot_credentials": {
-                "title": "API credentials for Carnot platform (https:\/\/www.carnot.dk\/)",
+                "title": "API credentials for Carnot platform",
+                "description": "See https:\/\/www.carnot.dk",
                 "data": {
                     "email": "Email",
                     "api_key": "API-key"
+                }
+            },
+            "tariff_settings": {
+                "title": "Select net operator",
+                "description": "If in doubt find more information here: https://greenpowerdenmark.dk/vejledning-teknik/nettilslutning/find-netselskab",
+                "data": {
+                    "tariff_charge_owner": "Select net operator"
                 }
             }
         }
@@ -59,22 +69,32 @@
                     "decimals": "Decimals",
                     "pricetype": "Price calculated in",
                     "cost_template": "Template for additional costs",
-                    "in_cent": "Show prices in cent"
+                    "in_cent": "Show prices in cent",
+                    "fixed_value": "Insert price - WITHOUT VAT"
                 },
                 "description": "Set details for {name} in {country}"
             },
-            "enable_forecast": {
-                "title": "Enable forecasts?",
+            "enable_extras": {
+                "title": "Enable extra services?",
                 "data": {
-                    "enable_forecast": "Enable forecasts"
+                    "enable_forecast": "AI forecasts from Carnot",
+                    "enable_tariffs": "Automatically fetch tariff data"
                 },
-                "description": "Should {name} in {country} show AI predicted prices for the next 7 days?"
+                "description": "Should {name} in {country} make use of extra services?"
             },
             "carnot_credentials": {
-                "title": "API credentials for Carnot platform (https:\/\/www.carnot.dk\/)",
+                "title": "API credentials for Carnot platform",
+                "description": "See https:\/\/www.carnot.dk",
                 "data": {
                     "email": "Email",
                     "api_key": "API-key"
+                }
+            },
+            "tariff_settings": {
+                "title": "Select net operator",
+                "description": "If in doubt find more information here: https://greenpowerdenmark.dk/vejledning-teknik/nettilslutning/find-netselskab",
+                "data": {
+                    "tariff_charge_owner": "Select net operator"
                 }
             }
         }

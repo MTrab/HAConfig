@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from collections import namedtuple
 from datetime import datetime
+import json
 import logging
 
 from homeassistant.components import sensor
@@ -29,7 +30,9 @@ from .const import (
     CONF_CURRENCY_IN_CENT,
     CONF_DECIMALS,
     CONF_ENABLE_FORECAST,
+    CONF_ENABLE_TARIFFS,
     CONF_PRICETYPE,
+    CONF_TARIFF_CHARGE_OWNER,
     CONF_TEMPLATE,
     CONF_VAT,
     DEFAULT_TEMPLATE,
@@ -64,6 +67,8 @@ def mean(data: list) -> float:
 def _setup(hass, config: ConfigEntry, add_devices):
     """Setup the platform."""
     area = config.options.get(CONF_AREA) or config.data.get(CONF_AREA)
+    if area is None:
+        area = "FIXED"
     region = RegionHandler(area)
     _LOGGER.debug("Timezone set in ha %s", hass.config.time_zone)
     _LOGGER.debug("Currency set in ha %s", hass.config.currency)
@@ -77,16 +82,21 @@ def _setup(hass, config: ConfigEntry, add_devices):
     _LOGGER.debug(
         "Get AI predictions? %s", config.options.get(CONF_ENABLE_FORECAST) or False
     )
+    _LOGGER.debug(
+        "Automatically try fetching tariffs? %s",
+        config.options.get(CONF_ENABLE_TARIFFS) or False,
+    )
     _LOGGER.debug("Domain %s", DOMAIN)
 
     if region.currency.name != hass.config.currency:
-        _LOGGER.warning(
-            "Official currency for %s is %s but Home Assistant reports %s from config and will show prices in %s",  # pylint: disable=line-too-long
-            region.country,
-            region.currency.name,
-            hass.config.currency,
-            hass.config.currency,
-        )
+        if area != "FIXED":
+            _LOGGER.warning(
+                "Official currency for %s is %s but Home Assistant reports %s from config and will show prices in %s",  # pylint: disable=line-too-long
+                region.country,
+                region.currency.name,
+                hass.config.currency,
+                hass.config.currency,
+            )
         region.set_region(area, hass.config.currency)
 
     this_sensor = SensorEntityDescription(
@@ -166,6 +176,7 @@ class EnergidataserviceSensor(SensorEntity):
         self._entry_id = config.entry_id
         self._cent = config.options.get(CONF_CURRENCY_IN_CENT) or False
         self._forecast = config.options.get(CONF_ENABLE_FORECAST) or False
+        self._tariff = config.options.get(CONF_ENABLE_TARIFFS) or False
         self._carnot_user = config.options.get(CONF_EMAIL) or None
         self._carnot_apikey = config.options.get(CONF_API_KEY) or None
         self._area = region.description
@@ -245,13 +256,13 @@ class EnergidataserviceSensor(SensorEntity):
         if not self._api.today:
             _LOGGER.debug("No sensor data found - calling update")
             await self._api.update()
-            if not self._api.today is None:
+            if not self._api.today is None and not self._api.today_calculated:
                 await self._hass.async_add_executor_job(
                     self._format_list,
                     self._api.today,
                     False,
                     False,
-                    self._api.connector_currency,
+                    self._api.connector_currency or self._currency,
                 )
 
         # Do we have valid data for tomorrow? If we do, calculate prices in local currency
@@ -263,13 +274,27 @@ class EnergidataserviceSensor(SensorEntity):
                     self._api.tomorrow,
                     True,
                     False,
-                    self._api.connector_currency,
+                    self._api.connector_currency or self._currency,
                 )
             self._tomorrow_raw = self._add_raw(self._api.tomorrow)
         else:
             self._api.tomorrow = None
             self._tomorrow_raw = None
             self._api.tomorrow_calculated = False
+
+        # Check if the data have been reset to API values rather than the calculated values
+        if self._api.today == self._api.api_today and not isinstance(
+            self._api.today, type(None)
+        ):
+            self._api.today_calculated = False
+        if self._api.tomorrow == self._api.api_tomorrow and not isinstance(
+            self._api.tomorrow, type(None)
+        ):
+            self._api.tomorrow_calculated = False
+        if self._api.predictions == self._api.api_predictions and not isinstance(
+            self._api.predictions, type(None)
+        ):
+            self._api.predictions_calculated = False
 
         # If we haven't already calculated todays prices in local currency, do so now
         if not self._api.today_calculated and not isinstance(
@@ -290,7 +315,7 @@ class EnergidataserviceSensor(SensorEntity):
                 self._api.predictions,
                 False,
                 True,
-                self._api.predictions_currency,
+                self._api.predictions_currency or self._currency,
             )
         else:
             _LOGGER.debug(
@@ -371,6 +396,16 @@ class EnergidataserviceSensor(SensorEntity):
                         "forecast": self._add_raw(self.predictions),
                         "attribution": f"Data sourced from {self._api.source} "
                         "and forecast from Carnot",
+                    }
+                )
+
+            if not isinstance(self._api.tariff_data, type(None)):
+                self._attr_extra_state_attributes.update(
+                    {
+                        "net_operator": self._config.options.get(
+                            CONF_TARIFF_CHARGE_OWNER
+                        ),
+                        "tariffs": self._api.tariff_data,
                     }
                 )
         else:
@@ -500,9 +535,14 @@ class EnergidataserviceSensor(SensorEntity):
         return self._tomorrow_mean
 
     def _calculate(
-        self, value=None, fake_dt=None, default_currency: str = "EUR"
+        self,
+        value=None,
+        fake_dt=None,
+        default_currency: str = "EUR",
     ) -> float:
         """Do price calculations"""
+        hour = None
+
         if value is None:
             value = self._attr_native_value
 
@@ -522,9 +562,14 @@ class EnergidataserviceSensor(SensorEntity):
 
                 return pass_context(inner)
 
-            template_value = self._cost_template.async_render(now=faker())
+            hour = fake_dt
+            template_value = self._cost_template.async_render(
+                now=faker(), tariffs=self._api.tariff_data
+            )
         else:
-            template_value = self._cost_template.async_render()
+            template_value = self._cost_template.async_render(
+                tariffs=self._api.tariff_data
+            )
 
         # The api returns prices in MWh
         if self._price_type in ("MWh", "mWh"):
@@ -533,6 +578,23 @@ class EnergidataserviceSensor(SensorEntity):
             price = (
                 template_value + (value / UNIT_TO_MULTIPLIER[self._price_type])
             ) * (float(1 + self._vat))
+
+        if self._api.tariff_data is not None and hour is not None:
+            # Add tariffs automatically
+            try:
+                if "additional_tariffs" in self._api.tariff_data:
+                    for _, additional_tariff in self._api.tariff_data[
+                        "additional_tariffs"
+                    ].items():
+                        price += float(additional_tariff) * (float(1 + self._vat))
+
+                price += float(self._api.tariff_data["tariffs"][str(hour.hour)]) * (
+                    float(1 + self._vat)
+                )
+            except KeyError:
+                _LOGGER.warning(
+                    "Error adding tariffs for %s, no valid tariffs was found!", fake_dt
+                )
 
         if self._cent:
             price = price * CENT_MULTIPLIER
@@ -545,7 +607,19 @@ class EnergidataserviceSensor(SensorEntity):
         """Format data as list with prices localized."""
         formatted_pricelist = []
 
-        _LOGGER.debug("Unformatted list:\n%s", data)
+        list_for = "TODAY"
+
+        if tomorrow:
+            list_for = "TOMORROW"
+
+        if predictions:
+            list_for = "FORECASTS"
+
+        _LOGGER.debug(
+            "Unformatted list for '%s':\n%s",
+            list_for,
+            json.dumps(data, indent=2, default=str),
+        )
 
         _start = datetime.now().timestamp()
         Interval = namedtuple("Interval", "price hour")
@@ -560,7 +634,11 @@ class EnergidataserviceSensor(SensorEntity):
         _stop = datetime.now().timestamp()
         _ttf = round(_stop - _start, 2)
 
-        _LOGGER.debug("Formatted list:\n%s", formatted_pricelist)
+        _LOGGER.debug(
+            "Formatted list for '%s':\n%s",
+            list_for,
+            json.dumps(formatted_pricelist, indent=2, default=str),
+        )
 
         if tomorrow:
             _calc_for = "TOMORROW"

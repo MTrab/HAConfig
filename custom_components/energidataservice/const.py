@@ -20,6 +20,12 @@ CONF_PRICETYPE = "pricetype"
 CONF_TEMPLATE = "cost_template"
 CONF_VAT = "vat"
 CONF_ENABLE_FORECAST = "enable_forecast"
+CONF_ENABLE_HELPER_BEFORE = "enable_helper_before"
+CONF_ENABLE_HELPER_DURATION = "enable_helper_duration"
+CONF_ENABLE_TARIFFS = "enable_tariffs"
+CONF_FIXED_PRICE = "fixed_price"
+CONF_FIXED_PRICE_VALUE = "fixed_value"
+CONF_TARIFF_CHARGE_OWNER = "tariff_charge_owner"
 
 DATA = "data"
 DEFAULT_NAME = "Energidataservice"
@@ -63,6 +69,11 @@ CURRENCY_LIST = {
         "symbol": "$",
         "cent": "¢",
     },
+    "NONE": {
+        "name": "NONE",
+        "symbol": "NONE",
+        "cent": "NONE",
+    },
 }
 
 # Regions
@@ -90,4 +101,5 @@ REGIONS = {
     "AT": [CURRENCY_LIST["EUR"], "Austria", "Austria", 0.20],
     "DE": [CURRENCY_LIST["EUR"], "Germany", "Germany", 0.19],
     "LU": [CURRENCY_LIST["EUR"], "Luxemburg", "Luxemburg", 0.08],
+    "FIXED": [CURRENCY_LIST["NONE"], "Fixed Price", "Fixed Price", 0.0],
 }

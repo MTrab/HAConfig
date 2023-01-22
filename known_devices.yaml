@@ -2,13 +2,13 @@
 kia_niro:
   name: kia_niro
   mac:
-  icon:
+  icon: mdi:car
   picture:
   track: true
 
 honda_nc750x:
   name: honda_nc750x
   mac:
-  icon:
+  icon: mdi:motorbike
   picture:
   track: true

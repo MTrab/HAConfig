@@ -8,27 +8,27 @@
 pack_octoprint_anet_a8:
   template:
     - binary_sensor:
-      - name: "Anet A8 Idle"
-        state: >
-          {% set idle = 'on' %}
-          {% if is_state("binary_sensor.anet_a8_printing", "on") %}
-            {% set idle = 'off' %}
-          {% endif %}
-          {% if is_state("switch.anet_a8_mains", "off") %}
-            {% set idle = 'off' %}
-          {% endif %}
-          {% if is_state("binary_sensor.anet_a8_connected", "off") %}
-            {% set idle = 'off' %}
-          {% endif %}
-          {{ idle }}
-      - name: "Anet A8 Min Temp"
-        state: >
-          {% set min = 190 %}
-          {% if (states("sensor.anet_a8_tool_0_temperature") | float(0)) > min and is_state("binary_sensor.anet_a8_idle", "on") %}
-            on
-          {% else %}
-            off
-          {% endif %}
+        - name: "Anet A8 Idle"
+          state: >
+            {% set idle = 'on' %}
+            {% if is_state("binary_sensor.anet_a8_printing", "on") %}
+              {% set idle = 'off' %}
+            {% endif %}
+            {% if is_state("switch.anet_a8_mains", "off") %}
+              {% set idle = 'off' %}
+            {% endif %}
+            {% if is_state("binary_sensor.anet_a8_connected", "off") %}
+              {% set idle = 'off' %}
+            {% endif %}
+            {{ idle }}
+        - name: "Anet A8 Min Temp"
+          state: >
+            {% set min = 190 %}
+            {% if (states("sensor.anet_a8_tool_0_temperature") | float(0)) > min and is_state("binary_sensor.anet_a8_idle", "on") %}
+              on
+            {% else %}
+              off
+            {% endif %}
 
   #switch:
   #  - platform: template
@@ -106,6 +106,19 @@ pack_octoprint_anet_a8:
       icon: mdi:folder-open
 
   automation:
+    - alias: "Auto - Anet A8 - Issue Klipper Restart command on powerup"
+      id: AnetA8KlipperRestart
+      trigger:
+        platform: state
+        entity_id: switch.anet_a8_mains
+      action:
+        - delay:
+            seconds: 5
+        - service: mqtt.publish
+          data:
+            topic: octoprint/anet_a8/hassControl/commands
+            payload_template: "restart"
+
     - alias: "Auto - Anet A8 - Read Nozzle Temperature"
       id: AnetA8SetNozzleTemp
       trigger:
@@ -144,19 +157,19 @@ pack_octoprint_anet_a8:
       trigger:
         - platform: state
           entity_id: input_boolean.anet_a8_file_origin_local
-          to: 'on'
-          id: 'local'
+          to: "on"
+          id: "local"
         - platform: state
           entity_id: input_boolean.anet_a8_file_origin_sd
-          to: 'on'
-          id: 'sd'
+          to: "on"
+          id: "sd"
         - platform: homeassistant
           event: start
-          id: 'local'
+          id: "local"
         - platform: state
           entity_id: sensor.anet_a8_print_status
-          from: 'unavailable'
-          id: 'local'
+          from: "unavailable"
+          id: "local"
       action:
         - choose:
             - conditions:
@@ -235,7 +248,7 @@ pack_octoprint_anet_a8:
         - platform: state
           entity_id: switch.anet_a8_mains
           for: 00:00:05
-          to: 'on'
+          to: "on"
       action:
         - service: switch.turn_on
           data:
@@ -250,25 +263,25 @@ pack_octoprint_anet_a8:
 
   script:
     #Safe shutdown script
-  #  3dp_anet_a8_safe_shutdown:
-  #    sequence:
-  #      - service: switch.turn_on
-  #        target:
-  #          entity_id: switch.anet_a8_shutdown_system
-  #      - wait_template:
-  #          "{{ is_state('sensor.anet_a8_print_status', 'unavailable')
-  #          }}"
-  #      - delay:
-  #          hours: 0
-  #          minutes: 1 # PLEASE MAKE SURE YOUR PI REACHES POWER OFF STATE BEFORE THIS DELAY ENDS!
-  #          seconds: 0
-  #          milliseconds: 0
-  #      - service: switch.turn_off
-  #        target:
-  #          entity_id: switch.anet_a8_mains
-  #    mode: single
-  #    alias: 3DP - Anet A8 - Safe Shutdown
-  #    icon: mdi:power-cycle
+    #  3dp_anet_a8_safe_shutdown:
+    #    sequence:
+    #      - service: switch.turn_on
+    #        target:
+    #          entity_id: switch.anet_a8_shutdown_system
+    #      - wait_template:
+    #          "{{ is_state('sensor.anet_a8_print_status', 'unavailable')
+    #          }}"
+    #      - delay:
+    #          hours: 0
+    #          minutes: 1 # PLEASE MAKE SURE YOUR PI REACHES POWER OFF STATE BEFORE THIS DELAY ENDS!
+    #          seconds: 0
+    #          milliseconds: 0
+    #      - service: switch.turn_off
+    #        target:
+    #          entity_id: switch.anet_a8_mains
+    #    mode: single
+    #    alias: 3DP - Anet A8 - Safe Shutdown
+    #    icon: mdi:power-cycle
 
     # Power up after safe shutdown
     3dp_anet_a8_power_up:
@@ -280,9 +293,9 @@ pack_octoprint_anet_a8:
         - wait_template:
             "{{ is_state('sensor.anet_a8_print_status', 'unavailable')
             == false }}"
-  #      - service: switch.turn_on
-  #        target:
-  #          entity_id: switch.anet_a8_power
+      #      - service: switch.turn_on
+      #        target:
+      #          entity_id: switch.anet_a8_power
       mode: single
       icon: mdi:power
 

@@ -72,8 +72,8 @@ display:
       - id: boot
         lambda: |-
           int tmpX, tmpY, dWidth, dHeight;
-          it.get_text_bounds(0, 0, "\U000F16C4", id(icon_states), TextAlign::TOP_LEFT, &tmpX, &tmpY, &dWidth, &dHeight);
-          it.print(200-(dWidth/2), 150-(dHeight/2), id(icon_states), "\U000F16C4");
+          it.get_text_bounds(0, 0, "Connecting ...", id(font_month), TextAlign::TOP_LEFT, &tmpX, &tmpY, &dWidth, &dHeight);
+          it.print(200-(dWidth/2), 150-(dHeight/2), id(font_month), "Connecting ...");
       - id: calendar
         lambda: |-
           /* Defines */
@@ -81,7 +81,7 @@ display:
           int x_start_offset = 40;
           
           int y_header_start = 20;
-          int y_start_offset = 20;
+          int y_start_offset = 15;
           
           int x_offset = x_start_offset;
           int x_offset_next = x_header_start;
@@ -158,7 +158,7 @@ display:
             X = x_offset_next + ((width[weekDay]/2) - (dWidth/2));
             
             if (i == atoi(ExtractDateTime(month_data, 2).c_str())) {
-              it.filled_rectangle(x_offset_next-5, y_offset-10, width[weekDay]+10, y_start_offset+10);
+              it.filled_rectangle(x_offset_next-5, y_offset-5, width[weekDay]+10, y_start_offset+5);
               it.print(X, y_offset, id(font_date), id(white), std::to_string(i).c_str());
             } else {
               it.print(X, y_offset, id(font_date), std::to_string(i).c_str());
@@ -372,16 +372,16 @@ button:
         - display.page.show: weather
         - component.update: screen
 
-sensor:
-  - platform: debug
-    free:
-      name: "Heap Free"
-    fragmentation:
-      name: "Heap Fragmentation"
-    block:
-      name: "Heap Max Block"
-    loop_time:
-      name: "Loop Time"
+# sensor:
+#   - platform: debug
+#     free:
+#       name: "Heap Free"
+#     fragmentation:
+#       name: "Heap Fragmentation"
+#     block:
+#       name: "Heap Max Block"
+#     loop_time:
+#       name: "Loop Time"
 
 switch:
   - platform: template
@@ -411,10 +411,10 @@ font:
     id: font_datetime
     size: 50
     glyphs: "0123456789"
-  - file: "fonts/Arial-Black-Bold.ttf"
+  - file: "fonts/Arial-Bold.ttf"
     id: font_month
     size: 40
-    glyphs: "ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ abcdefghijklmnopqrstuvwxyzæøå"
+    glyphs: "ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ abcdefghijklmnopqrstuvwxyzæøå."
   - file: "fonts/Arial-Black-Bold.ttf"
     id: font_week
     size: 25
@@ -431,12 +431,6 @@ font:
     id: font_small_arial
     size: 18
     glyphs: "()/+,.-°&:0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ abcdefghijklmnopqrstuvwxyzæøå"
-  - file: "fonts/materialdesignicons-webfont.ttf"
-    id: icon_states
-    size: 150
-    glyphs:
-      - "\U000F16C4" # Boot
-      - "\U000F1792" # Update
   - file: "fonts/materialdesignicons-webfont.ttf"
     id: icon_weather_small
     size: 15

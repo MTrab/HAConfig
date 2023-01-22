@@ -1,27 +1,36 @@
 -== Watchman Report ==- 
 
--== Congratulations, all 43 services from your config are available!
+-== Congratulations, all 45 services from your config are available!
 
--== Missing 12 entity(ies) from 199 found in your config:
+-== Missing 20 entity(ies) from 236 found in your config:
 +--------------------------------+---------+--------------------------------------------------------------+
 | Entity ID                      | State   | Location                                                     |
 +--------------------------------+---------+--------------------------------------------------------------+
-| sensor.switch_doorbell_click   | missing | automations.yaml:189                                         |
-| person.gaest                   | unknown | configurations/groups/presence.yaml:4                        |
-| person.pia                     | unknown | configurations/groups/presence.yaml:6                        |
-| media_player.all_house         | missing | configurations/packages/speech_notifications.yaml:18,30,52   |
-| switch.core_a8_shutdown_system | unknown | configurations/packages/octoprint_core_a8.yaml:349           |
+| button.skrivebord_m2           | unavail | scripts.yaml:102                                             |
+| button.skrivebord_m1           | unavail | scripts.yaml:110                                             |
+| remote.rmmini3_stue_remote     | unavail | scripts.yaml:172                                             |
+| switch.store_stearinlys        | unavail | automations.yaml:109,228,859                                 |
+| sensor.switch_doorbell_click   | missing | automations.yaml:238                                         |
+| light.digiclock_dots_lights    | unavail | automations.yaml:627,628,685                                 |
+| light.digiclock_minutes_lights | unavail | automations.yaml:629,687                                     |
+| light.store_stearinlys         | unavail | automations.yaml:647                                         |
+| light.digiclock_hours_lights   | unavail | automations.yaml:686                                         |
+| sensor.kitchen_energy          | missing | configurations/groups/energy_sensors.yaml:10                 |
+| vacuum.robert                  | unavail | configurations/packages/horsensvej/landroid.yaml:8,12,17     |
+| media_player.all_house         | missing | configurations/packages/hotelvej/speech_notifications.yaml:3 |
+|                                |         | 1                                                            |
+| person.pia                     | missing | configurations/packages/hotelvej/speech_notifications.yaml:1 |
+|                                |         | 71                                                           |
+| switch.core_a8_shutdown_system | unknown | configurations/packages/hotelvej/octoprint_core_a8.yaml:391  |
 | switch.adaptive_lighting_defau | missing | custom_components/adaptive_lighting/services.yaml:6,30       |
 | lt                             |         |                                                              |
-| binary_sensor.pfsense_localdom | missing | custom_components/pfsense/services.yaml:12,35,91,106,121,136 |
-| ain_pending_notices_present    |         | ,144,152                                                     |
 | switch.schedule_abcdef         | missing | custom_components/scheduler/services.yaml:8,29,94,154        |
 | light.my_lamp                  | missing | custom_components/scheduler/services.yaml:64,124             |
 | input_boolean.foo              | missing | custom_components/var/services.yaml:12                       |
-| input_boolean.bar              | missing | custom_components/var/services.yaml:15                       |
+| input_boolean.bar              | missing | custom_components/var/services.yaml:20                       |
 | switch.is_on                   | missing | esphome/infopanel.yaml:47                                    |
 +--------------------------------+---------+--------------------------------------------------------------+
 
--== Report created on 17 May 2022 09:51:23
--== Parsed 114 files in 1.75s., ignored 0 files 
--== Generated in: 0.01s. Validated in: 0.00s.
+-== Report created on 21 Dec 2022 10:00:35
+-== Parsed 111 files in 0.70s., ignored 0 files 
+-== Generated in: 0.02s. Validated in: 0.00s.

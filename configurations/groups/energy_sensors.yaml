@@ -5,7 +5,7 @@ energy_sensors:
     - sensor.3d_printer_energy
     - sensor.bedroom_ceiling_energy
     - sensor.extensioncord_energy
-    - sensor.deathstar_energy
+    - sensor.dodsstjernen_energy
     - sensor.gang_loftlys_energy
     - sensor.kitchen_energy
     - sensor.outside_energy

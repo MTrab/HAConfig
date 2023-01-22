@@ -97,6 +97,7 @@ staa_position:
   alias: Stå Position
   sequence:
   - service: button.press
+    data: {}
     target:
       entity_id: button.skrivebord_m2
   mode: single

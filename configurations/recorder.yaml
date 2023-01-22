@@ -6,6 +6,7 @@ exclude:
     - script
     - updater
     - media_player
+    - climate
   entities:
     - sun.sun
   entity_globs:

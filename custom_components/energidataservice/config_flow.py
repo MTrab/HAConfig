@@ -19,6 +19,8 @@ from .const import (
     CONF_AREA,
     CONF_COUNTRY,
     CONF_ENABLE_FORECAST,
+    CONF_ENABLE_TARIFFS,
+    CONF_FIXED_PRICE_VALUE,
     CONF_TEMPLATE,
     DEFAULT_TEMPLATE,
     DOMAIN,
@@ -26,13 +28,34 @@ from .const import (
 from .forecasts import Forecast
 from .utils.configuration_schema import (
     energidataservice_config_option_carnot_credentials,
-    energidataservice_config_option_enable_forecasts,
+    energidataservice_config_option_extras,
     energidataservice_config_option_info_schema,
     energidataservice_config_option_initial_schema,
+    energidataservice_config_option_tariff_settings,
 )
+from .utils.tariffhandler import TariffHandler
 from .utils.regionhandler import RegionHandler
+from .utils.forecasthandler import ForecastHandler
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def get_options(area) -> list:
+    """Get available options for a given region."""
+
+    options = []
+
+    region = RegionHandler.description_to_region(area)
+    tariff_connectors = TariffHandler.get_chargeowners(region)
+    forecast_connectors = ForecastHandler.get_forecasts_connectors(region)
+
+    if len(tariff_connectors) > 0:
+        options.append("tariff")
+
+    if len(forecast_connectors) > 0:
+        options.append("forecast")
+
+    return options
 
 
 class EnergidataserviceOptionsFlowHandler(config_entries.OptionsFlow):
@@ -76,34 +99,58 @@ class EnergidataserviceOptionsFlowHandler(config_entries.OptionsFlow):
             },
         )
 
-    async def _do_update(self, *args, **kwargs) -> None:
+    async def _do_update(
+        self, *args, **kwargs  # pylint: disable=unused-argument
+    ) -> None:
         """Update after settings change."""
         await async_unload_entry(self.hass, self.config_entry)
         await async_setup_entry(self.hass, self.config_entry)
 
-    async def async_step_enable_forecast(
+    async def async_step_enable_extras(
         self, user_input: Any | None = None
     ) -> FlowResult:
-        """Handle forecasts options flow."""
+        """Handle extras options flow."""
 
         self._errors = {}
         _LOGGER.debug("Options: %s", self.options)
 
         if user_input is not None:
             self.options.update(user_input)
-            _LOGGER.debug(self.options)
-            _LOGGER.debug("Going to credentials")
-            if user_input[CONF_ENABLE_FORECAST]:
-                creds = energidataservice_config_option_carnot_credentials(self.options)
-                return self.async_show_form(
-                    step_id="carnot_credentials",
-                    data_schema=vol.Schema(creds),
-                    errors=self._errors,
-                    description_placeholders={
-                        "name": self.config_entry.data[CONF_NAME],
-                        "country": self.get_country(),
-                    },
-                )
+            _LOGGER.debug("Forecast selected: %s", user_input[CONF_ENABLE_FORECAST])
+            _LOGGER.debug("Tariffs selected: %s", user_input[CONF_ENABLE_TARIFFS])
+            if CONF_ENABLE_FORECAST in user_input or CONF_ENABLE_TARIFFS in user_input:
+                if user_input[CONF_ENABLE_FORECAST]:
+                    creds = energidataservice_config_option_carnot_credentials(
+                        self.options
+                    )
+                    return self.async_show_form(
+                        step_id="carnot_credentials",
+                        data_schema=vol.Schema(creds),
+                        errors=self._errors,
+                        description_placeholders={
+                            "name": self.config_entry.data[CONF_NAME],
+                            "country": self.get_country(),
+                        },
+                    )
+                elif user_input[CONF_ENABLE_TARIFFS]:
+                    creds = energidataservice_config_option_tariff_settings(
+                        self.options
+                    )
+                    return self.async_show_form(
+                        step_id="tariff_settings",
+                        data_schema=vol.Schema(creds),
+                        errors=self._errors,
+                        description_placeholders={
+                            "name": self.config_entry.options[CONF_NAME],
+                            "country": self.get_country(),
+                        },
+                    )
+                else:
+                    async_call_later(self.hass, 2, self._do_update)
+                    return self.async_create_entry(
+                        title=self.options.get(CONF_NAME),
+                        data=self.options,
+                    )
             else:
                 async_call_later(self.hass, 2, self._do_update)
                 return self.async_create_entry(
@@ -111,12 +158,13 @@ class EnergidataserviceOptionsFlowHandler(config_entries.OptionsFlow):
                     data=self.options,
                 )
 
-        enable_forecast_schema = energidataservice_config_option_enable_forecasts(
-            self.config_entry.options
+        options = get_options(self.config_entry.options.get(CONF_AREA))
+        enable_extra_schema = energidataservice_config_option_extras(
+            self.config_entry.options, options
         )
         return self.async_show_form(
-            step_id="enable_forecast",
-            data_schema=vol.Schema(enable_forecast_schema),
+            step_id="enable_extras",
+            data_schema=vol.Schema(enable_extra_schema),
             errors=self._errors,
             description_placeholders={
                 "name": self.config_entry.options[CONF_NAME],
@@ -135,11 +183,23 @@ class EnergidataserviceOptionsFlowHandler(config_entries.OptionsFlow):
             self.options.update(user_input)
             _LOGGER.debug(self.options)
 
-            async_call_later(self.hass, 2, self._do_update)
-            return self.async_create_entry(
-                title=self.options.get(CONF_NAME),
-                data=self.options,
-            )
+            if self.options.get(CONF_ENABLE_TARIFFS):
+                creds = energidataservice_config_option_tariff_settings(self.options)
+                return self.async_show_form(
+                    step_id="tariff_settings",
+                    data_schema=vol.Schema(creds),
+                    errors=self._errors,
+                    description_placeholders={
+                        "name": self.options.get(CONF_NAME),
+                        "country": self.options.get(CONF_COUNTRY),
+                    },
+                )
+            else:
+                async_call_later(self.hass, 2, self._do_update)
+                return self.async_create_entry(
+                    title=self.options.get(CONF_NAME),
+                    data=self.options,
+                )
 
         creds = energidataservice_config_option_carnot_credentials(
             self.config_entry.options
@@ -154,12 +214,47 @@ class EnergidataserviceOptionsFlowHandler(config_entries.OptionsFlow):
             },
         )
 
+    async def async_step_tariff_settings(
+        self, user_input: Any | None = None
+    ) -> FlowResult:
+        """Handle Tariff Settings."""
+        self._errors = {}
+
+        if user_input is not None:
+            self.options.update(user_input)
+            _LOGGER.debug(self.options)
+
+            async_call_later(self.hass, 2, self._do_update)
+            return self.async_create_entry(
+                title=self.options.get(CONF_NAME),
+                data=self.options,
+            )
+
+        _LOGGER.debug(self.config_entry.options)
+        creds = energidataservice_config_option_tariff_settings(
+            self.config_entry.options
+        )
+        return self.async_show_form(
+            step_id="tariff_settings",
+            data_schema=vol.Schema(creds),
+            errors=self._errors,
+            description_placeholders={
+                "name": self.config_entry.data[CONF_NAME],
+                "country": self.get_country(),
+            },
+        )
+
     async def async_step_region(self, user_input: Any | None = None) -> FlowResult:
         """Handle region options flow."""
 
         self._errors = {}
 
         if user_input is not None:
+            if CONF_FIXED_PRICE_VALUE in user_input:
+                user_input[CONF_FIXED_PRICE_VALUE] = (
+                    user_input[CONF_FIXED_PRICE_VALUE] * 1000
+                )
+
             self.options.update(user_input)
             _LOGGER.debug(self.options)
             template_ok = False
@@ -173,22 +268,14 @@ class EnergidataserviceOptionsFlowHandler(config_entries.OptionsFlow):
 
             template_ok = await _validate_template(self.hass, user_input[CONF_TEMPLATE])
             if template_ok:
-                available_forecasts = []
-                for f_endpoint in self.forecasts.forecast_endpoints:
-                    _LOGGER.debug(f_endpoint)
-                    if (
-                        RegionHandler.description_to_region(user_input[CONF_AREA])
-                        in f_endpoint.regions
-                    ):
-                        available_forecasts.append(f_endpoint)
-
-                if len(available_forecasts) > 0:
-                    enable_forecast_schema = (
-                        energidataservice_config_option_enable_forecasts(self.options)
+                options = get_options(self.config_entry.options.get(CONF_AREA))
+                if len(options) > 0:
+                    enable_extra_schema = energidataservice_config_option_extras(
+                        self.options, options
                     )
                     return self.async_show_form(
-                        step_id="enable_forecast",
-                        data_schema=vol.Schema(enable_forecast_schema),
+                        step_id="enable_extras",
+                        data_schema=vol.Schema(enable_extra_schema),
                         errors=self._errors,
                         description_placeholders={
                             "name": self.config_entry.data[CONF_NAME],
@@ -254,6 +341,11 @@ class EnergidataserviceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         self._errors = {}
 
         if user_input is not None:
+            if CONF_FIXED_PRICE_VALUE in user_input:
+                user_input[CONF_FIXED_PRICE_VALUE] = (
+                    user_input[CONF_FIXED_PRICE_VALUE] * 1000
+                )
+
             user_input = {**user_input, **self.user_input}
             self.user_input = user_input
             await self.async_set_unique_id(user_input[CONF_NAME])
@@ -272,20 +364,14 @@ class EnergidataserviceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             template_ok = await _validate_template(self.hass, user_input[CONF_TEMPLATE])
             self._async_abort_entries_match({CONF_NAME: user_input[CONF_NAME]})
             if template_ok:
-                available_forecasts = []
-                for f_endpoint in self.forecasts.forecast_endpoints:
-                    if user_input[CONF_AREA]:
-                        available_forecasts.append(f_endpoint)
-
-                if len(available_forecasts) > 0:
-                    enable_forecast_schema = (
-                        energidataservice_config_option_enable_forecasts(
-                            self.user_input
-                        )
+                options = get_options(self.user_input.get(CONF_AREA))
+                if len(options) > 0:
+                    enable_extra_schema = energidataservice_config_option_extras(
+                        self.user_input, options
                     )
                     return self.async_show_form(
-                        step_id="enable_forecast",
-                        data_schema=vol.Schema(enable_forecast_schema),
+                        step_id="enable_extras",
+                        data_schema=vol.Schema(enable_extra_schema),
                         errors=self._errors,
                         description_placeholders={
                             "name": self.user_input[CONF_NAME],
@@ -312,10 +398,10 @@ class EnergidataserviceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             },
         )
 
-    async def async_step_enable_forecast(
+    async def async_step_enable_extras(
         self, user_input: Any | None = None
     ) -> FlowResult:
-        """Handle step 3, should we enable forecasts."""
+        """Handle step 3, should we enable extras."""
         self._errors = {}
 
         if user_input is not None:
@@ -332,6 +418,17 @@ class EnergidataserviceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         "country": self.user_input[CONF_COUNTRY],
                     },
                 )
+            elif user_input[CONF_ENABLE_TARIFFS]:
+                creds = energidataservice_config_option_tariff_settings(user_input)
+                return self.async_show_form(
+                    step_id="tariff_settings",
+                    data_schema=vol.Schema(creds),
+                    errors=self._errors,
+                    description_placeholders={
+                        "name": self.user_input[CONF_NAME],
+                        "country": self.user_input[CONF_COUNTRY],
+                    },
+                )
             else:
                 return self.async_create_entry(
                     title=user_input[CONF_NAME],
@@ -339,12 +436,13 @@ class EnergidataserviceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     options=user_input,
                 )
 
-        enable_forecast_schema = energidataservice_config_option_enable_forecasts(
-            self.user_input
+        options = get_options(self.user_input.get(CONF_AREA))
+        enable_extra_schema = energidataservice_config_option_extras(
+            self.user_input, options
         )
         return self.async_show_form(
-            step_id="enable_forecast",
-            data_schema=vol.Schema(enable_forecast_schema),
+            step_id="enable_extras",
+            data_schema=vol.Schema(enable_extra_schema),
             errors=self._errors,
             description_placeholders={
                 "name": self.user_input[CONF_NAME],
@@ -361,12 +459,24 @@ class EnergidataserviceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
         if user_input is not None:
             user_input = {**user_input, **self.user_input}
-
-            return self.async_create_entry(
-                title=user_input[CONF_NAME],
-                data={"name": user_input[CONF_NAME]},
-                options=user_input,
-            )
+            self.user_input = user_input
+            if user_input[CONF_ENABLE_TARIFFS]:
+                creds = energidataservice_config_option_tariff_settings(user_input)
+                return self.async_show_form(
+                    step_id="tariff_settings",
+                    data_schema=vol.Schema(creds),
+                    errors=self._errors,
+                    description_placeholders={
+                        "name": self.user_input[CONF_NAME],
+                        "country": self.user_input[CONF_COUNTRY],
+                    },
+                )
+            else:
+                return self.async_create_entry(
+                    title=user_input[CONF_NAME],
+                    data={"name": user_input[CONF_NAME]},
+                    options=user_input,
+                )
 
         creds = energidataservice_config_option_carnot_credentials(self.user_input)
         return self.async_show_form(
@@ -379,9 +489,37 @@ class EnergidataserviceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             },
         )
 
+    async def async_step_tariff_settings(
+        self, user_input: Any | None = None
+    ) -> FlowResult:
+        """Handle Eloverblik credentials."""
+        self._errors = {}
+
+        if user_input is not None:
+            user_input = {**user_input, **self.user_input}
+            self.user_input = user_input
+            _LOGGER.debug(user_input)
+
+            return self.async_create_entry(
+                title=user_input[CONF_NAME],
+                data={"name": user_input[CONF_NAME]},
+                options=user_input,
+            )
+
+        creds = energidataservice_config_option_tariff_settings(self.user_input)
+        return self.async_show_form(
+            step_id="tariff_settings",
+            data_schema=vol.Schema(creds),
+            errors=self._errors,
+            description_placeholders={
+                "name": self.user_input[CONF_NAME],
+                "country": self.user_input[CONF_COUNTRY],
+            },
+        )
+
     async def async_step_import(
-        self, user_input: Any | None
-    ) -> Any:  # pylint: disable=unused-argument
+        self, user_input: Any | None  # pylint: disable=unused-argument
+    ) -> Any:
         """Import a config entry.
         Special type of import, we're not actually going to store any data.
         Instead, we're going to rely on the values that are in config file.
@@ -398,7 +536,7 @@ async def _validate_template(hass: HomeAssistant, user_template: Any) -> bool:
         _LOGGER.debug(user_template)
         user_template = Template(user_template, hass).async_render()
         return bool(isinstance(user_template, float))
-    except Exception as err:
+    except Exception as err:  # pylint: disable=broad-except
         _LOGGER.error(err)
 
     return False

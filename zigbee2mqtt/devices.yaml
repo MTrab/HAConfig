@@ -99,3 +99,13 @@
   description: Extension cord used primarily for the car charger
 '0x588e81fffe75a9ad':
   friendly_name: Kitchen_1
+'0x54ef4410004a588a':
+  friendly_name: Rullegardin Spisestue
+  invert_cover: false
+'0x54ef4410004a5be2':
+  friendly_name: Rullegardin Stue Højre
+  invert_cover: false
+'0x54ef4410004a70a2':
+  friendly_name: Rullegardin Stue Venstre
+'0x54ef4410004a5249':
+  friendly_name: Rullegardin Stue Midt

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import asyncio
 import logging
-import time
 
-from homeassistant.const import DEVICE_CLASS_MONETARY, ATTR_ATTRIBUTION
+from homeassistant.const import ATTR_ATTRIBUTION
 from .const import (
     CONF_CLIENT,
     CONF_UPDATE_INTERVAL,
@@ -14,7 +14,11 @@ from .const import (
 
 from datetime import timedelta
 
-from homeassistant.components.sensor import SensorEntity, SensorStateClass
+from homeassistant.components.sensor import (
+    SensorEntity,
+    SensorStateClass,
+    SensorDeviceClass,
+)
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 _LOGGER: logging.Logger = logging.getLogger(__package__)
@@ -33,7 +37,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         # Sleep for 3 seconds
         for company in fuelPrices.getCompanies():
             await hass.async_add_executor_job(company.refreshPrices)
-            time.sleep(3)
+            await asyncio.sleep(3)
 
     # Create a coordinator
     coordinator = DataUpdateCoordinator(
@@ -94,7 +98,6 @@ class FuelPriceSensor(SensorEntity):
         attr["product_name"] = self._productName
         attr["product_type"] = self._productKey
         attr["price_type"] = self._fuelCompany.getPriceType()
-        # attr["last_update"] = self._fuelCompany.getLastUpdate()
         attr["last_update"] = self._fuelCompany.getProductLastUpdate(self._productKey)
         attr[ATTR_ATTRIBUTION] = CREDITS
         return attr
@@ -105,7 +108,7 @@ class FuelPriceSensor(SensorEntity):
 
     @property
     def device_class(self):
-        return DEVICE_CLASS_MONETARY
+        return SensorDeviceClass.MONETARY
 
     @property
     def state_class(self) -> str:
