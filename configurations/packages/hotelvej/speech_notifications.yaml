@@ -24,7 +24,7 @@ pack_speech_notifications:
               {% if device == 'kitchen' %}
                 media_player.nesthub8311
               {% elif device == 'livingroom' %}
-                media_player.stue
+                media_player.stue_2
               {% elif device == 'bedroom' %}
                 media_player.sovevaerelse
               {% else %}
@@ -46,7 +46,7 @@ pack_speech_notifications:
               {% if device == 'kitchen' %}
                 media_player.nesthub8311
               {% elif device == 'livingroom' %}
-                media_player.stue
+                media_player.stue_2
               {% elif device == 'bedroom' %}
                 media_player.sovevaerelse
               {% endif %}

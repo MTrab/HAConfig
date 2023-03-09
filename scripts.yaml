@@ -188,3 +188,12 @@ control_desktop_power_off:
     default: []
   mode: single
   icon: mdi:electric-switch
+start_cast:
+  alias: Start Cast
+  sequence:
+  - service: cast.show_lovelace_view
+    data:
+      entity_id: media_player.nesthub8311
+      dashboard_path: dashboard-cast
+      view_path: '0'
+  mode: single

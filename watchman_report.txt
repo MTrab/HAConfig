@@ -1,19 +1,25 @@
 -== Watchman Report ==- 
 
--== Congratulations, all 46 services from your config are available!
+-== Congratulations, all 47 services from your config are available!
 
--== Missing 18 entity(ies) from 230 found in your config:
+-== Missing 23 entity(ies) from 231 found in your config:
 +--------------------------------+---------+--------------------------------------------------------------+
 | Entity ID                      | State   | Location                                                     |
 +--------------------------------+---------+--------------------------------------------------------------+
 | button.skrivebord_m2           | unknown | scripts.yaml:102                                             |
 | button.skrivebord_m1           | unknown | scripts.yaml:110                                             |
-| sensor.switch_doorbell_click   | missing | automations.yaml:242                                         |
-| light.digiclock_dots_lights    | unavail | automations.yaml:615,616,671                                 |
-| light.digiclock_minutes_lights | unavail | automations.yaml:617,673                                     |
-| light.digiclock_hours_lights   | unavail | automations.yaml:672                                         |
+| media_player.android_tv_192_16 | unavail | automations.yaml:68,75                                       |
+| 8_1_199                        |         |                                                              |
+| sensor.switch_doorbell_click   | missing | automations.yaml:258                                         |
+| light.digiclock_dots_lights    | unavail | automations.yaml:622,623,669                                 |
+| light.digiclock_minutes_lights | unavail | automations.yaml:624,671                                     |
+| light.kitchen_1                | unavail | automations.yaml:630                                         |
+| light.digiclock_hours_lights   | unavail | automations.yaml:670                                         |
+| climate.shelly_trv_kitchen     | missing | automations.yaml:1770,1788                                   |
+| climate.shelly_trv_spisestue   | missing | automations.yaml:1771,1789                                   |
 | binary_sensor.dw_kitchen_left_ | unavail | configurations/groups/dw_kitchen.yaml:6                      |
 | top_right                      |         |                                                              |
+| person.gaest                   | unknown | configurations/groups/presence.yaml:4                        |
 | vacuum.robert                  | unavail | configurations/packages/horsensvej/landroid.yaml:8,12,17     |
 | media_player.all_house         | missing | configurations/packages/hotelvej/speech_notifications.yaml:3 |
 |                                |         | 1                                                            |
@@ -29,6 +35,6 @@
 | switch.is_on                   | missing | esphome/infopanel.yaml:47                                    |
 +--------------------------------+---------+--------------------------------------------------------------+
 
--== Report created on 27 Jan 2023 11:15:28
--== Parsed 109 files in 1.76s., ignored 0 files 
+-== Report created on 18 Feb 2023 10:01:22
+-== Parsed 109 files in 0.77s., ignored 0 files 
 -== Generated in: 0.01s. Validated in: 0.00s.

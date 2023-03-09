@@ -186,28 +186,55 @@ def get_radio(app):
 
 
 def get_radio_version(app):
+    # pylint: disable=R0911
     if hasattr(app, "_znp"):
         import zigpy_znp
 
-        return zigpy_znp.__version__
+        if hasattr(zigpy_znp, "__version__"):
+            return zigpy_znp.__version__
+
+        import pkg_resources
+
+        return pkg_resources.get_distribution("zigpy_znp").version
     if hasattr(app, "_ezsp"):
         import bellows
 
-        return bellows.__version__
+        if hasattr(bellows, "__version__"):
+            return bellows.__version__
+
+        import pkg_resources
+
+        return pkg_resources.get_distribution("bellows").version
     if hasattr(app, "_api"):
         rt = get_radiotype(app)
         if rt == RadioType.DECONZ:
             import zigpy_deconz
 
-            return zigpy_deconz.__version__
+            if hasattr(zigpy_deconz, "__version__"):
+                return zigpy_deconz.__version__
+
+            import pkg_resources
+
+            return pkg_resources.get_distribution("zigpy_deconz").version
         if rt == RadioType.ZIGATE:
             import zigpy_zigate
 
-            return zigpy_zigate.__version__
+            if hasattr(zigpy_zigate, "__version__"):
+                return zigpy_zigate.__version__
+
+            import pkg_resources
+
+            return pkg_resources.get_distribution("zigpy_zigate").version
         if rt == RadioType.XBEE:
             import zigpy_xbee
 
-            return zigpy_xbee.__version__
+            if hasattr(zigpy_xbee, "__version__"):
+                return zigpy_xbee.__version__
+
+            import pkg_resources
+
+            return pkg_resources.get_distribution("zigpy_xbee").version
+
         # if rt == RadioType.ZIGPY_CC:
         #     import zigpy_cc
         #     return zigpy_cc.__version__
@@ -612,6 +639,7 @@ def extractParams(  # noqa: C901
     params: dict[str, None | int | str | list[int | str] | bytes] = {
         p.CMD_ID: None,
         p.EP_ID: None,
+        p.DST_EP_ID: None,
         p.CLUSTER_ID: None,
         p.ATTR_ID: None,
         p.ATTR_TYPE: None,
@@ -647,6 +675,10 @@ def extractParams(  # noqa: C901
     # Endpoint to send command to
     if P.ENDPOINT in rawParams:
         params[p.EP_ID] = str2int(rawParams[P.ENDPOINT])
+
+    # Destination endpoint (e.g., target of data/cmds in bind_ieee)
+    if P.DST_ENDPOINT in rawParams:
+        params[p.DST_EP_ID] = str2int(rawParams[P.DST_ENDPOINT])
 
     # Cluster to send command to
     if P.CLUSTER in rawParams:
@@ -707,16 +739,23 @@ def extractParams(  # noqa: C901
 
     if P.ARGS in rawParams:
         cmd_args = []
-        for val in rawParams[P.ARGS]:
-            LOGGER.debug("cmd arg %s", val)
-            lval = str2int(val)
-            if isinstance(lval, list):
-                # Convert list to List of uint8_t
-                lval = t.List[t.uint8_t]([t.uint8_t(i) for i in lval])
-                # Convert list to LVList structure
-                # lval = t.LVList(lval)
-            cmd_args.append(lval)
-            LOGGER.debug("cmd converted arg %s", lval)
+        rawArgs = rawParams[P.ARGS]
+        if rawArgs is not None:
+            try:
+                iter(rawParams)
+            except ValueError:
+                rawArgs = [rawArgs]
+
+            for val in rawParams[P.ARGS]:
+                LOGGER.debug("cmd arg %s", val)
+                lval = str2int(val)
+                if isinstance(lval, list):
+                    # Convert list to List of uint8_t
+                    lval = t.List[t.uint8_t]([t.uint8_t(i) for i in lval])
+                    # Convert list to LVList structure
+                    # lval = t.LVList(lval)
+                cmd_args.append(lval)
+                LOGGER.debug("cmd converted arg %s", lval)
         params[p.ARGS] = cmd_args
 
     if P.MIN_INTRVL in rawParams:

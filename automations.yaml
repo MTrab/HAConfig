@@ -12,7 +12,7 @@
     state: home
   action:
   - type: turn_on
-    device_id: 7298c1c5058d72f733c3e1bc167f6a31
+    device_id: 3246c312f9e0e5220c923e523158141e
     entity_id: light.vitrine
     domain: light
     brightness_pct: 100
@@ -21,13 +21,13 @@
   alias: Light - Livingroom - Desktop Switch
   description: ''
   trigger:
-  - device_id: 611792b4bc62583abb6e7f8827c4800b
+  - device_id: 0c217534fa16479f6fe7d4c595edea3d
     domain: zha
     platform: device
     type: remote_button_short_press
     subtype: turn_on
     id: desktop_on
-  - device_id: 611792b4bc62583abb6e7f8827c4800b
+  - device_id: 0c217534fa16479f6fe7d4c595edea3d
     domain: zha
     platform: device
     type: remote_button_short_press
@@ -115,15 +115,15 @@
     state: below_horizon
   action:
   - type: turn_on
-    device_id: 7298c1c5058d72f733c3e1bc167f6a31
+    device_id: 3246c312f9e0e5220c923e523158141e
     entity_id: light.vitrine
     domain: light
     brightness_pct: 100
   - type: turn_on
-    device_id: 008fa23255e5932cab33819bdbd02707
+    device_id: 80cb35c383ad7ab431957c4800c3573d
     entity_id: light.outside_1
     domain: light
-    brightness_pct: 100
+    brightness_pct: 1
   - service: switch.turn_on
     target:
       entity_id: switch.store_stearinlys
@@ -302,13 +302,13 @@
   trigger:
   - type: motion
     platform: device
-    device_id: c8fef595bc035fcad424970497243a13
+    device_id: 7565b2d2c98ed8355cac357b12cfd5ea
     entity_id: binary_sensor.pir_kitchen
     domain: binary_sensor
   condition:
   - type: is_illuminance
     condition: device
-    device_id: c8fef595bc035fcad424970497243a13
+    device_id: 7565b2d2c98ed8355cac357b12cfd5ea
     entity_id: sensor.pir_kitchen_illuminance
     domain: sensor
     below: 45
@@ -332,7 +332,7 @@
       - wait_for_trigger:
         - type: no_motion
           platform: device
-          device_id: c8fef595bc035fcad424970497243a13
+          device_id: 7565b2d2c98ed8355cac357b12cfd5ea
           entity_id: binary_sensor.pir_kitchen
           domain: binary_sensor
     - conditions:
@@ -350,7 +350,7 @@
       - wait_for_trigger:
         - type: no_motion
           platform: device
-          device_id: c8fef595bc035fcad424970497243a13
+          device_id: 7565b2d2c98ed8355cac357b12cfd5ea
           entity_id: binary_sensor.pir_kitchen
           domain: binary_sensor
     - conditions:
@@ -368,7 +368,7 @@
       - wait_for_trigger:
         - type: no_motion
           platform: device
-          device_id: c8fef595bc035fcad424970497243a13
+          device_id: 7565b2d2c98ed8355cac357b12cfd5ea
           entity_id: binary_sensor.pir_kitchen
           domain: binary_sensor
     - conditions:
@@ -386,7 +386,7 @@
       - wait_for_trigger:
         - type: no_motion
           platform: device
-          device_id: c8fef595bc035fcad424970497243a13
+          device_id: 7565b2d2c98ed8355cac357b12cfd5ea
           entity_id: binary_sensor.pir_kitchen
           domain: binary_sensor
     default:
@@ -398,7 +398,7 @@
     - wait_for_trigger:
       - type: no_motion
         platform: device
-        device_id: c8fef595bc035fcad424970497243a13
+        device_id: 7565b2d2c98ed8355cac357b12cfd5ea
         entity_id: binary_sensor.pir_kitchen
         domain: binary_sensor
         for:
@@ -417,13 +417,13 @@
   trigger:
   - type: not_opened
     platform: device
-    device_id: ac2c97156dde5069bb5273b883199c2a
+    device_id: 401edc5cb9bb8b099c004a1a31954d41
     entity_id: binary_sensor.dw_dartskab
     domain: binary_sensor
     id: 'off'
   - type: opened
     platform: device
-    device_id: ac2c97156dde5069bb5273b883199c2a
+    device_id: 401edc5cb9bb8b099c004a1a31954d41
     entity_id: binary_sensor.dw_dartskab
     domain: binary_sensor
     id: 'on'
@@ -435,7 +435,7 @@
         id: 'off'
       sequence:
       - type: turn_off
-        device_id: 1b827c7e5ede91e75ce13ada09f34ca9
+        device_id: 02452f84e219fd36505c84ee76d66895
         entity_id: light.dartskab
         domain: light
     - conditions:
@@ -443,7 +443,7 @@
         id: 'on'
       sequence:
       - type: turn_on
-        device_id: 1b827c7e5ede91e75ce13ada09f34ca9
+        device_id: 02452f84e219fd36505c84ee76d66895
         entity_id: light.dartskab
         domain: light
         brightness_pct: 100
@@ -497,7 +497,7 @@
     state: home
   action:
   - type: turn_on
-    device_id: 4b5d99c32798653431b5f3f4bc310873
+    device_id: 80cb35c383ad7ab431957c4800c3573d
     entity_id: light.outside_1
     domain: light
     brightness_pct: 1
@@ -517,7 +517,7 @@
     before_offset: '60'
   action:
   - type: turn_on
-    device_id: 4b5d99c32798653431b5f3f4bc310873
+    device_id: 80cb35c383ad7ab431957c4800c3573d
     entity_id: light.outside_1
     domain: light
     brightness_pct: 1
@@ -528,20 +528,24 @@
   trigger:
   - type: motion
     platform: device
-    device_id: b45202ab84c6b7e0ad956daae6d798d9
+    device_id: 16ca24c77ca1daa4dfb487e96a3ee80a
     entity_id: binary_sensor.pir_outside
     domain: binary_sensor
     id: 'on'
   - type: no_motion
     platform: device
-    device_id: b45202ab84c6b7e0ad956daae6d798d9
+    device_id: 16ca24c77ca1daa4dfb487e96a3ee80a
     entity_id: binary_sensor.pir_outside
     domain: binary_sensor
     id: 'off'
+    for:
+      hours: 0
+      minutes: 2
+      seconds: 0
   condition:
   - condition: device
     type: is_on
-    device_id: 4b5d99c32798653431b5f3f4bc310873
+    device_id: 80cb35c383ad7ab431957c4800c3573d
     entity_id: light.outside_1
     domain: light
   action:
@@ -551,7 +555,7 @@
         id: 'on'
       sequence:
       - type: turn_on
-        device_id: 4b5d99c32798653431b5f3f4bc310873
+        device_id: 80cb35c383ad7ab431957c4800c3573d
         entity_id: light.outside_1
         domain: light
         brightness_pct: 100
@@ -559,11 +563,10 @@
       - condition: trigger
         id: 'off'
       sequence:
-      - type: turn_on
-        device_id: 4b5d99c32798653431b5f3f4bc310873
+      - type: turn_off
+        device_id: 80cb35c383ad7ab431957c4800c3573d
         entity_id: light.outside_1
         domain: light
-        brightness_pct: 1
     default: []
   mode: single
 - id: '1612506618068'
@@ -575,7 +578,7 @@
   condition: []
   action:
   - type: turn_off
-    device_id: 008fa23255e5932cab33819bdbd02707
+    device_id: 80cb35c383ad7ab431957c4800c3573d
     entity_id: light.outside_1
     domain: light
   mode: single
@@ -627,7 +630,6 @@
           - light.bedside_1
           - light.bedside_2
           - light.deathstar
-          - light.kitchen_1
           - light.kitchen_2
           - light.kitchen_3
           - light.kitchen
@@ -676,23 +678,36 @@
   description: ''
   trigger:
   - platform: state
-    entity_id: binary_sensor.toilet_hygrostat
-    from: 'off'
+    entity_id:
+    - binary_sensor.toilet_hygrostat
     to: 'on'
+    id: 'on'
+    from: 'off'
+  - platform: state
+    entity_id:
+    - binary_sensor.toilet_hygrostat
+    id: 'off'
+    from: 'on'
+    to: 'off'
   condition: []
   action:
-  - service: switch.turn_on
-    target:
-      entity_id: switch.toilet_fan
-  - wait_for_trigger:
-    - platform: state
-      entity_id: binary_sensor.toilet_hygrostat
-      from: 'on'
-      to: 'off'
-    timeout: 03:00:00
-  - service: switch.turn_off
-    target:
-      entity_id: switch.toilet_fan
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: 'on'
+      sequence:
+      - type: turn_on
+        device_id: 6de9fe6a5eb1d0abb21bd52d06de2f57
+        entity_id: switch.toilet_fan
+        domain: switch
+    - conditions:
+      - condition: trigger
+        id: 'off'
+      sequence:
+      - type: turn_off
+        device_id: 6de9fe6a5eb1d0abb21bd52d06de2f57
+        entity_id: switch.toilet_fan
+        domain: switch
   mode: single
 - id: '1615289935324'
   alias: Light - Hall - Motion
@@ -700,13 +715,13 @@
   trigger:
   - type: motion
     platform: device
-    device_id: a89a886abb2c1885c1a34dc3e2bd18de
+    device_id: 24ba3139aa039e754aa5e126a868c1f5
     entity_id: binary_sensor.pir_hall
     domain: binary_sensor
   condition:
   - type: is_illuminance
     condition: device
-    device_id: a89a886abb2c1885c1a34dc3e2bd18de
+    device_id: 24ba3139aa039e754aa5e126a868c1f5
     entity_id: sensor.pir_hall_illuminance
     domain: sensor
     below: 130
@@ -719,7 +734,7 @@
   - wait_for_trigger:
     - type: no_motion
       platform: device
-      device_id: a89a886abb2c1885c1a34dc3e2bd18de
+      device_id: 24ba3139aa039e754aa5e126a868c1f5
       entity_id: binary_sensor.pir_hall
       domain: binary_sensor
       for:
@@ -737,7 +752,7 @@
   trigger:
   - type: motion
     platform: device
-    device_id: 2051496258e5cdf31e86cf5fc7c985aa
+    device_id: bbf250698a4a53bbca8c2b5e919cc617
     entity_id: binary_sensor.pir_bathroom
     domain: binary_sensor
   condition: []
@@ -749,7 +764,7 @@
   - wait_for_trigger:
     - type: no_motion
       platform: device
-      device_id: 2051496258e5cdf31e86cf5fc7c985aa
+      device_id: bbf250698a4a53bbca8c2b5e919cc617
       entity_id: binary_sensor.pir_bathroom
       domain: binary_sensor
       for:
@@ -1394,13 +1409,13 @@
   alias: Light - Livingroom - Wallswitch
   description: ''
   trigger:
-  - device_id: 042fd86505e8cc41b1219652e2579af8
+  - device_id: 313c7e26b66b3bc0afecb70b846d820b
     domain: zha
     platform: device
     type: remote_button_short_press
     subtype: turn_on
     id: 'on'
-  - device_id: 042fd86505e8cc41b1219652e2579af8
+  - device_id: 313c7e26b66b3bc0afecb70b846d820b
     domain: zha
     platform: device
     type: remote_button_short_press
@@ -1422,7 +1437,7 @@
         id: 'on'
       sequence:
       - type: toggle
-        device_id: c5d3112ba73f80cd24bab7d6f3aad278
+        device_id: 0179248391cdf4e263909ad5bc67e23e
         entity_id: light.deathstar
         domain: light
     default: []
@@ -1432,13 +1447,13 @@
   alias: Light - Diningroom
   description: ''
   trigger:
-  - device_id: abe8b8817d60bf5a2b4fb723dd81899c
+  - device_id: c7191429c1bd2426c678ef55d9e5e5e8
     domain: zha
     platform: device
     type: remote_button_short_press
     subtype: turn_on
     id: 'on'
-  - device_id: abe8b8817d60bf5a2b4fb723dd81899c
+  - device_id: c7191429c1bd2426c678ef55d9e5e5e8
     domain: zha
     platform: device
     type: remote_button_short_press
@@ -1595,12 +1610,20 @@
               hvac_mode: 'off'
             target:
               entity_id: climate.hall
+          - service: climate.turn_off
+            data: {}
+            target:
+              device_id: dcda4e53071311eb96e5c56d002656e1
         default:
         - service: climate.set_hvac_mode
           data:
             hvac_mode: auto
           target:
             entity_id: climate.hall
+        - service: climate.turn_on
+          data: {}
+          target:
+            device_id: dcda4e53071311eb96e5c56d002656e1
     - conditions:
       - condition: trigger
         id: kitchen
@@ -1614,14 +1637,12 @@
           - service: climate.turn_off
             data: {}
             target:
-              device_id:
-              - 87754886a3732e6076a5035700c54e72
+              device_id: dcda4e53071311eb96e5c56d002656e1
         default:
         - service: climate.turn_on
           data: {}
           target:
-            device_id:
-            - 87754886a3732e6076a5035700c54e72
+            device_id: dcda4e53071311eb96e5c56d002656e1
     - conditions:
       - condition: trigger
         id: diningroom
@@ -1767,8 +1788,8 @@
           - climate.bedroom
           - climate.hall
           - climate.toilet
-          - climate.shelly_trv_kitchen
-          - climate.shelly_trv_spisestue
+          - climate.kokken
+          - climate.spisestue
     - conditions:
       - condition: trigger
         id: 'off'
@@ -1785,8 +1806,8 @@
         target:
           entity_id:
           - climate.stue
-          - climate.shelly_trv_kitchen
-          - climate.shelly_trv_spisestue
+          - climate.kokken
+          - climate.spisestue
   mode: single
 - id: '1661776831305'
   alias: Auto - Shutdown charger on high temperature
@@ -1794,13 +1815,13 @@
   trigger:
   - type: temperature
     platform: device
-    device_id: 008d5a039a6e092ade04909a8299a89c
+    device_id: 12b849a1984b12b6e6dae365c9dd84cc
     entity_id: sensor.extensioncord_device_temperature
     domain: sensor
     above: 50
     for:
       hours: 0
-      minutes: 5
+      minutes: 2
       seconds: 0
   condition: []
   action:
@@ -1853,7 +1874,7 @@
   description: ''
   trigger:
   - platform: time
-    at: 07:30:00
+    at: 07:15:00
     id: time
   condition: []
   action:
@@ -1896,12 +1917,12 @@
   condition:
   - condition: device
     type: is_on
-    device_id: 4b5d99c32798653431b5f3f4bc310873
+    device_id: 80cb35c383ad7ab431957c4800c3573d
     entity_id: light.outside_1
     domain: light
   action:
   - type: turn_off
-    device_id: 4b5d99c32798653431b5f3f4bc310873
+    device_id: 80cb35c383ad7ab431957c4800c3573d
     entity_id: light.outside_1
     domain: light
   mode: single

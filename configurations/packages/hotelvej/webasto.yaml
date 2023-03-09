@@ -312,14 +312,3 @@ pack_webasto:
       min: 10
       max: 15
       step: 0.1
-
-  climate:
-    - platform: generic_thermostat
-      unique_id: bf4ca25e-3d8f-11ed-b878-0242ac120002
-      name: Webasto
-      heater: switch.webasto
-      target_sensor: sensor.webasto_temperature
-      min_temp: 15
-      max_temp: 25
-      comfort_temp: 22
-      precision: 0.5
