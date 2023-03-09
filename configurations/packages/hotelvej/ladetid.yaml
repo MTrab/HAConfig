@@ -178,7 +178,7 @@ pack_ladetid:
           for: 00:10:00
       condition: []
       action:
-        - wait_template: '{{ (states("sensor.extensioncord_power") | float(0)) < 5 }}'
+        - wait_template: '{{ (states("sensor.extensioncord_active_power") | float(0)) < 5 }}'
         - service: switch.turn_off
           target:
             entity_id: switch.extensioncord

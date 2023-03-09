@@ -121,6 +121,7 @@ async def _setup(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         api.api_tomorrow = None
         api._tomorrow_valid = False  # pylint: disable=protected-access
         api.tomorrow_calculated = False
+        await api.async_get_tariffs()
         async_dispatcher_send(hass, UPDATE_EDS)
 
     async def new_hour(n):  # type: ignore pylint: disable=unused-argument, invalid-name
@@ -155,7 +156,7 @@ async def _setup(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     update_new_day = async_track_time_change(
         hass,
         new_day,
-        hour=0,
+        hour=0,  # LOCAL time!!
         minute=0,
         second=0,
     )

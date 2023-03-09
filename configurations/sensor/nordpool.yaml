@@ -1,6 +1,6 @@
-- platform: template
-  sensors:
-    elpris_tomorrow_available:
-      friendly_name: "Elpris tomorrow available"
-      #AGR - Indsæt din nordpool sensor her for at vide om morgendagens priser er tilgængelige 
-      value_template: "{{ state_attr('sensor.energi_data_service_west_of_the_great_belt', 'tomorrow_valid') }}"
+# - platform: template
+#   sensors:
+#     elpris_tomorrow_available:
+#       friendly_name: "Elpris tomorrow available"
+#       #AGR - Indsæt din nordpool sensor her for at vide om morgendagens priser er tilgængelige 
+#       value_template: "{{ state_attr('sensor.energi_data_service_west_of_the_great_belt', 'tomorrow_valid') }}"

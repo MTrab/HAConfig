@@ -21,7 +21,7 @@ http:
 homeassistant:
   customize: !include customize.yaml
   #customize_glob: !include_dir_merge_named configurations/customize_glob
-  packages: !include_dir_merge_named  configurations/packages/
+  packages: !include_dir_merge_named configurations/packages/
   allowlist_external_dirs:
     - /config/www/rest
     - /config
@@ -41,6 +41,7 @@ scene: !include scenes.yaml
 # Integrations without configuration
 media_extractor:
 wake_on_lan:
+zha_toolkit:
 
 ######################################
 # Configurations
@@ -62,8 +63,20 @@ shell_command: !include configurations/shell_commands.yaml
 switch: !include_dir_merge_list configurations/switch
 tts: !include configurations/tts.yaml
 
+zha:
+  custom_quirks_path: /config/custom_zha_quirks/
+  zigpy_config:
+    ota:
+      ikea_provider: true
+      inovelli_provider: true
+      ledvance_provider: true
+      salus_provider: true
+      sonoff_provider: true
+      thirdreality_provider: true
+      otau_directory: /config/zigpy_ota
+    network:
+      channel: 25
 # logger:
 #   default: warning
 #   logs:
 #     custom_components.energidataservice: debug
-    

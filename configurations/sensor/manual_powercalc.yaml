@@ -23,7 +23,7 @@
 # Ude lys
 - platform: powercalc
   unique_id: outsideLightPowercalc
-  entity_id: light.outside
+  entity_id: light.outside_1
   manufacturer: tuya
   model: TS0505A
 

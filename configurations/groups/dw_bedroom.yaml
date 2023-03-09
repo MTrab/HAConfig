@@ -3,5 +3,5 @@ dw_bedroom:
   all: false
   icon: mdi:window-open
   entities:
-    - binary_sensor.dw_bedroom_1_contact
-    - binary_sensor.dw_bedroom_2_contact
+    - binary_sensor.dw_bedroom_1
+    - binary_sensor.dw_bedroom_2

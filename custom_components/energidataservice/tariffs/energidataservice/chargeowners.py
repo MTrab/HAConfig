@@ -4,7 +4,7 @@ CHARGEOWNERS = {
     "Radius": {
         "gln": "5790000705689",
         "company": "Radius Elnet A/S",
-        "type": ["DC_C_01"],
+        "type": ["DT_C_01"],
         "note": ["Nettarif C time"],
     },
     "RAH": {
@@ -56,7 +56,7 @@ CHARGEOWNERS = {
         "note": ["Nettarif C time"],
     },
     "Elektrus": {
-        "gln": "5790000706686",
+        "gln": "5790000836239",
         "company": "Elektrus A/S",
         "type": ["6000091"],
         "note": ["Nettarif C time"],
@@ -149,6 +149,18 @@ CHARGEOWNERS = {
         "gln": "5790001089375",
         "company": "Zeanet A/S",
         "type": ["43110"],
+        "note": ["Nettarif C time"],
+    },
+    "NKE-Elnet": {
+        "gln": "5790001088231",
+        "company": "NKE-Elnet A/S",
+        "type": ["94TR_C_ET"],
+        "note": ["Nettarif C time"],
+    },
+    "L-Net": {
+        "gln": "5790001090111",
+        "company": "L-Net A/S",
+        "type": ["4010"],
         "note": ["Nettarif C time"],
     },
 }

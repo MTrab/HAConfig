@@ -1,36 +1,34 @@
 -== Watchman Report ==- 
 
--== Congratulations, all 45 services from your config are available!
+-== Congratulations, all 46 services from your config are available!
 
--== Missing 20 entity(ies) from 236 found in your config:
+-== Missing 18 entity(ies) from 230 found in your config:
 +--------------------------------+---------+--------------------------------------------------------------+
 | Entity ID                      | State   | Location                                                     |
 +--------------------------------+---------+--------------------------------------------------------------+
-| button.skrivebord_m2           | unavail | scripts.yaml:102                                             |
-| button.skrivebord_m1           | unavail | scripts.yaml:110                                             |
-| remote.rmmini3_stue_remote     | unavail | scripts.yaml:172                                             |
-| switch.store_stearinlys        | unavail | automations.yaml:109,228,859                                 |
-| sensor.switch_doorbell_click   | missing | automations.yaml:238                                         |
-| light.digiclock_dots_lights    | unavail | automations.yaml:627,628,685                                 |
-| light.digiclock_minutes_lights | unavail | automations.yaml:629,687                                     |
-| light.store_stearinlys         | unavail | automations.yaml:647                                         |
-| light.digiclock_hours_lights   | unavail | automations.yaml:686                                         |
-| sensor.kitchen_energy          | missing | configurations/groups/energy_sensors.yaml:10                 |
+| button.skrivebord_m2           | unknown | scripts.yaml:102                                             |
+| button.skrivebord_m1           | unknown | scripts.yaml:110                                             |
+| sensor.switch_doorbell_click   | missing | automations.yaml:242                                         |
+| light.digiclock_dots_lights    | unavail | automations.yaml:615,616,671                                 |
+| light.digiclock_minutes_lights | unavail | automations.yaml:617,673                                     |
+| light.digiclock_hours_lights   | unavail | automations.yaml:672                                         |
+| binary_sensor.dw_kitchen_left_ | unavail | configurations/groups/dw_kitchen.yaml:6                      |
+| top_right                      |         |                                                              |
 | vacuum.robert                  | unavail | configurations/packages/horsensvej/landroid.yaml:8,12,17     |
 | media_player.all_house         | missing | configurations/packages/hotelvej/speech_notifications.yaml:3 |
 |                                |         | 1                                                            |
-| person.pia                     | missing | configurations/packages/hotelvej/speech_notifications.yaml:1 |
-|                                |         | 71                                                           |
 | switch.core_a8_shutdown_system | unknown | configurations/packages/hotelvej/octoprint_core_a8.yaml:391  |
+| sensor.extensioncord_energy    | missing | configurations/packages/hotelvej/ladetid.yaml:230            |
 | switch.adaptive_lighting_defau | missing | custom_components/adaptive_lighting/services.yaml:6,30       |
 | lt                             |         |                                                              |
 | switch.schedule_abcdef         | missing | custom_components/scheduler/services.yaml:8,29,94,154        |
 | light.my_lamp                  | missing | custom_components/scheduler/services.yaml:64,124             |
+| sensor.example                 | missing | custom_components/zha_toolkit/services.yaml:163,449,594,1302 |
 | input_boolean.foo              | missing | custom_components/var/services.yaml:12                       |
 | input_boolean.bar              | missing | custom_components/var/services.yaml:20                       |
 | switch.is_on                   | missing | esphome/infopanel.yaml:47                                    |
 +--------------------------------+---------+--------------------------------------------------------------+
 
--== Report created on 21 Dec 2022 10:00:35
--== Parsed 111 files in 0.70s., ignored 0 files 
--== Generated in: 0.02s. Validated in: 0.00s.
+-== Report created on 27 Jan 2023 11:15:28
+-== Parsed 109 files in 1.76s., ignored 0 files 
+-== Generated in: 0.01s. Validated in: 0.00s.

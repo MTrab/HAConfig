@@ -35,5 +35,7 @@ glances/
 diyhue/
 unifi/
 zigbee2mqtt/
-zigbee2mqtt/database.db
-zigbee2mqtt/state.json
+zigpy_ota/
+zigbee.db
+zigbee.db-shm
+zigbee.db-wal

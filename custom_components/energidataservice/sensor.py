@@ -31,6 +31,7 @@ from .const import (
     CONF_DECIMALS,
     CONF_ENABLE_FORECAST,
     CONF_ENABLE_TARIFFS,
+    CONF_FIXED_PRICE_VAT,
     CONF_PRICETYPE,
     CONF_TARIFF_CHARGE_OWNER,
     CONF_TEMPLATE,
@@ -43,6 +44,28 @@ from .const import (
 from .utils.regionhandler import RegionHandler
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def show_with_vat(dataset: dict, vat: float, decimals: int = 3) -> dict:
+    """Add vat to the dataset."""
+    _LOGGER.debug("Tariff dataset before VAT: %s", dataset)
+
+    out_set = {"additional_tariffs": {}, "tariffs": {}}
+    for key, _ in dataset.items():
+        if key == "additional_tariffs":
+            out_set.update({"additional_tariffs": {}})
+            for add_key, add_value in dataset[key].items():
+                out_set["additional_tariffs"].update(
+                    {add_key: round(add_value * float(1 + vat), decimals)}
+                )
+        elif key == "tariffs":
+            for t_key, t_value in dataset[key].items():
+                out_set["tariffs"].update(
+                    {t_key: round(t_value * float(1 + vat), decimals)}
+                )
+
+    _LOGGER.debug("Tariff dataset after VAT: %s", out_set)
+    return out_set
 
 
 async def async_setup_entry(hass, config_entry: ConfigEntry, async_add_devices):
@@ -113,7 +136,7 @@ def _setup(hass, config: ConfigEntry, add_devices):
         device_class=SensorDeviceClass.MONETARY,
         icon="mdi:flash",
         name=config.data.get(CONF_NAME),
-        state_class=SensorStateClass.MEASUREMENT,
+        state_class=None,
     )
     sens = EnergidataserviceSensor(config, hass, region, this_sensor)
 
@@ -197,9 +220,12 @@ class EnergidataserviceSensor(SensorEntity):
         )
 
         if config.options.get(CONF_VAT) is True:
-            self._vat = 0.25
+            self._vat = region.vat
         else:
             self._vat = 0
+
+        if config.options.get(CONF_COUNTRY) == "Fixed Price":
+            self._vat = (config.options.get(CONF_FIXED_PRICE_VAT) / 100) or 0
 
         self._entity_id = sensor.ENTITY_ID_FORMAT.format(
             util_slugify(f"{self._attr_name} {self._area}")
@@ -257,6 +283,8 @@ class EnergidataserviceSensor(SensorEntity):
             _LOGGER.debug("No sensor data found - calling update")
             await self._api.update()
             if not self._api.today is None and not self._api.today_calculated:
+                _LOGGER.debug("API currency: %s", self._api.connector_currency)
+                _LOGGER.debug("SELF currency: %s", self._currency)
                 await self._hass.async_add_executor_job(
                     self._format_list,
                     self._api.today,
@@ -287,10 +315,12 @@ class EnergidataserviceSensor(SensorEntity):
             self._api.today, type(None)
         ):
             self._api.today_calculated = False
+
         if self._api.tomorrow == self._api.api_tomorrow and not isinstance(
             self._api.tomorrow, type(None)
         ):
             self._api.tomorrow_calculated = False
+
         if self._api.predictions == self._api.api_predictions and not isinstance(
             self._api.predictions, type(None)
         ):
@@ -300,7 +330,13 @@ class EnergidataserviceSensor(SensorEntity):
         if not self._api.today_calculated and not isinstance(
             self._api.today, type(None)
         ):
-            await self._hass.async_add_executor_job(self._format_list, self._api.today)
+            await self._hass.async_add_executor_job(
+                self._format_list,
+                self._api.today,
+                False,
+                False,
+                self._api.connector_currency or self._currency,
+            )
 
         # If predictions is enabled but no data exists, fetch dataset
         if self._api.forecast and isinstance(self._api.predictions, type(None)):
@@ -405,7 +441,9 @@ class EnergidataserviceSensor(SensorEntity):
                         "net_operator": self._config.options.get(
                             CONF_TARIFF_CHARGE_OWNER
                         ),
-                        "tariffs": self._api.tariff_data,
+                        "tariffs": show_with_vat(
+                            self._api.tariff_data, self._vat, self._decimals
+                        ),
                     }
                 )
         else:
@@ -541,10 +579,16 @@ class EnergidataserviceSensor(SensorEntity):
         default_currency: str = "EUR",
     ) -> float:
         """Do price calculations"""
-        hour = None
-
         if value is None:
             value = self._attr_native_value
+
+        def faker():
+            def inner(*_, **__):
+                return fake_dt or dt_utils.now()
+
+            return pass_context(inner)
+
+        hour = faker()
 
         # Convert currency from EUR
         if self._currency != default_currency:
@@ -552,49 +596,61 @@ class EnergidataserviceSensor(SensorEntity):
                 value, to_currency=self._currency, from_currency=default_currency
             )
 
-        # Used to inject the current hour.
-        # so template can be simplified using now
-        if fake_dt is not None:
-
-            def faker():
-                def inner(*args, **kwargs):  # type: ignore pylint: disable=unused-argument
-                    return fake_dt
-
-                return pass_context(inner)
-
-            hour = fake_dt
-            template_value = self._cost_template.async_render(
-                now=faker(), tariffs=self._api.tariff_data
-            )
-        else:
-            template_value = self._cost_template.async_render(
-                tariffs=self._api.tariff_data
-            )
-
-        # The api returns prices in MWh
-        if self._price_type in ("MWh", "mWh"):
-            price = ((template_value / 1000) + value) * float(1 + self._vat)
-        else:
-            price = (
-                template_value + (value / UNIT_TO_MULTIPLIER[self._price_type])
-            ) * (float(1 + self._vat))
-
+        tariff_value = 0
         if self._api.tariff_data is not None and hour is not None:
-            # Add tariffs automatically
             try:
                 if "additional_tariffs" in self._api.tariff_data:
                     for _, additional_tariff in self._api.tariff_data[
                         "additional_tariffs"
                     ].items():
-                        price += float(additional_tariff) * (float(1 + self._vat))
+                        tariff_value += float(additional_tariff)
 
-                price += float(self._api.tariff_data["tariffs"][str(hour.hour)]) * (
-                    float(1 + self._vat)
+                tariff_value += float(
+                    self._api.tariff_data["tariffs"][
+                        str(fake_dt.hour or dt_utils.now().hour)
+                    ]
                 )
             except KeyError:
                 _LOGGER.warning(
                     "Error adding tariffs for %s, no valid tariffs was found!", fake_dt
                 )
+                raise
+
+        price = value / UNIT_TO_MULTIPLIER[self._price_type]
+
+        template_value = self._cost_template.async_render(
+            now=hour,
+            current_tariff=tariff_value,
+            current_price=price,
+        )
+
+        if not isinstance(template_value, (int, float)):
+            try:
+                template_value = float(template_value)
+            except (TypeError, ValueError):
+                _LOGGER.exception(
+                    "Failed to convert %s %s to float",
+                    template_value,
+                    type(template_value),
+                )
+                raise
+
+        try:
+            template_value = abs(template_value) if price < 0 else template_value
+            price += template_value + tariff_value
+        except Exception:
+            _LOGGER.debug(
+                "price %s template value %s type %s dt %s tariff_value %s ",
+                price,
+                template_value,
+                type(template_value),
+                fake_dt,
+                tariff_value,
+            )
+            raise
+
+        # Add vat if selected
+        price = price * (float(1 + self._vat))
 
         if self._cent:
             price = price * CENT_MULTIPLIER

@@ -3,4 +3,4 @@ dw_kitchen:
   all: false
   icon: mdi:window-open
   entities:
-    - binary_sensor.dw_kitchen_2_1_2_contact
+    - binary_sensor.dw_kitchen_left_top_right

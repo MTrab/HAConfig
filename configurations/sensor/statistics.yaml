@@ -1,6 +1,6 @@
 - platform: statistics
   name: Køleskab Temperatur
-  entity_id: sensor.temperature_fridge_temperature
+  entity_id: sensor.th_fridge
   state_characteristic: mean
   sampling_size: 20
   max_age:
