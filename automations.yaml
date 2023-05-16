@@ -563,10 +563,11 @@
       - condition: trigger
         id: 'off'
       sequence:
-      - type: turn_off
+      - type: turn_on
         device_id: 80cb35c383ad7ab431957c4800c3573d
         entity_id: light.outside_1
         domain: light
+        brightness_pct: 1
     default: []
   mode: single
 - id: '1612506618068'
@@ -654,6 +655,10 @@
           entity_id:
           - switch.hifi
         data: {}
+      - device_id: 28b104fe7237af38667520e0d5135ff6
+        domain: button
+        entity_id: button.serber_win11_jump_304_start
+        type: press
     - conditions:
       - condition: trigger
         id: arriving
@@ -671,6 +676,10 @@
           - light.digiclock_dots_lights
           - light.digiclock_hours_lights
           - light.digiclock_minutes_lights
+      - device_id: 28b104fe7237af38667520e0d5135ff6
+        domain: button
+        entity_id: button.serber_win11_jump_304_shutdown
+        type: press
     default: []
   mode: single
 - id: '1615284560741'
@@ -1309,11 +1318,24 @@
       entity_id: sensor.google_sovevaerelse_alarms
       state: unknown
   action:
+  - service: sonos.snapshot
+    data:
+      with_group: true
+      entity_id: media_player.stue
   - service: script.do_speech
     data:
       device: livingroom
       call_interrupt: 1
       call_bedtime_first: 1
+  - delay:
+      hours: 0
+      minutes: 10
+      seconds: 0
+      milliseconds: 0
+  - service: sonos.restore
+    data:
+      with_group: true
+      entity_id: media_player.stue
   - delay:
       hours: 0
       minutes: 30
@@ -1925,4 +1947,260 @@
     device_id: 80cb35c383ad7ab431957c4800c3573d
     entity_id: light.outside_1
     domain: light
+  mode: single
+- id: '1681199186648'
+  alias: TTS - ChatGPT - Bedtime
+  description: ''
+  trigger:
+  - platform: time
+    at: input_datetime.bedtime
+  condition:
+  - condition: state
+    entity_id: person.malene_trab
+    state: home
+  - condition: state
+    entity_id: binary_sensor.workday_tomorrow
+    state: 'on'
+  - condition: or
+    conditions:
+    - condition: state
+      entity_id: sensor.google_sovevaerelse_alarms
+      state: unavailable
+    - condition: state
+      entity_id: sensor.google_sovevaerelse_alarms
+      state: unknown
+  action:
+  - service: sonos.snapshot
+    data:
+      with_group: true
+      entity_id: media_player.stue
+  - parallel:
+    - alias: call chatgpt
+      sequence:
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 0
+          milliseconds: 100
+      - service: chatgpt.chat
+        data:
+          messages:
+          - role: user
+            content: Skriv en glad eller flabet talesprogspåmindelse i SSML på én
+              linje om at det er sengetid.
+          callback_id: '{{this.context.id}}'
+    - alias: call tts
+      sequence:
+      - wait_for_trigger:
+        - platform: event
+          event_type: return_value
+          event_data:
+            callback_id: '{{this.context.id}}'
+        timeout:
+          hours: 0
+          minutes: 1
+          seconds: 0
+          milliseconds: 0
+        continue_on_timeout: false
+      - service: media_player.volume_set
+        data:
+          entity_id: media_player.stue
+          volume_level: 0.3
+      - service: tts.google_cloud_say
+        data_template:
+          entity_id: media_player.stue
+          message: '{{wait.trigger.event.data.content | trim | replace(''\"'','''')}}'
+          cache: false
+          language: da-DK
+          options:
+            gender: female
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 10
+      milliseconds: 0
+  - service: sonos.restore
+    data:
+      with_group: true
+      entity_id: media_player.stue
+  - delay:
+      hours: 0
+      minutes: 30
+      seconds: 0
+      milliseconds: 0
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: sensor.google_sovevaerelse_alarms
+        state: unavailable
+      sequence:
+      - service: script.go_to_bed_reminder
+        data: {}
+    default: []
+  mode: single
+- id: '1681207362051'
+  alias: TTS - ChatGPT - Departure Time
+  description: ''
+  trigger:
+  - platform: time
+    at: input_datetime.car_departure_time
+  condition:
+  - condition: state
+    entity_id: input_boolean.charge_time_override
+    state: 'on'
+  action:
+  - parallel:
+    - alias: call chatgpt
+      sequence:
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 0
+          milliseconds: 100
+      - service: chatgpt.chat
+        data:
+          messages:
+          - role: user
+            content: Skriv en kæk talesprogspåmindelse i SSML i 2. person på én linje
+              om at jeg skal afsted nu.
+          callback_id: '{{this.context.id}}'
+    - alias: call tts
+      sequence:
+      - wait_for_trigger:
+        - platform: event
+          event_type: return_value
+          event_data:
+            callback_id: '{{this.context.id}}'
+        timeout:
+          hours: 0
+          minutes: 1
+          seconds: 0
+          milliseconds: 0
+        continue_on_timeout: false
+      - service: media_player.volume_set
+        data:
+          entity_id: media_player.nesthub8311
+          volume_level: 0.6
+      - service: tts.google_cloud_say
+        data_template:
+          entity_id: media_player.nesthub8311
+          message: '{{wait.trigger.event.data.content | trim | replace(''\"'','''')}}'
+          cache: false
+          language: da-DK
+          options:
+            gender: female
+  mode: single
+- id: '1681208450554'
+  alias: TTS - ChatGPT - DJ Skoge stream
+  description: Giv besked når Skoge streamer
+  trigger:
+  - platform: state
+    entity_id: sensor.djskoge
+    from: offline
+    to: streaming
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 30
+  condition:
+  - condition: time
+    after: '10:00:00'
+    before: '22:00:00'
+  action:
+  - service: sonos.snapshot
+    data:
+      with_group: true
+      entity_id: media_player.stue
+  - parallel:
+    - alias: call chatgpt
+      sequence:
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 0
+          milliseconds: 100
+      - service: chatgpt.chat
+        data:
+          messages:
+          - role: user
+            content: Skriv en sjov talesprogspåmindelse i SSML på én linje om at tænde
+              for DJ Skoges Twitch-stream.
+          callback_id: '{{this.context.id}}'
+    - alias: call tts
+      sequence:
+      - wait_for_trigger:
+        - platform: event
+          event_type: return_value
+          event_data:
+            callback_id: '{{this.context.id}}'
+        timeout:
+          hours: 0
+          minutes: 1
+          seconds: 0
+          milliseconds: 0
+        continue_on_timeout: false
+      - service: media_player.volume_set
+        data:
+          entity_id: media_player.stue
+          volume_level: 0.3
+      - service: tts.google_cloud_say
+        data_template:
+          entity_id: media_player.stue
+          message: '{{wait.trigger.event.data.content | trim | replace(''\"'','''')}}'
+          cache: false
+          language: da-DK
+          options:
+            gender: female
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 10
+      milliseconds: 0
+  - service: sonos.restore
+    data:
+      with_group: true
+      entity_id: media_player.stue
+  mode: single
+- id: '1683624735066'
+  alias: Auto - Close cover in livingroom when sun is on
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.livingroom_sun
+  condition:
+  - condition: and
+    conditions:
+    - condition: sun
+      before: sunset
+    - condition: sun
+      after: sunrise
+    - condition: not
+      conditions:
+      - condition: state
+        entity_id: cover.rullegardin_spisestue
+        state: closed
+  action:
+  - service: cover.set_cover_position
+    data_template:
+      position: '{{ states("sensor.livingroom_sun") }}'
+    target:
+      entity_id: cover.rullegardin_spisestue
+  mode: single
+- id: '1684152370872'
+  alias: Auto - Update UV Index when sun is 10 degrees above horizon
+  description: ''
+  trigger:
+  - platform: time_pattern
+    minutes: /20
+  condition:
+  - condition: numeric_state
+    entity_id: sun.sun
+    value_template: '{{ state.attributes.elevation }}'
+    above: 10
+  action:
+  - service: homeassistant.update_entity
+    data: {}
+    target:
+      entity_id: sensor.current_uv_index
   mode: single

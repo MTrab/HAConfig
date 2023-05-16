@@ -5,9 +5,8 @@ from datetime import datetime
 import json
 from logging import getLogger
 
-import aiohttp
 from aiohttp import ClientSession
-from async_retrying import retry
+from async_retrying_ng import retry
 from homeassistant.util import slugify as util_slugify
 
 from .chargeowners import CHARGEOWNERS
@@ -67,8 +66,8 @@ class Connector:
         try:
             chargeowner = CHARGEOWNERS[self._chargeowner]
             limit = "limit=500"
-            objfilter = 'filter=%7B"note": {},"gln_number": ["{}"]%7D'.format(  # pylint: disable=consider-using-f-string
-                str(chargeowner["note"]).replace("'", '"'), chargeowner["gln"]
+            objfilter = 'filter=%7B"chargetypecode": {},"gln_number": ["{}"]%7D'.format(  # pylint: disable=consider-using-f-string
+                str(chargeowner["type"]).replace("'", '"'), chargeowner["gln"]
             )
             sort = "sort=ValidFrom desc"
 

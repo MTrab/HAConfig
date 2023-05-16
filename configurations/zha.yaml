@@ -1,0 +1,12 @@
+custom_quirks_path: /config/custom_zha_quirks/
+zigpy_config:
+  ota:
+    ikea_provider: true
+    inovelli_provider: true
+    ledvance_provider: true
+    salus_provider: true
+    sonoff_provider: true
+    thirdreality_provider: true
+    otau_directory: /config/zigpy_ota
+  network:
+    channel: 25

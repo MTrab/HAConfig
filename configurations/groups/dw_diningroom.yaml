@@ -3,4 +3,4 @@ dw_diningroom:
   all: false
   icon: mdi:window-open
   entities:
-    - binary_sensor.dw_diningroom_bottom_right_bottom_right
+    - binary_sensor.dw_diningroom_right_bottom

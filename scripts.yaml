@@ -113,10 +113,23 @@ sidde_position:
 go_to_bed_reminder:
   alias: Go To Bed Reminder
   sequence:
+  - service: sonos.snapshot
+    data:
+      with_group: true
+      entity_id: media_player.stue
   - service: script.do_speech
     data:
       device: livingroom
       call_bedtime_recurring: 1
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 20
+      milliseconds: 0
+  - service: sonos.restore
+    data:
+      with_group: true
+      entity_id: media_player.stue
   - delay:
       hours: 0
       minutes: 30
@@ -197,3 +210,63 @@ start_cast:
       dashboard_path: dashboard-cast
       view_path: '0'
   mode: single
+nyt_script:
+  alias: Say With GPT
+  fields:
+    message:
+      name: Message
+      description: The message you want ChatGPT to respond to.
+      required: true
+      example: Write a $style, one line, spoken language reminder for the 'cleaning'
+        calendar event.
+    target:
+      name: Target
+      description: The TTS device(s) that should be used.
+      required: false
+      example: all
+      default: all
+  sequence:
+  - variables:
+      styles:
+      - happy
+      - upbeat
+      - motivational
+      - funny
+      - epic
+      - poetic
+      - dark humor
+      - tough love
+  - parallel:
+    - alias: call chatgpt
+      sequence:
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 0
+          milliseconds: 100
+      - service: chatgpt.chat
+        data:
+          messages:
+          - role: user
+            content: '{{message.replace(''$style'', styles | random)}}'
+          callback_id: '{{this.context.id}}'
+    - alias: call tts
+      sequence:
+      - wait_for_trigger:
+        - platform: event
+          event_type: return_value
+          event_data:
+            callback_id: '{{this.context.id}}'
+        timeout:
+          hours: 0
+          minutes: 1
+          seconds: 0
+          milliseconds: 0
+        continue_on_timeout: false
+      - service: script.unified_tts
+        data:
+          target: '{{target}}'
+          message: '{{wait.trigger.event.data.content | trim | replace(''"'','''')}}'
+  mode: queued
+  icon: mdi:head-alert
+  max: 10

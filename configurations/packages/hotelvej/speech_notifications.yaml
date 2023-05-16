@@ -24,7 +24,7 @@ pack_speech_notifications:
               {% if device == 'kitchen' %}
                 media_player.nesthub8311
               {% elif device == 'livingroom' %}
-                media_player.stue_2
+                media_player.stue
               {% elif device == 'bedroom' %}
                 media_player.sovevaerelse
               {% else %}
@@ -46,7 +46,7 @@ pack_speech_notifications:
               {% if device == 'kitchen' %}
                 media_player.nesthub8311
               {% elif device == 'livingroom' %}
-                media_player.stue_2
+                media_player.stue
               {% elif device == 'bedroom' %}
                 media_player.sovevaerelse
               {% endif %}
@@ -133,7 +133,11 @@ pack_speech_notifications:
                   'Så er der bassarm med Skoge!',
                   'DJ Skoge streamer nu på Twitch!',
                   'Op med volumen og tænd for Twitch, Skoge er online.',
-                  'Retroparty med DJ Skoge, tænd for Twitch nu!'
+                  'Retroparty med DJ Skoge, tænd for Twitch nu!',
+                  "Savner du spænding i din aften? Tjek DJSkoge's Twitch-stream ud!",
+                  "Følg med på DJSkoge's Twitch-kanal og bliv underholdt.",
+                  'DJSkoge streamer på Twitch - er du klar til at se med?',
+                  "Gå ikke glip af DJSkoge's underholdende Twitch-stream - se med nu!"
                 ] | random }}
               {% endmacro %}
 
@@ -142,24 +146,40 @@ pack_speech_notifications:
                   'Du tænker ikke det er på tide at lukke døren?',
                   'Puha, jeg synes det bliver køligt.<break time="0.5s"/>Kan du ikke lukke døren?',
                   'Det trækker, jeg bliver syg.<break time="1s"/>Så luk dog døren menneske!',
-                  'Har du overvejet alle de insekter der kommer ind af døren lige nu?<break time="0.5s"/>Luk den!'
+                  'Har du overvejet alle de insekter der kommer ind af døren lige nu?<break time="0.5s"/>Luk den!',
+                  'Sørg for at lukke døren, før du går i seng.',
+                  'Din dør står åben - luk den venligst!',
+                  'Glem ikke at lukke døren for at holde varmen inde.',
+                  'Det er vigtigt at huske at lukke døren for at undgå ubudne gæster.',
+                  'Luk døren ordentligt for at undgå at miste varme og energi.'
                 ] | random }}
               {% endmacro %}
 
               {%- macro dinner() %}
                 {{ [
                   'Du tænker ikke det er på tide lave noget at spise?',
-                  'Jeg er sulten, og jeg er endda en robot!<break time="0.5s"/>Hvad med dig?<break time="0.5s"/>Er du ikke sulten?',
-                  'Det der med at undlade at spise, det er ikke så sundt.',
+                  'Det der med at undlade at spise, det er altså ikke så sundt!',
                   'Har du overvejet at lave noget aftensmad?',
-                  'Du bliver ikke kønnere, bare fordi du ikke spiser<break time="1s"/>Få så lavet noget mad!'
+                  'Tiden er inde til at lave aftensmad!',
+                  'Madlavningstid! Hvad skal du spise til aftensmad i dag?',
+                  'Er du sulten? Husk at lave noget lækkert til aftensmad!',
+                  'Det er vigtigt at spise godt - tid til at lave aftensmad.',
+                  'Sørg for at få en god og nærende aftensmad ved at lave noget lækkert.',
+                  'Du har sikkert travlt, men husk at tage dig tid til at lave en sund aftensmad.',
+                  'Du har arbejdet hårdt hele dagen - nu er det tid til at slappe af og lave noget lækkert til aftensmad.'
                 ] | random }}
               {% endmacro %}
 
               {%- macro flowers() %}
                 {{ [
-                  'Dine blomster tørster.',
-                  'Jeg tænker det er på tide at få vandet blomsterne, så de ikke visner helt.'
+                  'Det er tid til at vande dine blomster!',
+                  'Husk at tage dig af dine blomster - de har brug for vand.',
+                  'Sørg for at give dine blomster den rigtige mængde vand.',
+                  'Har du husket at vande dine blomster i dag?',
+                  'Vanding af blomster er en vigtig del af at holde dem sunde og smukke.',
+                  'Glem ikke at vande dine blomster - det kan gøre en stor forskel.',
+                  'Dine blomster vil takke dig for at vande dem regelmæssigt.',
+                  'En lille indsats kan gøre en stor forskel - husk at vande dine blomster.'
                 ] | random }}
               {% endmacro %}
 
@@ -198,7 +218,12 @@ pack_speech_notifications:
                   'du skal i seng.<break time="1s"/>Det er arbejdsdag i morgen.',
                   'det er sengetid nu.',
                   'du skal i seng, ellers er du bare træt i morgen.',
-                  'det er tid for at finde dynen,<break time="0.5s"/>den kalder på dig.'
+                  'det er tid for at finde dynen,<break time="0.5s"/>den kalder på dig.',
+                  'Det er tid til at gå i seng - husk at få din skønhedssøvn!',
+                  'Glem ikke at tage dig tid til at hvile og lade op - det er sengetid.',
+                  'En god nats søvn er vigtig for dit helbred - husk at gå i seng til tiden.',
+                  'Din krop har brug for hvile - det er sengetid.',
+                  'Sørg for at få nok søvn, så du er frisk og klar til en ny dag i morgen. Gå i seng nu.'
                 ] | random }}
               {% endmacro %}
 

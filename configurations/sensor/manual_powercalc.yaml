@@ -28,11 +28,11 @@
   model: TS0505A
 
 # Loftlys i køkken
-- platform: powercalc
-  unique_id: kitchenCeiling1
-  entity_id: light.kitchen_1
-  manufacturer: ikea
-  model: LED1537R6
+# - platform: powercalc
+#   unique_id: kitchenCeiling1
+#   entity_id: light.kitchen_1
+#   manufacturer: ikea
+#   model: LED1537R6
 - platform: powercalc
   unique_id: kitchenCeiling2
   entity_id: light.kitchen_2
@@ -47,7 +47,7 @@
   unique_id: kitchenCeilingPowercalc
   create_group: kitchen
   entities:
-    - entity_id: light.kitchen_1
+    # - entity_id: light.kitchen_1
     - entity_id: light.kitchen_2
     - entity_id: light.kitchen_3
 

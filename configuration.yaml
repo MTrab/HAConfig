@@ -47,6 +47,7 @@ zha_toolkit:
 # Configurations
 binary_sensor: !include_dir_merge_list configurations/binary_sensor
 conversation: !include configurations/conversation.yaml
+chatgpt: !include configurations/chatgpt.yaml
 device_tracker: !include configurations/device_tracker.yaml
 fuelprices_dk: !include configurations/fuelprices.yaml
 greentel: !include configurations/greentel.yaml
@@ -62,21 +63,4 @@ sensor: !include_dir_merge_list configurations/sensor
 shell_command: !include configurations/shell_commands.yaml
 switch: !include_dir_merge_list configurations/switch
 tts: !include configurations/tts.yaml
-
-zha:
-  custom_quirks_path: /config/custom_zha_quirks/
-  zigpy_config:
-    ota:
-      ikea_provider: true
-      inovelli_provider: true
-      ledvance_provider: true
-      salus_provider: true
-      sonoff_provider: true
-      thirdreality_provider: true
-      otau_directory: /config/zigpy_ota
-    network:
-      channel: 25
-# logger:
-#   default: warning
-#   logs:
-#     custom_components.energidataservice: debug
+zha: !include configurations/zha.yaml

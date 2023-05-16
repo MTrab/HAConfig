@@ -8,7 +8,7 @@ energy_sensors:
     - sensor.dodsstjernen_energy
     - sensor.gang_loftlys_energy
     - sensor.kitchen_energy
-    - sensor.outside_energy
+    - sensor.outside_1_energy
     - sensor.skrivebord_energy
     - sensor.sengelys_energy
     - sensor.toilet_energy

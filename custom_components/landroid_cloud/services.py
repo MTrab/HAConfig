@@ -35,12 +35,13 @@ from .scheme import (
     CONFIG_SCHEMA,
     EMPTY_SCHEME,
     OTS_SCHEME,
+    PARTYMODE_SCHEME,
     RAW_SCHEME,
     SCHEDULE_SCHEME,
     SET_ZONE_SCHEME,
     TORQUE_SCHEME,
 )
-from .utils.logger import LandroidLogger, LoggerType, LogLevel
+from .utils.logger import LandroidLogger, LoggerType
 
 
 @dataclass
@@ -58,7 +59,9 @@ SUPPORTED_SERVICES = [
         key=SERVICE_CONFIG, schema=CONFIG_SCHEMA, feature=LandroidFeatureSupport.CONFIG
     ),
     LandroidServiceDescription(
-        key=SERVICE_PARTYMODE, feature=LandroidFeatureSupport.PARTYMODE
+        key=SERVICE_PARTYMODE,
+        schema=PARTYMODE_SCHEME,
+        feature=LandroidFeatureSupport.PARTYMODE,
     ),
     LandroidServiceDescription(
         key=SERVICE_SETZONE,
@@ -122,7 +125,6 @@ async def async_setup_services(hass: HomeAssistant) -> None:
 
         for device in devices:
             api: LandroidAPI = await async_match_api(hass, device)
-            logger = LandroidLogger(name=__name__, api=api, log_level=LOGLEVEL)
 
             if isinstance(api, type(None)):
                 raise HomeAssistantError(
@@ -135,7 +137,7 @@ async def async_setup_services(hass: HomeAssistant) -> None:
                     "Service is not supported by this device."
                 )
 
-            if not api.device.online or not api.device.mqtt.connected:
+            if not api.device.online:
                 raise HomeAssistantError(
                     f"Failed to call service '{service_call.service}'. "
                     "Device is currently offline."

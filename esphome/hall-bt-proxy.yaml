@@ -1,0 +1,30 @@
+substitutions:
+  node_name: hall-bt-proxy
+  device_verbose_name: "Hall Bluetooth Proxy"
+
+esphome:
+  name: ${node_name}
+  friendly_name: ${device_verbose_name}
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+packages:
+  wifi: !include common/wifi.yaml
+
+# Enable logging
+logger:
+  level: VERY_VERBOSE
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "KQJYQTpfr7dO97fSJZtehmwY+57zsyI0WoWmKlEDKHI="
+
+ota:
+  password: "3d02b1aac382913d31bae85e011cc5d5"
+
+captive_portal:
+
+esp32_ble_tracker:

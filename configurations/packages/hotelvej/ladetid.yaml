@@ -227,5 +227,5 @@ pack_ladetid:
 
   utility_meter:
     car_charge_usage:
-      source: sensor.extensioncord_energy
+      source: sensor.extensioncord_active_power
       cycle: daily

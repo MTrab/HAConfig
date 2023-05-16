@@ -73,6 +73,7 @@ pack_webasto:
       trigger:
         - platform: webhook
           webhook_id: !secret webhook_webasto
+          local_only: false
       condition: []
       action:
         - choose:

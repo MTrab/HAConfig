@@ -88,6 +88,15 @@ pack_octoprint_core_a8:
       icon: mdi:printer-3d-nozzle
       unit_of_measurement: "%"
 
+    core_a8_fan_speed:
+      name: Core A8 Fan Speed
+      min: 0
+      max: 100
+      step: 1
+      initial: 0
+      icon: mdi:fan
+      unit_of_measurement: "%"
+
     core_a8_feedrate:
       name: Core A8 Feed Rate
       min: 50
@@ -217,6 +226,18 @@ pack_octoprint_core_a8:
             payload_template: 'M221 S{{ states("input_number.core_a8_flow") }}'
       mode: single
 
+    - alias: "Auto - Core A8 - Set Fan Speed"
+      id: coreA8SetFanSpeed
+      trigger:
+        - platform: state
+          entity_id: input_number.core_a8_fan_speed
+      action:
+        - service: mqtt.publish
+          data:
+            topic: octoprint/core_a8/hassControl/commands
+            payload_template: 'M106 S{{ 255 * ((states("input_number.core_a8_fan_speed") | int(0)) / 100) }}'
+      mode: single
+
     - alias: "Auto - Core A8 - Set Feed Rate"
       id: coreA8SetFeedRate
       trigger:
@@ -234,7 +255,7 @@ pack_octoprint_core_a8:
       trigger:
         - platform: state
           entity_id: binary_sensor.core_a8_connected
-          to: 'on'
+          to: "on"
       action:
         - service: input_number.set_value
           data:

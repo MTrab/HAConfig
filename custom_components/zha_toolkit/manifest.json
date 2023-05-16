@@ -14,5 +14,5 @@
         "packaging>=20.8",
         "pytz"
     ],
-    "version": "v0.8.37"
+    "version": "v0.8.39"
 }

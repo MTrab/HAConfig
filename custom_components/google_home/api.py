@@ -59,7 +59,7 @@ class GlocaltokensApiClient:
         self._client = GLocalAuthenticationTokens(
             username=username,
             password=password,
-            master_token=master_token,
+            # master_token=master_token,
             android_id=android_id,
             verbose=verbose,
         )
