@@ -21,7 +21,7 @@ pack_wakeup_reminder:
     - alias: Alert - Extra Wakeup Alarm
       id: soundAlarm
       mode: single
-      description: 'Sound extra alarm if no motion'
+      description: "Sound extra alarm if no motion"
       trigger:
         - platform: time
           at: input_datetime.extra_wakeup_alarm
@@ -29,42 +29,81 @@ pack_wakeup_reminder:
         - condition: template
           value_template: >-
             {% set lastChange =
-            as_timestamp(states.binary_sensor.motion_hall_occupancy.last_changed, 0) %}
+            as_timestamp(states.binary_sensor.pir_hall_occupancy.last_changed, 0) %}
 
             {{ (now() - timedelta(minutes=20)).timestamp() > lastChange }}
       action:
-        - service: sonos.snapshot
-          data:
-            entity_id: media_player.sovevaerelse_2
-            with_group: true
-        - service: media_player.volume_set
-          data:
-            volume_level: 0.3
-          target:
-            entity_id: media_player.sovevaerelse_2
-        - service: media_player.play_media
-          data:
-            media_content_id: https://home.trab.dk/local/alarm/wakeup.wav
-            media_content_type: music
-          target:
-            entity_id: media_player.sovevaerelse_2
-        - delay: '00:00:10'
-        - service: sonos.restore
-          data:
-            entity_id: media_player.sovevaerelse_2
-            with_group: true
+        - service: script.handle_extra_wakeup_alarms
+          data: {}
+        # - service: sonos.snapshot
+        #   data:
+        #     entity_id: media_player.sovevaerelse_2
+        #     with_group: true
+        # - service: media_player.volume_set
+        #   data:
+        #     volume_level: 0.3
+        #   target:
+        #     entity_id: media_player.sovevaerelse_2
+        # - service: media_player.play_media
+        #   data:
+        #     media_content_id: https://home.trab.dk/local/alarm/wakeup.wav
+        #     media_content_type: music
+        #   target:
+        #     entity_id: media_player.sovevaerelse_2
+        # - delay: "00:00:10"
+        # - service: sonos.restore
+        #   data:
+        #     entity_id: media_player.sovevaerelse_2
+        #     with_group: true
+
+  script:
+    handle_extra_wakeup_alarms:
+      alias: Handle Extra Wakeup alarms
+      sequence:
+        - repeat:
+            while:
+              - condition: template
+                value_template: >-
+                  {% set lastChange =
+                  as_timestamp(states.binary_sensor.pir_hall_occupancy.last_changed,
+                  0) %}
+
+                  {{ (now() - timedelta(minutes=20)).timestamp() > lastChange }}
+            sequence:
+              - service: sonos.snapshot
+                data:
+                  entity_id: media_player.sovevaerelse_2
+                  with_group: true
+              - service: media_player.volume_set
+                data:
+                  volume_level: 0.3
+                target:
+                  entity_id: media_player.sovevaerelse_2
+              - service: media_player.play_media
+                data:
+                  media_content_id: https://home.trab.dk/local/alarm/wakeup.wav
+                  media_content_type: music
+                target:
+                  entity_id: media_player.sovevaerelse_2
+              - delay: "00:00:10"
+              - service: sonos.restore
+                data:
+                  entity_id: media_player.sovevaerelse_2
+                  with_group: true
+              - delay: "00:05:00"
+      mode: restart
 
   template:
     - sensor:
-      - name: Extra Wakeup Reminder
-        state: >
-          {% if states("sensor.google_sovevaerelse_alarms") != "unavailable" %}
-            {{
-              (as_timestamp(
-                states("sensor.google_sovevaerelse_alarms")
-              ) + (15*60))
-              | timestamp_local(0)
-            }}
-          {% else %}
-            {{ states("sensor.extra_wakeup_reminder") }}
-          {% endif %}
+        - name: Extra Wakeup Reminder
+          state: >
+            {% if states("sensor.google_sovevaerelse_alarms") != "unavailable" %}
+              {{
+                (as_timestamp(
+                  states("sensor.google_sovevaerelse_alarms")
+                ) + (15*60))
+                | timestamp_local(0)
+              }}
+            {% else %}
+              {{ states("sensor.extra_wakeup_reminder") }}
+            {% endif %}

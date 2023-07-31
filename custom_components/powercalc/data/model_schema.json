@@ -4,7 +4,6 @@
     "type": "object",
     "required": [
         "name",
-        "standby_power",
         "measure_method",
         "measure_device",
         "calculation_strategy"
@@ -62,7 +61,8 @@
             "enum": [
                 "light",
                 "smart_switch",
-                "smart_speaker"
+                "smart_speaker",
+                "network"
             ],
             "description": "Type of device"
         },
@@ -175,7 +175,8 @@
                                 "enum": [
                                     "attribute",
                                     "entity_id",
-                                    "entity_state"
+                                    "entity_state",
+                                    "integration"
                                 ]
                             },
                             "attribute": {
@@ -188,6 +189,9 @@
                                 "type": "string"
                             },
                             "profile": {
+                                "type": "string"
+                            },
+                            "integration": {
                                 "type": "string"
                             }
                         },

@@ -106,7 +106,6 @@ pack_kamstrup:
               {%- endif %}
             {%- endfor %}
 
-
             {{ ns.sensors | map(attribute='state') | map('float') | sum() | round(2) }}
         - name: "Kamstrup Meter Reading Without Sensors"
           device_class: energy

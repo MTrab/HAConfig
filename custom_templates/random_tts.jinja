@@ -1,0 +1,8 @@
+{% macro mood() %}{{[
+'sød',
+'sjov',
+'',
+'flabet'
+] | random }}{% endmacro %}
+
+{% macro tts(set_mood) %}Skriv en {% if set_mood == "" %}{{ set_mood }}{% else %}{{ mood() }}{% endif %} talesprogspåmindelse i SSML i 2. person på én linje{% endmacro %}

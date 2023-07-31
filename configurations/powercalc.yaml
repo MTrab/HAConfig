@@ -1,2 +1,70 @@
 enable_autodiscovery: true
 create_utility_meters: true
+sensors:
+  # Sengelys
+  - create_group: sengelys
+    unique_id: bedlightPowercalc
+    entities:
+      - entity_id: light.bedside_1
+      - entity_id: light.bedside_2
+
+  # Loftlys i gangen
+  - entity_id: light.gang_loftlys
+    unique_id: hallCeilingPowercalc
+    power_sensor_id: sensor.loftlys_power
+
+  # Ude lys
+  - entity_id: light.outside_1
+    unique_id: outsideLightPowercalc
+    manufacturer: tuya
+    model: TS0505A
+
+  # Loftlys i køkken
+  # - entity_id: light.kitchen_1
+  #   unique_id: kitchenCeiling1
+  #   manufacturer: ikea
+  #   model: LED1537R6
+  - entity_id: light.kitchen_2
+    unique_id: kitchenCeiling2
+    manufacturer: ikea
+    model: LED1537R6
+  - entity_id: light.kitchen_3
+    unique_id: kitchenCeiling3
+    manufacturer: ikea
+    model: LED1537R6
+  - create_group: kitchen
+    unique_id: kitchenCeilingPowercalc
+    entities:
+      # - entity_id: light.kitchen_1
+      - entity_id: light.kitchen_2
+      - entity_id: light.kitchen_3
+
+  # 3D printer bord
+  - entity_id: switch.core_a8_mains
+    unique_id: 3dprintPowercalc
+    power_sensor_id: sensor.3d_printer_power_power
+    name: 3D Printer
+
+  # Lampe over skrivebord
+  - create_group: desktop_ceiling
+    name: Lampe over skrivebord
+    unique_id: desktopceilinglampPowercalc
+    entities:
+      - entity_id: light.desktop
+        manufacturer: yeelight
+        model: YLDL01YL/downlight
+      - entity_id: light.desktop_ambilight
+        manufacturer: yeelight
+        model: YLDL01YL/ambilight
+
+  # Lampe over spisebord
+  - create_group: diningtable_ceiling
+    name: Lampe over spisebord
+    unique_id: diningtableceilinglampPowercalc
+    entities:
+      - entity_id: light.spisebord
+        manufacturer: yeelight
+        model: YLDL01YL/downlight
+      - entity_id: light.spisebord_ambilight
+        manufacturer: yeelight
+        model: YLDL01YL/ambilight

@@ -47,10 +47,8 @@ zha_toolkit:
 # Configurations
 binary_sensor: !include_dir_merge_list configurations/binary_sensor
 conversation: !include configurations/conversation.yaml
-chatgpt: !include configurations/chatgpt.yaml
 device_tracker: !include configurations/device_tracker.yaml
 fuelprices_dk: !include configurations/fuelprices.yaml
-greentel: !include configurations/greentel.yaml
 group: !include_dir_merge_named configurations/groups
 intent_script: !include_dir_merge_named configurations/intent_script
 media_player: !include_dir_merge_list configurations/media_player

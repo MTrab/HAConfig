@@ -60,45 +60,35 @@
   description: ''
   trigger:
   - platform: state
-    entity_id: media_player.stue
-    attribute: source
-  - platform: device
-    type: changed_states
-    device_id: 183f58b910a2703ab9c65b27eef113bd
-    entity_id: media_player.android_tv_192_168_1_199
-    domain: media_player
+    entity_id:
+    - media_player.android_tv
+    attribute: app_name
   condition: []
   action:
   - choose:
     - conditions:
       - condition: state
-        entity_id: media_player.android_tv_192_168_1_199
-        attribute: source
+        entity_id: media_player.android_tv
         state: Twitch
+        attribute: app_name
       sequence:
       - service: media_player.volume_set
+        target:
+          entity_id: media_player.stue
         data:
           volume_level: 0.05
-        target:
-          entity_id: media_player.stue
-    - conditions:
-      - condition: state
-        entity_id: media_player.stue
-        state: TV
-        attribute: source
-      sequence:
-      - service: media_player.volume_set
-        target:
-          entity_id: media_player.stue
-        data:
-          volume_level: 0.25
     default:
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 5
+        milliseconds: 0
     - service: media_player.volume_set
       target:
         entity_id: media_player.stue
       data:
         volume_level: 0.12
-  mode: single
+  mode: restart
 - id: '1602610466182'
   alias: Auto - Turn on some lights when dark and coming home
   description: ''
@@ -474,8 +464,13 @@
     default: []
   - choose:
     - conditions:
-      - condition: trigger
-        id: 'on'
+      - condition: and
+        conditions:
+        - condition: state
+          entity_id: group.any_home
+          state: home
+        - condition: trigger
+          id: 'on'
       sequence:
       - service: switch.turn_on
         data: {}
@@ -618,6 +613,10 @@
       - service: media_player.media_stop
         entity_id: all
         data: {}
+      - device_id: 8af98a436fdd76e2bd241402247108d0
+        domain: button
+        entity_id: b33ee7927bcf4cdd14f4e456154434eb
+        type: press
       - service: light.turn_off
         data: {}
         target:
@@ -655,10 +654,6 @@
           entity_id:
           - switch.hifi
         data: {}
-      - device_id: 28b104fe7237af38667520e0d5135ff6
-        domain: button
-        entity_id: button.serber_win11_jump_304_start
-        type: press
     - conditions:
       - condition: trigger
         id: arriving
@@ -676,9 +671,9 @@
           - light.digiclock_dots_lights
           - light.digiclock_hours_lights
           - light.digiclock_minutes_lights
-      - device_id: 28b104fe7237af38667520e0d5135ff6
+      - device_id: 8af98a436fdd76e2bd241402247108d0
         domain: button
-        entity_id: button.serber_win11_jump_304_shutdown
+        entity_id: d87ce4f1b1a0a8e82cbd451f309e363b
         type: press
     default: []
   mode: single
@@ -835,7 +830,7 @@
       entity_id: switch.store_stearinlys
   mode: single
 - id: '1634541207719'
-  alias: TTS - Greeting when coming home
+  alias: TTS - ChatGPT - Greeting when coming home
   description: ''
   trigger:
   - platform: state
@@ -854,6 +849,12 @@
       domain: binary_sensor
     continue_on_timeout: false
     timeout: 00:05:00
+  - service: conversation.process
+    data:
+      agent_id: 566e2ddad12ef92916ee7b102fe86f43
+      text: '{% from ''random_tts.jinja'' import tts %} {{ tts() }} der byder velkommen
+        hjem {{[''til husets dronningen'',''til Malene'',''fordi man har været savnet'','''']|random()}}'
+    response_variable: chatgpt
   - wait_for_trigger:
     - type: motion
       platform: device
@@ -862,48 +863,21 @@
       domain: binary_sensor
     continue_on_timeout: false
     timeout: 00:05:00
-  - service: script.do_speech
+  - service: media_player.volume_set
     data:
-      call_morten_home: 1
-      device: kitchen
+      entity_id: media_player.nesthub8311
+      volume_level: 0.6
+  - service: tts.google_cloud_say
+    data_template:
+      entity_id: media_player.nesthub8311
+      message: <speak>{{chatgpt.response.speech.plain.speech | trim | replace('\"','')}}</speak>
+      cache: false
+      language: da-DK
+      options:
+        gender: female
   mode: restart
-- id: '1634544090085'
-  alias: TTS - DJ Skoge Stremer
-  description: Giv besked når Skoge streamer
-  trigger:
-  - platform: state
-    entity_id: sensor.djskoge
-    from: offline
-    to: streaming
-    for:
-      hours: 0
-      minutes: 0
-      seconds: 30
-      milliseconds: 0
-  condition:
-  - condition: time
-    after: '10:00:00'
-    before: '22:00:00'
-  action:
-  - service: sonos.snapshot
-    data: {}
-    entity_id: media_player.stue
-  - service: script.do_speech
-    data:
-      device: livingroom
-      call_interrupt: 1
-      call_djskoge: 1
-  - delay:
-      hours: 0
-      minutes: 0
-      seconds: 10
-      milliseconds: 0
-  - service: sonos.restore
-    data: {}
-    entity_id: media_player.stue
-  mode: single
 - id: '1634544242311'
-  alias: TTS - Reminder - Frontdoor is open
+  alias: TTS - ChatGPT - Frontdoor is open
   description: Reminding to close the frontdoor
   trigger:
   - platform: time
@@ -915,16 +889,38 @@
     entity_id: binary_sensor.dw_frontdoor
     domain: binary_sensor
   action:
-  - service: media_player.volume_mute
+  - service: sonos.snapshot
     data:
-      is_volume_muted: false
-    target:
+      with_group: true
       entity_id: media_player.stue
-  - service: script.do_speech
+  - service: conversation.process
     data:
-      device: livingroom
-      call_interrupt: 1
-      call_dooropen: 1
+      agent_id: 566e2ddad12ef92916ee7b102fe86f43
+      text: '{% from ''random_tts.jinja'' import tts %} {{ tts() }} for at huske at
+        lukke døren {{ [''for at holde varmen inde'',''holde insekterne ude'',''holde
+        varmen inde og insekterne ude''] | random() }}'
+    response_variable: chatgpt
+  - service: media_player.volume_set
+    data:
+      entity_id: media_player.stue
+      volume_level: 0.3
+  - service: tts.google_cloud_say
+    data_template:
+      entity_id: media_player.stue
+      message: <speak>{{chatgpt.response.speech.plain.speech | trim | replace('\"','')}}</speak>
+      cache: false
+      language: da-DK
+      options:
+        gender: female
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 10
+      milliseconds: 0
+  - service: sonos.restore
+    data:
+      with_group: true
+      entity_id: media_player.stue
   mode: single
 - id: '1637156442232'
   alias: Auto - Work From Home?
@@ -1096,7 +1092,7 @@
       notification_message: Det er tid til at tage din medicin
       notification_action_taken: Taget
       notification_action_later: Spørg senere
-      notification_action_skip: Spring over
+      notification_action_skip: ''
       logbook_message_remind: Morning Medication Reminder Sent
       logbook_message_taken: Morning Medication Taken
       logbook_message_later: Postpone Morning Medication Reminder
@@ -1123,7 +1119,7 @@
       reminder_time: '18:00:00'
       input_boolean: input_boolean.dinner_reminder
 - id: '1640082213543'
-  alias: TTS - Reminder - Dinner
+  alias: TTS - ChatGPT - Dinner
   description: Påmindelse for aftensmad
   trigger:
   - platform: time
@@ -1131,24 +1127,43 @@
   condition: []
   action:
   - service: sonos.snapshot
-    data: {}
-    entity_id: media_player.stue
-  - service: script.do_speech
     data:
-      device: livingroom
-      call_interrupt: 1
-      call_dinner: 1
+      with_group: true
+      entity_id: media_player.stue
+  - service: conversation.process
+    data:
+      agent_id: 566e2ddad12ef92916ee7b102fe86f43
+      text: '{% from ''random_tts.jinja'' import tts %} {{ tts() }} om at huske at
+        lave {{ [''mad'',''aftensmad'',''noget at spise''] | random() }}.'
+    response_variable: chatgpt
+  - service: media_player.volume_set
+    data:
+      entity_id: media_player.stue
+      volume_level: 0.3
+  - service: tts.google_cloud_say
+    data_template:
+      entity_id: media_player.stue
+      message: <speak>{{chatgpt.response.speech.plain.speech | trim | replace('\"','')}}</speak>
+      cache: false
+      language: da-DK
+      options:
+        gender: female
   - delay:
       hours: 0
       minutes: 0
       seconds: 10
       milliseconds: 0
+    enabled: true
+  - wait_template: '{{ states(''media_player.stue'') != "playing" }}'
+    continue_on_timeout: true
+    enabled: false
   - service: sonos.restore
-    data: {}
-    entity_id: media_player.stue
+    data:
+      with_group: true
+      entity_id: media_player.stue
   mode: single
 - id: '1640082318900'
-  alias: TTS - Reminder - Water the flowers
+  alias: TTS - ChatGPT - Water the flowers
   description: Påmindelse at vande blomsterne
   trigger:
   - platform: time
@@ -1159,21 +1174,36 @@
     - sun
   action:
   - service: sonos.snapshot
-    data: {}
-    entity_id: media_player.stue
-  - service: script.do_speech
     data:
-      device: livingroom
-      call_interrupt: 1
-      call_flowers: 1
+      with_group: true
+      entity_id: media_player.stue
+  - service: conversation.process
+    data:
+      agent_id: 566e2ddad12ef92916ee7b102fe86f43
+      text: '{% from ''random_tts.jinja'' import tts %} {{ tts() }} at huske at vande
+        blomsterne'
+    response_variable: chatgpt
+  - service: media_player.volume_set
+    data:
+      entity_id: media_player.stue
+      volume_level: 0.3
+  - service: tts.google_cloud_say
+    data_template:
+      entity_id: media_player.stue
+      message: <speak>{{chatgpt.response.speech.plain.speech | trim | replace('\"','')}}</speak>
+      cache: false
+      language: da-DK
+      options:
+        gender: female
   - delay:
       hours: 0
       minutes: 0
       seconds: 10
       milliseconds: 0
   - service: sonos.restore
-    data: {}
-    entity_id: media_player.stue
+    data:
+      with_group: true
+      entity_id: media_player.stue
   mode: single
 - id: '1641207894004'
   alias: TTS - Calendar Notification
@@ -1296,77 +1326,6 @@
           entity_id: switch.anet_a8_mains
   mode: parallel
   max: 5
-- id: '1644826763466'
-  alias: TTS - Bedtime
-  description: ''
-  trigger:
-  - platform: time
-    at: input_datetime.bedtime
-  condition:
-  - condition: state
-    entity_id: person.malene_trab
-    state: home
-  - condition: state
-    entity_id: binary_sensor.workday_tomorrow
-    state: 'on'
-  - condition: or
-    conditions:
-    - condition: state
-      entity_id: sensor.google_sovevaerelse_alarms
-      state: unavailable
-    - condition: state
-      entity_id: sensor.google_sovevaerelse_alarms
-      state: unknown
-  action:
-  - service: sonos.snapshot
-    data:
-      with_group: true
-      entity_id: media_player.stue
-  - service: script.do_speech
-    data:
-      device: livingroom
-      call_interrupt: 1
-      call_bedtime_first: 1
-  - delay:
-      hours: 0
-      minutes: 10
-      seconds: 0
-      milliseconds: 0
-  - service: sonos.restore
-    data:
-      with_group: true
-      entity_id: media_player.stue
-  - delay:
-      hours: 0
-      minutes: 30
-      seconds: 0
-      milliseconds: 0
-  - choose:
-    - conditions:
-      - condition: state
-        entity_id: sensor.google_sovevaerelse_alarms
-        state: unavailable
-      sequence:
-      - service: script.go_to_bed_reminder
-        data: {}
-    default: []
-  mode: single
-- id: '1645448355621'
-  alias: TTS - Departure Time Reached
-  description: ''
-  trigger:
-  - platform: time
-    at: input_datetime.car_departure_time
-  condition:
-  - condition: state
-    entity_id: input_boolean.charge_time_override
-    state: 'on'
-  action:
-  - service: script.do_speech
-    data:
-      device: kitchen
-      call_departure: 1
-  mode: single
 - id: '1645621979465'
   alias: Infopanel - Update events
   description: ''
@@ -1974,46 +1933,23 @@
     data:
       with_group: true
       entity_id: media_player.stue
-  - parallel:
-    - alias: call chatgpt
-      sequence:
-      - delay:
-          hours: 0
-          minutes: 0
-          seconds: 0
-          milliseconds: 100
-      - service: chatgpt.chat
-        data:
-          messages:
-          - role: user
-            content: Skriv en glad eller flabet talesprogspåmindelse i SSML på én
-              linje om at det er sengetid.
-          callback_id: '{{this.context.id}}'
-    - alias: call tts
-      sequence:
-      - wait_for_trigger:
-        - platform: event
-          event_type: return_value
-          event_data:
-            callback_id: '{{this.context.id}}'
-        timeout:
-          hours: 0
-          minutes: 1
-          seconds: 0
-          milliseconds: 0
-        continue_on_timeout: false
-      - service: media_player.volume_set
-        data:
-          entity_id: media_player.stue
-          volume_level: 0.3
-      - service: tts.google_cloud_say
-        data_template:
-          entity_id: media_player.stue
-          message: '{{wait.trigger.event.data.content | trim | replace(''\"'','''')}}'
-          cache: false
-          language: da-DK
-          options:
-            gender: female
+  - service: conversation.process
+    data:
+      agent_id: 566e2ddad12ef92916ee7b102fe86f43
+      text: '{% from ''random_tts.jinja'' import tts %} {{ tts() }} om at det er sengetid.'
+    response_variable: chatgpt
+  - service: media_player.volume_set
+    data:
+      entity_id: media_player.stue
+      volume_level: 0.3
+  - service: tts.google_cloud_say
+    data_template:
+      entity_id: media_player.stue
+      message: <speak>{{chatgpt.response.speech.plain.speech | trim | replace('\"','')}}</speak>
+      cache: false
+      language: da-DK
+      options:
+        gender: female
   - delay:
       hours: 0
       minutes: 0
@@ -2037,7 +1973,7 @@
       - service: script.go_to_bed_reminder
         data: {}
     default: []
-  mode: single
+  mode: restart
 - id: '1681207362051'
   alias: TTS - ChatGPT - Departure Time
   description: ''
@@ -2049,46 +1985,24 @@
     entity_id: input_boolean.charge_time_override
     state: 'on'
   action:
-  - parallel:
-    - alias: call chatgpt
-      sequence:
-      - delay:
-          hours: 0
-          minutes: 0
-          seconds: 0
-          milliseconds: 100
-      - service: chatgpt.chat
-        data:
-          messages:
-          - role: user
-            content: Skriv en kæk talesprogspåmindelse i SSML i 2. person på én linje
-              om at jeg skal afsted nu.
-          callback_id: '{{this.context.id}}'
-    - alias: call tts
-      sequence:
-      - wait_for_trigger:
-        - platform: event
-          event_type: return_value
-          event_data:
-            callback_id: '{{this.context.id}}'
-        timeout:
-          hours: 0
-          minutes: 1
-          seconds: 0
-          milliseconds: 0
-        continue_on_timeout: false
-      - service: media_player.volume_set
-        data:
-          entity_id: media_player.nesthub8311
-          volume_level: 0.6
-      - service: tts.google_cloud_say
-        data_template:
-          entity_id: media_player.nesthub8311
-          message: '{{wait.trigger.event.data.content | trim | replace(''\"'','''')}}'
-          cache: false
-          language: da-DK
-          options:
-            gender: female
+  - service: conversation.process
+    data:
+      agent_id: 566e2ddad12ef92916ee7b102fe86f43
+      text: '{% from ''random_tts.jinja'' import tts %} {{ tts() }} om at jeg skal
+        afsted nu.'
+    response_variable: chatgpt
+  - service: media_player.volume_set
+    data:
+      entity_id: media_player.nesthub8311
+      volume_level: 0.6
+  - service: tts.google_cloud_say
+    data_template:
+      entity_id: media_player.nesthub8311
+      message: <speak>{{chatgpt.response.speech.plain.speech | trim | replace('\"','')}}</speak>
+      cache: false
+      language: da-DK
+      options:
+        gender: female
   mode: single
 - id: '1681208450554'
   alias: TTS - ChatGPT - DJ Skoge stream
@@ -2111,46 +2025,24 @@
     data:
       with_group: true
       entity_id: media_player.stue
-  - parallel:
-    - alias: call chatgpt
-      sequence:
-      - delay:
-          hours: 0
-          minutes: 0
-          seconds: 0
-          milliseconds: 100
-      - service: chatgpt.chat
-        data:
-          messages:
-          - role: user
-            content: Skriv en sjov talesprogspåmindelse i SSML på én linje om at tænde
-              for DJ Skoges Twitch-stream.
-          callback_id: '{{this.context.id}}'
-    - alias: call tts
-      sequence:
-      - wait_for_trigger:
-        - platform: event
-          event_type: return_value
-          event_data:
-            callback_id: '{{this.context.id}}'
-        timeout:
-          hours: 0
-          minutes: 1
-          seconds: 0
-          milliseconds: 0
-        continue_on_timeout: false
-      - service: media_player.volume_set
-        data:
-          entity_id: media_player.stue
-          volume_level: 0.3
-      - service: tts.google_cloud_say
-        data_template:
-          entity_id: media_player.stue
-          message: '{{wait.trigger.event.data.content | trim | replace(''\"'','''')}}'
-          cache: false
-          language: da-DK
-          options:
-            gender: female
+  - service: conversation.process
+    data:
+      agent_id: 566e2ddad12ef92916ee7b102fe86f43
+      text: '{% from ''random_tts.jinja'' import tts %} {{ tts() }} om at tænde for
+        DJ Skoges Twitch-stream.'
+    response_variable: chatgpt
+  - service: media_player.volume_set
+    data:
+      entity_id: media_player.stue
+      volume_level: 0.3
+  - service: tts.google_cloud_say
+    data_template:
+      entity_id: media_player.stue
+      message: <speak>{{chatgpt.response.speech.plain.speech | trim | replace('\"','')}}</speak>
+      cache: false
+      language: da-DK
+      options:
+        gender: female
   - delay:
       hours: 0
       minutes: 0
@@ -2203,4 +2095,25 @@
     data: {}
     target:
       entity_id: sensor.current_uv_index
+  mode: single
+- id: '1687369590504'
+  alias: State - Irrigation Controller manual switch
+  description: ''
+  trigger:
+  - device_id: 16a78929ea02ecd08640f5b26bb1e30f
+    domain: zha
+    platform: device
+    type: remote_button_short_press
+    subtype: turn_on
+  - device_id: 16a78929ea02ecd08640f5b26bb1e30f
+    domain: zha
+    platform: device
+    type: remote_button_short_press
+    subtype: turn_off
+  condition: []
+  action:
+  - type: toggle
+    device_id: 86f14665760b850467402a95fea93dfd
+    entity_id: f9dc31e59b3fc2a02f7d57a00133029e
+    domain: switch
   mode: single

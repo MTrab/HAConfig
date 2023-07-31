@@ -39,3 +39,4 @@ zigpy_ota/
 zigbee.db
 zigbee.db-shm
 zigbee.db-wal
+dropbox.py

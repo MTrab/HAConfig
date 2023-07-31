@@ -15,3 +15,8 @@ horsensvej_landroid:
           unit_of_measurement: "%"
           state: >
             {{ state_attr("vacuum.robert","battery")["percent"] }}
+        - name: Robert wifi signal
+          unique_id: robert_wifi_signal
+          unit_of_measurement: "%"
+          state: >
+            {{ 2*((state_attr('vacuum.robert','rssi')|int) + 100) }}

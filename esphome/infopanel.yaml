@@ -389,7 +389,7 @@ switch:
     id: rotate
     entity_category: config
     icon: mdi:update
-    restore_state: true
+    restore_mode: RESTORE_DEFAULT_ON
     optimistic: true
 
 text_sensor:

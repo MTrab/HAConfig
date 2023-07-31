@@ -28,10 +28,3 @@ pack_custom_component_tracker:
           json_attributes_path: "$.landroid_cloud"
           json_attributes:
             - "versions"
-        - name: My Components - Clever
-          value_template: >
-            {{ value_json.clever.get("total") }}
-          unit_of_measurement: "installs"
-          json_attributes_path: "$.clever"
-          json_attributes:
-            - "versions"

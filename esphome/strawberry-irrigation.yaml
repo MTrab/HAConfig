@@ -1,0 +1,102 @@
+substitutions:
+  node_name: irrigation-controller
+  device_verbose_name: "Irrigation Controller"
+  board: nodemcuv2
+  platform: ESP8266
+  log_level: DEBUG
+
+packages:
+  wifi: !include common/wifi.yaml
+  logger: !include common/logger.yaml
+  web: !include common/web.yaml
+
+esphome:
+  friendly_name: ${device_verbose_name}
+  name: ${node_name}
+  build_path: ./build/${node_name}
+  platform: ${platform}
+  board: ${board}
+  esp8266_restore_from_flash: true
+  
+api:
+  reboot_timeout: 1h
+  encryption:
+    key: "ykst7UIy4eBjz3NW+eZH64Shr83IAvx+Fv/PjGCXQRo="
+
+ota:
+  safe_mode: true
+  password: "Cg43v3kbRHcuZP"
+
+text_sensor:
+  - <<: !include common/text_sensor/uptime.yaml
+
+sensor:
+  - <<: !include common/sensor/uptime.yaml
+  - <<: !include common/sensor/wifi_signal.yaml
+  - platform: homeassistant
+    id: "rain"
+    name: "Rain today"
+    entity_id: sensor.netatmo_public_rain_today
+
+binary_sensor:
+  - <<: !include common/binary_sensor/connection_status.yaml
+
+button:
+  - <<: !include common/button/restart.yaml
+
+number:
+  - platform: template
+    id: on_time
+    name: "On time"
+    min_value: 0.01
+    step: 0.01
+    max_value: 60
+    unit_of_measurement: minutes
+    optimistic: true
+    restore_value: true
+    icon: mdi:timer
+
+switch:
+  - platform: gpio
+    id: ch01
+    pin: GPIO4 #D2
+    name: "Channel 01"
+    restore_mode: ALWAYS_OFF
+    icon: mdi:water-pump
+    on_turn_on:
+      then:
+        if:
+          condition:
+            - switch.is_on: auto_off
+          then:
+            - delay: !lambda 'return (id(on_time).state*1000*60);'
+            - switch.turn_off: ch01
+  - platform: template
+    icon: mdi:timer-stop
+    id: auto_off
+    name: "Auto Shut-off"
+    restore_mode: RESTORE_DEFAULT_ON
+    optimistic: true
+  - platform: template
+    icon: mdi:timer-play
+    id: auto_on
+    name: "Auto Turn-On"
+    restore_mode: RESTORE_DEFAULT_ON
+    optimistic: true
+    on_turn_on:
+      - switch.turn_on: auto_off
+
+time:
+  - platform: sntp
+    id: sntp_time
+    on_time: 
+      - seconds: 0
+        minutes: 0
+        hours: 23
+        then:
+          if:
+            condition:
+              - lambda: 'return id(rain).state < 1;'
+              - switch.is_on: auto_on
+            then:
+              - switch.turn_on: ch01

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import functools
 import json
 import logging
 import os
@@ -8,14 +9,9 @@ import re
 import typing
 from enum import Enum
 
-import packaging
-import packaging.version
-from homeassistant.const import __version__ as HA_VERSION
-from pkg_resources import parse_version
-from zigpy import __version__ as zigpy_version
+from pkg_resources import get_distribution, parse_version
 from zigpy import types as t
 from zigpy.exceptions import ControllerException, DeliveryError
-from zigpy.util import retryable
 from zigpy.zcl import foundation as f
 
 from .params import INTERNAL_PARAMS as p
@@ -23,7 +19,10 @@ from .params import USER_PARAMS as P
 
 LOGGER = logging.getLogger(__name__)
 
-if packaging.version.parse(HA_VERSION) < packaging.version.parse("2023.4"):
+HA_VERSION = get_distribution("homeassistant").version
+ZIGPY_VERSION = get_distribution("zigpy").version
+
+if parse_version(HA_VERSION) < parse_version("2023.4"):
     # pylint: disable=ungrouped-imports
     from homeassistant.util.json import save_json
 else:
@@ -34,6 +33,16 @@ if typing.TYPE_CHECKING:
     VERSION_TIME: float = 0.0
     VERSION: str = "Unknown"
     MANIFEST: dict[str, str | list[str]] = {}
+
+
+def getHaVersion() -> str:
+    """Get HA Version"""
+    return HA_VERSION
+
+
+def getZigpyVersion() -> str:
+    """Get zigpy Version"""
+    return ZIGPY_VERSION
 
 
 def getVersion() -> str:
@@ -201,18 +210,14 @@ def get_radio_version(app):
         if hasattr(zigpy_znp, "__version__"):
             return zigpy_znp.__version__
 
-        import pkg_resources
-
-        return pkg_resources.get_distribution("zigpy_znp").version
+        return get_distribution("zigpy_znp").version
     if hasattr(app, "_ezsp"):
         import bellows
 
         if hasattr(bellows, "__version__"):
             return bellows.__version__
 
-        import pkg_resources
-
-        return pkg_resources.get_distribution("bellows").version
+        return get_distribution("bellows").version
     if hasattr(app, "_api"):
         rt = get_radiotype(app)
         if rt == RadioType.DECONZ:
@@ -221,27 +226,21 @@ def get_radio_version(app):
             if hasattr(zigpy_deconz, "__version__"):
                 return zigpy_deconz.__version__
 
-            import pkg_resources
-
-            return pkg_resources.get_distribution("zigpy_deconz").version
+            return get_distribution("zigpy_deconz").version
         if rt == RadioType.ZIGATE:
             import zigpy_zigate
 
             if hasattr(zigpy_zigate, "__version__"):
                 return zigpy_zigate.__version__
 
-            import pkg_resources
-
-            return pkg_resources.get_distribution("zigpy_zigate").version
+            return get_distribution("zigpy_zigate").version
         if rt == RadioType.XBEE:
             import zigpy_xbee
 
             if hasattr(zigpy_xbee, "__version__"):
                 return zigpy_xbee.__version__
 
-            import pkg_resources
-
-            return pkg_resources.get_distribution("zigpy_xbee").version
+            return get_distribution("zigpy_xbee").version
 
         # if rt == RadioType.ZIGPY_CC:
         #     import zigpy_cc
@@ -276,8 +275,7 @@ async def get_ieee(app, listener, ref):
         entity_registry = (
             # Deprecated >= 2022.6.0
             await listener._hass.helpers.entity_registry.async_get_registry()
-            if packaging.version.parse(HA_VERSION)
-            < packaging.version.parse("2022.6")
+            if not is_ha_ge("2022.6")
             else listener._hass.helpers.entity_registry.async_get(
                 listener._hass
             )
@@ -294,8 +292,7 @@ async def get_ieee(app, listener, ref):
         device_registry = (
             # Deprecated >= 2022.6.0
             await listener._hass.helpers.device_registry.async_get_registry()
-            if packaging.version.parse(HA_VERSION)
-            < packaging.version.parse("2022.6")
+            if not is_ha_ge("2022.6")
             else listener._hass.helpers.device_registry.async_get(
                 listener._hass
             )
@@ -461,6 +458,11 @@ def write_json_to_file(
 
     save_json(file_name, data)
     LOGGER.debug(f"Finished writing {desc} in '{file_name}'")
+
+
+def helper_save_json(file_name: str, data: typing.Any):
+    """Helper because the actual method depends on the HA version"""
+    save_json(file_name, data)
 
 
 def append_to_csvfile(
@@ -834,6 +836,92 @@ def extractParams(  # noqa: C901
     return params
 
 
+#
+# Copied retry and retryable from zigpy < 0.56.0
+#   where "tries" and "delay" were removed
+#  from the wrapper function and hence propagated to the decorated function.
+#
+async def retry(
+    func: typing.Callable[[], typing.Awaitable[typing.Any]],
+    retry_exceptions: typing.Iterable[typing.Any]
+    | None = None,  # typing.Iterable[BaseException],
+    tries: int = 3,
+    delay: int | float = 0.1,
+) -> typing.Any:
+    """Retry a function in case of exception
+
+    Only exceptions in `retry_exceptions` will be retried.
+    """
+    if retry_exceptions is None:
+        # Default list
+        retry_exceptions = (
+            DeliveryError,
+            ControllerException,
+            asyncio.CancelledError,
+            asyncio.TimeoutError,
+        )
+
+    while True:
+        LOGGER.debug("Tries remaining: %s", tries)
+        try:
+            return await func()
+            # pylint: disable-next=catching-non-exception
+        except retry_exceptions:  # type:ignore[misc]
+            if tries <= 1:
+                raise
+            tries -= 1
+            await asyncio.sleep(delay)
+
+
+async def retry_wrapper(
+    func: typing.Callable,
+    *args,
+    retry_exceptions: typing.Iterable[typing.Any]
+    | None = None,  # typing.Iterable[BaseException],
+    tries: int = 3,
+    delay: int | float = 0.1,
+    **kwargs,
+) -> typing.Any:
+    """Inline callable wrapper for retry"""
+    return await retry(
+        functools.partial(func, *args, **kwargs),
+        retry_exceptions,
+        tries=tries,
+        delay=delay,
+    )
+
+
+def retryable(
+    retry_exceptions: None
+    | typing.Iterable[typing.Any] = None,  # typing.Iterable[BaseException]
+    tries: int = 1,
+    delay: float = 0.1,
+) -> typing.Callable:
+    """Return a decorator which makes a function able to be retried
+
+    This adds "tries" and "delay" keyword arguments to the function. Only
+    exceptions in `retry_exceptions` will be retried.
+    """
+
+    def decorator(func: typing.Callable) -> typing.Callable:
+        nonlocal tries, delay
+
+        @functools.wraps(func)
+        def wrapper(*args, tries=tries, delay=delay, **kwargs):
+            if tries <= 1:
+                return func(*args, **kwargs)
+            return retry(
+                functools.partial(func, *args, **kwargs),
+                retry_exceptions,
+                tries=tries,
+                delay=delay,
+            )
+
+        return wrapper
+
+    return decorator
+
+
 # zigpy wrappers
 
 # The zigpy library does not offer retryable on read_attributes.
@@ -875,4 +963,9 @@ def get_local_dir() -> str:
 def is_zigpy_ge(version: str) -> bool:
     """Test if zigpy library is newer than version"""
     # Example version value: "0.45.0"
-    return parse_version(zigpy_version) >= parse_version(version)
+    return parse_version(getZigpyVersion()) >= parse_version(version)
+
+
+def is_ha_ge(version: str) -> bool:
+    """Test if zigpy library is newer than version"""
+    return parse_version(getHaVersion()) >= parse_version(version)

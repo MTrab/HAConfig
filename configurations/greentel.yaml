@@ -1,5 +1,0 @@
-phonenumber: !secret greentel_phone
-password: !secret greentel_pass
-consumption:
-  - packages
-  - user

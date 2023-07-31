@@ -74,6 +74,7 @@ godnat_tts:
     data:
       call_sleep: 1
       device: bedroom
+    enabled: true
   mode: single
 turn_on_webasto:
   alias: Turn on Webasto
@@ -111,20 +112,34 @@ sidde_position:
   mode: single
   icon: mdi:account-arrow-down
 go_to_bed_reminder:
-  alias: Go To Bed Reminder
+  alias: TTS - ChatGPT - Go To Bed Reminder
   sequence:
   - service: sonos.snapshot
     data:
       with_group: true
       entity_id: media_player.stue
-  - service: script.do_speech
+  - service: conversation.process
     data:
-      device: livingroom
-      call_bedtime_recurring: 1
+      agent_id: 566e2ddad12ef92916ee7b102fe86f43
+      text: '{% from ''random_tts.jinja'' import tts %} {{ tts("meget bestemt og skrap")
+        }} om at det er over sengetid, og man skal se at komme i seng.'
+    response_variable: chatgpt
+  - service: media_player.volume_set
+    data:
+      entity_id: media_player.stue
+      volume_level: 0.3
+  - service: tts.google_cloud_say
+    data_template:
+      entity_id: media_player.stue
+      message: '{{chatgpt.response.speech.plain.speech | trim | replace(''\"'','''')}}'
+      cache: false
+      language: da-DK
+      options:
+        gender: female
   - delay:
       hours: 0
       minutes: 0
-      seconds: 20
+      seconds: 10
       milliseconds: 0
   - service: sonos.restore
     data:
@@ -144,8 +159,7 @@ go_to_bed_reminder:
       - service: script.go_to_bed_reminder
         data: {}
     default: []
-  mode: parallel
-  max: 10
+  mode: restart
 working_home:
   alias: Working at home
   sequence:
@@ -174,17 +188,6 @@ working_home:
       start_date: '{{ now().strftime(''%Y-%m-%d'') }}'
       end_date: '{{ now().strftime(''%Y-%m-%d'') }}'
   mode: single
-tv_power:
-  alias: TV Power
-  sequence:
-  - service: remote.send_command
-    data:
-      device: fjernsyn
-      command: power
-    target:
-      entity_id: remote.rmmini3_stue_remote
-  mode: single
-  icon: mdi:power
 control_desktop_power_off:
   alias: Control - Desktop power off
   sequence:
@@ -201,72 +204,3 @@ control_desktop_power_off:
     default: []
   mode: single
   icon: mdi:electric-switch
-start_cast:
-  alias: Start Cast
-  sequence:
-  - service: cast.show_lovelace_view
-    data:
-      entity_id: media_player.nesthub8311
-      dashboard_path: dashboard-cast
-      view_path: '0'
-  mode: single
-nyt_script:
-  alias: Say With GPT
-  fields:
-    message:
-      name: Message
-      description: The message you want ChatGPT to respond to.
-      required: true
-      example: Write a $style, one line, spoken language reminder for the 'cleaning'
-        calendar event.
-    target:
-      name: Target
-      description: The TTS device(s) that should be used.
-      required: false
-      example: all
-      default: all
-  sequence:
-  - variables:
-      styles:
-      - happy
-      - upbeat
-      - motivational
-      - funny
-      - epic
-      - poetic
-      - dark humor
-      - tough love
-  - parallel:
-    - alias: call chatgpt
-      sequence:
-      - delay:
-          hours: 0
-          minutes: 0
-          seconds: 0
-          milliseconds: 100
-      - service: chatgpt.chat
-        data:
-          messages:
-          - role: user
-            content: '{{message.replace(''$style'', styles | random)}}'
-          callback_id: '{{this.context.id}}'
-    - alias: call tts
-      sequence:
-      - wait_for_trigger:
-        - platform: event
-          event_type: return_value
-          event_data:
-            callback_id: '{{this.context.id}}'
-        timeout:
-          hours: 0
-          minutes: 1
-          seconds: 0
-          milliseconds: 0
-        continue_on_timeout: false
-      - service: script.unified_tts
-        data:
-          target: '{{target}}'
-          message: '{{wait.trigger.event.data.content | trim | replace(''"'','''')}}'
-  mode: queued
-  icon: mdi:head-alert
-  max: 10
