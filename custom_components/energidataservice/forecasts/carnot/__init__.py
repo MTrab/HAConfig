@@ -1,7 +1,7 @@
-"""Carnot forecast connector"""
+"""Carnot forecast connector."""
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from logging import getLogger
 
 import pytz
@@ -25,28 +25,30 @@ def prepare_data(indata, tz) -> list | None:  # pylint: disable=invalid-name
     local_tz = pytz.timezone(tz)
     reslist = []
     if not isinstance(indata, type(None)):
+        now = datetime.now()
         for dataset in indata:
             tmpdate = (
                 datetime.fromisoformat(dataset["utctime"])
                 .replace(tzinfo=pytz.utc)
                 .astimezone(local_tz)
             )
-            if not tmpdate.day == datetime.now().day:
+            if tmpdate.day != now.day:
+                if tmpdate.month == now.month and tmpdate.day < now.day:
+                    continue
                 tmp = INTERVAL(dataset["prediction"], local_tz.normalize(tmpdate))
                 reslist.append(tmp)
-
         return reslist
 
     return None
 
 
 class Connector:
-    """Carnot forecast API"""
+    """Carnot forecast API."""
 
     def __init__(
         self, regionhandler, client, tz  # pylint: disable=invalid-name
     ) -> None:
-        """Init API connection to Carnot"""
+        """Init API connection to Carnot."""
         self.regionhandler = regionhandler
         self.client = client
         self._result = {}
@@ -88,7 +90,7 @@ class Connector:
 
     @staticmethod
     def _header(apikey: str, email: str) -> dict:
-        """Create default request header"""
+        """Create default request header."""
         data = {
             "User-Agent": "HomeAssistant/Energidataservice",
             "Content-Type": "application/json",

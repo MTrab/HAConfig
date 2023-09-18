@@ -1,11 +1,11 @@
 """Support for Energi Data Service sensor."""
 from __future__ import annotations
 
+import logging
 from collections import namedtuple
 from datetime import datetime
-import json  # pylint: disable=unused-import
-import logging
 
+import homeassistant.helpers.config_validation as cv
 from homeassistant.components import sensor
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -15,11 +15,12 @@ from homeassistant.components.sensor import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_API_KEY, CONF_EMAIL, CONF_NAME
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers import device_registry as dr, entity_registry as er
-import homeassistant.helpers.config_validation as cv
+from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.template import Template, attach
-from homeassistant.util import dt as dt_utils, slugify as util_slugify
+from homeassistant.util import dt as dt_utils
+from homeassistant.util import slugify as util_slugify
 from jinja2 import pass_context
 
 from .const import (
@@ -148,9 +149,9 @@ def _async_migrate_unique_id(hass: HomeAssistant, entity: str, new_id: str) -> N
     _LOGGER.debug("Testing for unique_id")
     entity_registry = er.async_get(hass)
     curentity = entity_registry.async_get(entity)
-    if not curentity is None:
+    if curentity is not None:
         _LOGGER.debug("- Device_id: %s", curentity.device_id)
-        if not new_id is None:
+        if new_id is not None:
             device_registry = dr.async_get(hass)
             curdevice = device_registry.async_get(curentity.device_id)
             identifiers = curdevice.identifiers
@@ -283,7 +284,7 @@ class EnergidataserviceSensor(SensorEntity):
         if not self._api.today:
             _LOGGER.debug("No sensor data found - calling update")
             await self._api.update()
-            if not self._api.today is None and not self._api.today_calculated:
+            if self._api.today is not None and not self._api.today_calculated:
                 _LOGGER.debug("API currency: %s", self._api.connector_currency)
                 _LOGGER.debug("SELF currency: %s", self._currency)
                 await self._hass.async_add_executor_job(
@@ -409,7 +410,7 @@ class EnergidataserviceSensor(SensorEntity):
         self.async_write_ha_state()
 
     def _get_current_price(self) -> None:
-        """Get price for current hour"""
+        """Get price for current hour."""
         current_state_time = datetime.fromisoformat(
             dt_utils.now()
             .replace(microsecond=0)
@@ -446,6 +447,7 @@ class EnergidataserviceSensor(SensorEntity):
                 "tomorrow_min": self._tomorrow_min or None,
                 "tomorrow_max": self._tomorrow_max or None,
                 "tomorrow_mean": self._tomorrow_mean or None,
+                "use_cent": self._cent,
                 "attribution": f"Data sourced from {self._api.source}",
             }
 
@@ -519,7 +521,7 @@ class EnergidataserviceSensor(SensorEntity):
     def today(self) -> list:
         """Get todays prices
         Returns:
-            list: sorted list where today[0] is the price of hour 00.00 - 01.00
+            list: sorted list where today[0] is the price of hour 00.00 - 01.00.
         """
         return (
             [
@@ -615,7 +617,7 @@ class EnergidataserviceSensor(SensorEntity):
         fake_dt=datetime,
         default_currency: str = "EUR",
     ) -> float:
-        """Do price calculations"""
+        """Do price calculations."""
         if value is None:
             value = self._attr_native_value
 
@@ -632,6 +634,7 @@ class EnergidataserviceSensor(SensorEntity):
             )
 
         tariff_value = 0
+        owner_tariff = 0
         elafgift = 0
         if (
             self._api.tariff_data is not None
@@ -646,12 +649,16 @@ class EnergidataserviceSensor(SensorEntity):
                     fake_dt
                 )
 
-                for tariff, additional_tariff in system_tariff.items():
-                    tariff_value += float(additional_tariff)
-                    if tariff == "elafgift":
-                        elafgift = float(additional_tariff)
+                if system_tariff:
+                    for tariff, additional_tariff in system_tariff.items():
+                        tariff_value += float(additional_tariff)
+                        if tariff == "elafgift":
+                            elafgift = float(additional_tariff)
 
-                tariff_value += float(chargeowner_tariff[str(fake_dt.hour)])
+                owner_tariff = float(
+                    chargeowner_tariff[str(fake_dt.hour)] if chargeowner_tariff else 0
+                )
+                tariff_value += owner_tariff
             except KeyError:
                 _LOGGER.warning(
                     "Error adding tariffs for %s, no valid tariffs was found!", fake_dt
@@ -673,9 +680,10 @@ class EnergidataserviceSensor(SensorEntity):
             current_tariff=tariff_value,
             current_price=price,
             el_afgift=elafgift,
+            chargeowner_tariff=owner_tariff,
         )
 
-        if not isinstance(template_value, (int, float)):
+        if not isinstance(template_value, int | float):
             try:
                 template_value = float(template_value)
             except (TypeError, ValueError):
@@ -713,13 +721,11 @@ class EnergidataserviceSensor(SensorEntity):
         """Format data as list with prices localized."""
         formatted_pricelist = []
 
-        list_for = "TODAY"
-
         if tomorrow:
-            list_for = "TOMORROW"
+            pass
 
         if predictions:
-            list_for = "FORECASTS"
+            pass
 
         _start = datetime.now().timestamp()
         Interval = namedtuple("Interval", "price hour")
@@ -756,7 +762,7 @@ class EnergidataserviceSensor(SensorEntity):
 
     @staticmethod
     def _get_specific(datatype: str, data: list, decimals: int):
-        """Get specific values - ie. min, max, mean values"""
+        """Get specific values - ie. min, max, mean values."""
 
         if datatype in ["MIN", "Min", "min"]:
             if data:

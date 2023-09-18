@@ -1332,8 +1332,22 @@
   trigger:
   - platform: time_pattern
     minutes: '30'
+    id: recurring
+  - platform: homeassistant
+    event: start
+    id: ha_start
   condition: []
   action:
+  - if:
+    - condition: trigger
+      id:
+      - ha_start
+    then:
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 15
+        milliseconds: 0
   - service: pyscript.infopanel_get_calendar_event
     data:
       count: 3
@@ -1373,14 +1387,14 @@
     path: Aohzan/medication_reminder.yaml
     input:
       logbook_message_no_answer: No Evening Medication Answer Time Out
-      reminder_time: '17:30:00'
+      reminder_time: '18:00:00'
       notify_device: 5a203dc793181fba91d8220b160558c1
       input_boolean: input_boolean.husket_medicin_aften
       notification_title: Husk medicin
       notification_message: Det er tid til at tage din medicin
       notification_action_taken: Taget
       notification_action_later: Spørg senere
-      notification_action_skip: Spring over
+      notification_action_skip: ''
       logbook_message_remind: Evening Medication Reminder Sent
       logbook_message_taken: Evening Medication Taken
       logbook_message_later: Postpone Evening Medication Reminder
@@ -1766,22 +1780,12 @@
         target:
           entity_id:
           - climate.stue
-          - climate.bedroom
-          - climate.hall
-          - climate.toilet
           - climate.kokken
           - climate.spisestue
     - conditions:
       - condition: trigger
         id: 'off'
       sequence:
-      - service: climate.set_hvac_mode
-        data:
-          hvac_mode: auto
-        target:
-          entity_id:
-          - climate.toilet
-          - climate.hall
       - service: climate.turn_on
         data: {}
         target:
@@ -1851,11 +1855,11 @@
       entity_id: cover.alle_gardiner
   mode: single
 - id: '1670270053658'
-  alias: Auto - Blinds - Open at 7:30
+  alias: Auto - Blinds - Open at 7:00
   description: ''
   trigger:
   - platform: time
-    at: 07:15:00
+    at: 07:00:00
     id: time
   condition: []
   action:
@@ -1940,8 +1944,10 @@
     response_variable: chatgpt
   - service: media_player.volume_set
     data:
+      volume_level: 0.25
+    enabled: true
+    target:
       entity_id: media_player.stue
-      volume_level: 0.3
   - service: tts.google_cloud_say
     data_template:
       entity_id: media_player.stue
@@ -2097,7 +2103,7 @@
       entity_id: sensor.current_uv_index
   mode: single
 - id: '1687369590504'
-  alias: State - Irrigation Controller manual switch
+  alias: State - Water Valve manual switch
   description: ''
   trigger:
   - device_id: 16a78929ea02ecd08640f5b26bb1e30f
@@ -2113,7 +2119,187 @@
   condition: []
   action:
   - type: toggle
-    device_id: 86f14665760b850467402a95fea93dfd
-    entity_id: f9dc31e59b3fc2a02f7d57a00133029e
+    device_id: df0febec5fa1eef2697dab361114ef6e
+    entity_id: 40ccafae661f7e9952373e8feafe8dcb
     domain: switch
   mode: single
+- id: '1691498227535'
+  alias: Auto - Light and Cover on TV state
+  description: ''
+  trigger:
+  - platform: device
+    device_id: 816e9da3f08029af2095292d2960106e
+    domain: media_player
+    entity_id: c95a5305c7d74751bf36458c1c2bfdc6
+    type: paused
+    id: pause
+    enabled: false
+  - platform: state
+    entity_id:
+    - media_player.android_tv
+    to: paused
+    id: pause
+  - platform: state
+    entity_id:
+    - media_player.android_tv
+    to: playing
+    id: play
+  - platform: state
+    entity_id:
+    - media_player.android_tv
+    to: buffering
+    id: play
+  - platform: state
+    entity_id:
+    - media_player.android_tv
+    to: 'off'
+    id: stop
+    from: playing
+  - platform: state
+    entity_id:
+    - media_player.android_tv
+    to: 'off'
+    id: stop
+    from: paused
+  - platform: state
+    entity_id:
+    - media_player.android_tv
+    to: 'off'
+    id: stop
+    from: buffering
+  condition:
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: media_player.android_tv_2
+      attribute: app_id
+      state: tv.twitch.android.app
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - play
+      sequence:
+      - service: light.turn_off
+        data: {}
+        target:
+          device_id: 0179248391cdf4e263909ad5bc67e23e
+          entity_id: light.desktop
+      - service: cover.close_cover
+        data: {}
+        target:
+          area_id: 8868a1b304c411eb9211dd814829b168
+    - conditions:
+      - condition: and
+        conditions:
+        - condition: trigger
+          id:
+          - pause
+        - condition: or
+          conditions:
+          - condition: sun
+            before: sunrise
+          - condition: sun
+            after: sunset
+      sequence:
+      - service: light.turn_on
+        data:
+          transition: 3
+          brightness_pct: 30
+        target:
+          device_id: 0179248391cdf4e263909ad5bc67e23e
+    - conditions:
+      - condition: and
+        conditions:
+        - condition: trigger
+          id:
+          - stop
+        - condition: sun
+          after: sunrise
+          before: sunset
+      sequence:
+      - service: cover.open_cover
+        data: {}
+        target:
+          area_id: 8868a1b304c411eb9211dd814829b168
+    - conditions:
+      - condition: and
+        conditions:
+        - condition: trigger
+          id:
+          - stop
+        - condition: or
+          conditions:
+          - condition: sun
+            before: sunrise
+          - condition: sun
+            after: sunset
+      sequence:
+      - service: light.turn_on
+        data:
+          transition: 5
+          brightness_pct: 50
+        target:
+          device_id: 0179248391cdf4e263909ad5bc67e23e
+  mode: single
+- id: '1694260829982'
+  alias: Notification - Medical reminder - Lunch
+  description: ''
+  use_blueprint:
+    path: Aohzan/medication_reminder.yaml
+    input:
+      logbook_message_no_answer: No Lunch Medication Answer Time Out
+      reminder_time: '12:00:00'
+      notify_device: 5a203dc793181fba91d8220b160558c1
+      input_boolean: input_boolean.husket_medicin_middag
+      notification_title: Husk medicin
+      notification_message: Det er tid til at tage din medicin
+      notification_action_taken: Taget
+      notification_action_later: Spørg senere
+      notification_action_skip: ''
+      logbook_message_remind: Lunch Medication Reminder Sent
+      logbook_message_taken: Lunch Medication Taken
+      logbook_message_later: Postpone Lunch Medication Reminder
+      logbook_message_skip: Lunch Medication Reminder Skipped
+      ask_later_wait_time: 60
+- id: '1694260934493'
+  alias: Notification - Medical reminder - Afternoon
+  description: ''
+  use_blueprint:
+    path: Aohzan/medication_reminder.yaml
+    input:
+      logbook_message_no_answer: No Afternoon Medication Answer Time Out
+      reminder_time: '14:00:00'
+      notify_device: 5a203dc793181fba91d8220b160558c1
+      input_boolean: input_boolean.husket_medicin_eftermiddag
+      notification_title: Husk medicin
+      notification_message: Det er tid til at tage din medicin
+      notification_action_taken: Taget
+      notification_action_later: Spørg senere
+      notification_action_skip: ''
+      logbook_message_remind: Afternoon Medication Reminder Sent
+      logbook_message_taken: Afternoot Medication Taken
+      logbook_message_later: Postpone Afternoon Medication Reminder
+      logbook_message_skip: Afternoon Medication Reminder Skipped
+      ask_later_wait_time: 60
+- id: '1694261007782'
+  alias: Notification - Medical reminder - Night
+  description: ''
+  use_blueprint:
+    path: Aohzan/medication_reminder.yaml
+    input:
+      logbook_message_no_answer: No Night Medication Answer Time Out
+      reminder_time: '22:00:00'
+      notify_device: 5a203dc793181fba91d8220b160558c1
+      input_boolean: input_boolean.husket_medicin_nat
+      notification_title: Husk medicin
+      notification_message: Det er tid til at tage din medicin
+      notification_action_taken: Taget
+      notification_action_later: Spørg senere
+      notification_action_skip: ''
+      logbook_message_remind: Night Medication Reminder Sent
+      logbook_message_taken: Night Medication Taken
+      logbook_message_later: Postpone Night Medication Reminder
+      logbook_message_skip: Night Medication Reminder Skipped
+      ask_later_wait_time: 60

@@ -1,0 +1,41 @@
+{
+    "anytime": [
+        "Hey smukke!",
+        "Skal du ud og erobre verden i dag?"
+    ],
+    "morning": [
+        "God morgen, smukke!",
+        "Have en god dag!",
+        "Har du sovet godt?"
+    ],
+    "afternoon": [
+        "Du ser skarp ud!",
+        "Du er smuk i dag!"
+    ],
+    "evening": [
+        "Wow du ser hot ud!",
+        "Du ser godt ud!"
+    ],
+    "....-01-01": [
+        "Godt nytår!"
+    ],
+    "....-12-24": [
+        "Glædelig jul!"
+    ],
+    "....-02-18": [
+        "Idag er det Malene's fødselsdag - HURRA!"
+    ],
+    "day_sunny": [
+        "I dag er en solrig dag",
+        "Det er en smuk dag i dag",
+        "Nyd det gode vejr"
+    ],
+    "snow": [
+        "Det SNEER!",
+        "Ud og lege med snebolde"
+    ],
+    "rain": [
+        "Det regner",
+        "Husk din paraply"
+    ]
+}

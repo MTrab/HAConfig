@@ -62,3 +62,7 @@ shell_command: !include configurations/shell_commands.yaml
 switch: !include_dir_merge_list configurations/switch
 tts: !include configurations/tts.yaml
 zha: !include configurations/zha.yaml
+# logger:
+#   default: info
+#   logs:
+#     custom_components.pyscript.scripts.infopanel.infopanel_get_calendar_event.infopanel_get_calendar_event: debug

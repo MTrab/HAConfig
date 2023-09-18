@@ -9,7 +9,7 @@ from homeassistant.const import (
 )
 
 DOMAIN = "places"
-VERSION = "v2.4"
+VERSION = "v2.5"
 EVENT_TYPE = DOMAIN + "_state_update"
 PLATFORM = Platform.SENSOR
 ENTITY_ID_FORMAT = Platform.SENSOR + ".{}"
@@ -30,6 +30,7 @@ TRACKING_DOMAINS = [
     str(Platform.DEVICE_TRACKER),
     str("person"),
     str(Platform.SENSOR),
+    CONF_ZONE,
     "variable",
 ]
 TRACKING_DOMAINS_NEED_LATLONG = [
@@ -49,9 +50,9 @@ CONF_NATIVE_VALUE = "native_value"
 CONF_DISPLAY_OPTIONS = "options"
 CONF_SHOW_TIME = "show_time"
 CONF_USE_GPS = "use_gps_accuracy"
-CONF_YAML_HASH = "yaml_hash"
 
 # Attributes
+ATTR_ATTRIBUTES = "attributes"
 ATTR_CITY = "city"
 ATTR_CITY_CLEAN = "city_clean"
 ATTR_COUNTRY = "country"
@@ -201,6 +202,7 @@ EXTRA_STATE_ATTRIBUTE_LIST = [
     ATTR_LAST_UPDATED,
 ]
 JSON_IGNORE_ATTRIBUTE_LIST = [
+    ATTR_ATTRIBUTES,
     ATTR_DEVICETRACKER_ID,
     ATTR_DISPLAY_OPTIONS,
     ATTR_DISPLAY_OPTIONS_LIST,

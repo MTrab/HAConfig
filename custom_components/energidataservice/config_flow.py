@@ -5,6 +5,7 @@ import logging
 import re
 from typing import Any
 
+import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.const import CONF_NAME
 from homeassistant.core import HomeAssistant, callback
@@ -13,7 +14,6 @@ from homeassistant.helpers.event import async_call_later
 from homeassistant.helpers.template import Template
 from homeassistant.util import dt as dt_utils
 from jinja2 import pass_context
-import voluptuous as vol
 
 from . import async_setup_entry, async_unload_entry
 from .connectors import Connectors
@@ -321,7 +321,7 @@ class EnergidataserviceOptionsFlowHandler(config_entries.OptionsFlow):
 
 
 class EnergidataserviceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for Energi Data Service"""
+    """Handle a config flow for Energi Data Service."""
 
     VERSION = 1
     CONNECTION_CLASS = config_entries.CONN_CLASS_CLOUD_POLL
@@ -564,6 +564,7 @@ async def _validate_template(hass: HomeAssistant, user_template: Any) -> bool:
             current_tariff=0,
             current_price=0,
             el_afgift=0,
+            chargeowner_tariff=0,
         )
         return bool(isinstance(user_template, float))
     except Exception as err:  # pylint: disable=broad-except

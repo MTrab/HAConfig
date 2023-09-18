@@ -23,12 +23,12 @@ DATA_ZHATK = "zha_toolkit"
 LOGGER = logging.getLogger(__name__)
 
 try:
-    LOADED_VERSION
+    LOADED_VERSION  # type:ignore[used-before-def]
 except NameError:
     LOADED_VERSION = ""
 
 try:
-    DEFAULT_OTAU
+    DEFAULT_OTAU   # type:ignore[used-before-def]
 except NameError:
     DEFAULT_OTAU = "/config/zigpy_ota"
 
@@ -75,7 +75,7 @@ SERVICE_SCHEMAS = {
             # vol.Optional(P.STATE_VALUE_TEMPLATE): cv.template,
             vol.Optional(P.STATE_VALUE_TEMPLATE): cv.string,
             vol.Optional(P.FORCE_UPDATE): cv.boolean,
-            vol.Optional(P.USE_CACHE): cv.boolean,
+            vol.Optional(P.USE_CACHE): vol.Any(vol.Range(0, 2), cv.boolean),
             vol.Optional(P.ALLOW_CREATE): cv.boolean,
             vol.Optional(P.READ_BEFORE_WRITE): cv.boolean,
             vol.Optional(P.READ_AFTER_WRITE): cv.boolean,
@@ -128,7 +128,7 @@ SERVICE_SCHEMAS = {
             # vol.Optional(P.STATE_VALUE_TEMPLATE): cv.template,
             vol.Optional(P.STATE_VALUE_TEMPLATE): cv.string,
             vol.Optional(P.FORCE_UPDATE): cv.boolean,
-            vol.Optional(P.USE_CACHE): cv.boolean,
+            vol.Optional(P.USE_CACHE): vol.Any(vol.Range(0, 2), cv.boolean),
             vol.Optional(P.ALLOW_CREATE): cv.boolean,
             vol.Optional(P.OUTCSV): cv.string,
             vol.Optional(P.CSVLABEL): cv.string,
@@ -161,7 +161,7 @@ SERVICE_SCHEMAS = {
             # vol.Optional(P.STATE_VALUE_TEMPLATE): cv.template,
             vol.Optional(P.STATE_VALUE_TEMPLATE): cv.string,
             vol.Optional(P.FORCE_UPDATE): cv.boolean,
-            vol.Optional(P.USE_CACHE): cv.boolean,
+            vol.Optional(P.USE_CACHE): vol.Any(vol.Range(0, 2), cv.boolean),
             vol.Optional(P.ALLOW_CREATE): cv.boolean,
             vol.Optional(P.READ_BEFORE_WRITE): cv.boolean,
             vol.Optional(P.READ_AFTER_WRITE): cv.boolean,
@@ -209,6 +209,9 @@ SERVICE_SCHEMAS = {
             ),
             vol.Optional(ATTR_COMMAND_DATA): vol.Any(
                 cv.entity_id_or_uuid, t.EUI64.convert
+            ),
+            vol.Optional(P.ENDPOINT): vol.Any(
+                vol.Range(0, 255), [vol.Range(0, 255)]
             ),
             vol.Optional(P.CLUSTER): vol.Any(
                 vol.Range(0, 0xFFFF), [vol.Range(0, 0xFFFF)]
@@ -375,6 +378,9 @@ SERVICE_SCHEMAS = {
             vol.Required(ATTR_IEEE): vol.Any(
                 cv.entity_id_or_uuid, t.EUI64.convert
             ),
+            vol.Required(ATTR_COMMAND_DATA): vol.Any(
+                cv.entity_id_or_uuid, t.EUI64.convert
+            ),
         },
         extra=vol.ALLOW_EXTRA,
     ),
@@ -459,10 +465,21 @@ SERVICE_SCHEMAS = {
         },
         extra=vol.ALLOW_EXTRA,
     ),
+    S.TUYA_MAGIC: vol.Schema(
+        {
+            vol.Required(ATTR_IEEE): vol.Any(
+                cv.entity_id_or_uuid, t.EUI64.convert
+            ),
+        },
+        extra=vol.ALLOW_EXTRA,
+    ),
     S.UNBIND_COORDINATOR: vol.Schema(
         {
             vol.Required(ATTR_IEEE): vol.Any(
                 cv.entity_id_or_uuid, t.EUI64.convert
+            ),
+            vol.Optional(P.ENDPOINT): vol.Any(
+                vol.Range(0, 255), [vol.Range(0, 255)]
             ),
             vol.Optional(P.CLUSTER): vol.Any(
                 vol.Range(0, 0xFFFF), [vol.Range(0, 0xFFFF)]

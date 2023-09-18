@@ -1,12 +1,12 @@
-"""Energi Data Service tariff connector"""
+"""Energi Data Service tariff connector."""
 from __future__ import annotations
 
-from datetime import datetime
 import json
+from datetime import datetime
 from logging import getLogger
 
 from aiohttp import ClientSession
-from async_retrying_ng import retry
+from async_retrying_ng import RetryError, retry
 from homeassistant.util import slugify as util_slugify
 
 from .chargeowners import CHARGEOWNERS
@@ -22,12 +22,12 @@ __all__ = ["Connector", "REGIONS", "CHARGEOWNERS"]
 
 
 class Connector:
-    """Energi Data Service API"""
+    """Energi Data Service API."""
 
     def __init__(
         self, hass, client: ClientSession, chargeowner: str | None = None
     ) -> None:
-        """Init API connection to Energi Data Service"""
+        """Init API connection to Energi Data Service."""
         self.hass = hass
         self.client = client
         self._chargeowner = chargeowner
@@ -35,12 +35,6 @@ class Connector:
         self._additional_tariff = {}
         self._all_tariffs = {}
         self._all_additional_tariffs = {}
-
-        # dt_now = datetime.now()
-        # for elafgift in FM_EL_AFGIFT:
-        #     if elafgift["from"] <= dt_now and elafgift["to"] > dt_now:
-        #         self._additional_tariff.update({"el_afgift": elafgift["value"]})
-        #         break
 
     @property
     def tariffs(self):
@@ -56,12 +50,12 @@ class Connector:
 
     @staticmethod
     def _header() -> dict:
-        """Create default request header"""
+        """Create default request header."""
         data = {"Content-Type": "application/json"}
         return data
 
     async def async_get_tariffs(self):
-        """Get tariff from Eloverblik API"""
+        """Get tariff from Eloverblik API."""
         await self.async_get_system_tariffs()
 
         try:
@@ -115,6 +109,8 @@ class Connector:
                 "please reconfigure your integration.",
                 self._chargeowner,
             )
+        except RetryError:
+            _LOGGER.error("Retry attempts exceeded for tariffs request.")
 
     def get_dated_tariff(self, date: datetime) -> dict:
         """Get tariff for this specific date."""
@@ -145,7 +141,7 @@ class Connector:
         tariff_data = {}
         for entry in self._all_additional_tariffs:
             if self.__entry_in_range(entry, check_date):
-                if not entry["Note"] in tariff_data:
+                if entry["Note"] not in tariff_data:
                     tariff_data.update(
                         {util_slugify(entry["Note"]): float(entry["Price1"])}
                     )
@@ -159,28 +155,31 @@ class Connector:
 
         query = f"filter={search_filter}&limit={limit}"
 
-        dataset = await self.async_call_api(query)
+        try:
+            dataset = await self.async_call_api(query)
 
-        if len(dataset) == 0:
-            _LOGGER.warning(
-                "Could not fetch tariff data from Energi Data Service DataHub!"
-            )
-            return
-        else:
-            self._all_additional_tariffs = dataset
+            if len(dataset) == 0:
+                _LOGGER.warning(
+                    "Could not fetch tariff data from Energi Data Service DataHub!"
+                )
+                return
+            else:
+                self._all_additional_tariffs = dataset
 
-        check_date = (datetime.utcnow()).strftime("%Y-%m-%d")
-        tariff_data = {}
-        for entry in self._all_additional_tariffs:
-            if self.__entry_in_range(entry, check_date):
-                if not entry["Note"] in tariff_data:
-                    tariff_data.update(
-                        {util_slugify(entry["Note"]): float(entry["Price1"])}
-                    )
+            check_date = (datetime.utcnow()).strftime("%Y-%m-%d")
+            tariff_data = {}
+            for entry in self._all_additional_tariffs:
+                if self.__entry_in_range(entry, check_date):
+                    if entry["Note"] not in tariff_data:
+                        tariff_data.update(
+                            {util_slugify(entry["Note"]): float(entry["Price1"])}
+                        )
 
-        self._additional_tariff = tariff_data
+            self._additional_tariff = tariff_data
+        except RetryError:
+            _LOGGER.error("Retry attempts exceeded for retrieving system tariffs.")
 
-    @retry(attempts=5)
+    @retry(attempts=5, delay=10, max_delay=3600, backoff=1.5)
     async def async_call_api(self, query: str) -> dict:
         """Make the API calls."""
         try:
@@ -205,7 +204,7 @@ class Connector:
             raise
 
     def __entry_in_range(self, entry, check_date) -> bool:
-        """Check if an entry is witin the date range"""
+        """Check if an entry is witin the date range."""
         return (entry["ValidFrom"].split("T"))[0] <= check_date and (
             entry["ValidTo"] is None or (entry["ValidTo"].split("T"))[0] > check_date
         )

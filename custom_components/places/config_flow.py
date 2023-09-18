@@ -55,7 +55,7 @@ COMPONENT_CONFIG_URL = (
 def get_devicetracker_id_entities(
     hass: core.HomeAssistant, current_entity=None
 ) -> list[str]:
-    """Get the list of valid entities. For sensors, only include ones with latitude and longitude attributes. For the devicetracker selector"""
+    """Get the list of valid entities. For sensors, only include ones with latitude and longitude attributes."""
     dt_list = []
     for dom in TRACKING_DOMAINS:
         # _LOGGER.debug(f"Geting entities for domain: {dom}")
@@ -170,7 +170,7 @@ class PlacesConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors["base"] = "unknown"
         devicetracker_id_list = get_devicetracker_id_entities(self.hass)
         zone_list = get_home_zone_entities(self.hass)
-        # _LOGGER.debug(f"Devicetracker entities with lat/long: {devicetracker_id_list}")
+        # _LOGGER.debug(f"Trackable entities with lat/long: {devicetracker_id_list}")
         DATA_SCHEMA = vol.Schema(
             {
                 vol.Required(CONF_NAME): str,
@@ -244,13 +244,6 @@ class PlacesConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             },
         )
 
-    # this is run to import the configuration.yaml parameters\
-    async def async_step_import(self, import_config=None) -> FlowResult:
-        """Import a config entry from configuration.yaml."""
-
-        # _LOGGER.debug(f"[async_step_import] import_config: {import_config}")
-        return await self.async_step_user(import_config)
-
     @staticmethod
     @core.callback
     def async_get_options_flow(
@@ -295,7 +288,7 @@ class PlacesOptionsFlowHandler(config_entries.OptionsFlow):
             else None,
         )
         zone_list = get_home_zone_entities(self.hass)
-        # _LOGGER.debug(f"Devicetracker_id entities including sensors with lat/long: {devicetracker_id_list}")
+        # _LOGGER.debug(f"Trackable entities including sensors with lat/long: {devicetracker_id_list}")
         OPTIONS_SCHEMA = vol.Schema(
             {
                 vol.Required(

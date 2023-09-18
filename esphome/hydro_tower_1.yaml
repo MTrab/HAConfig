@@ -1,0 +1,279 @@
+substitutions:
+  node_name: hydro-tower-1
+  device_verbose_name: "Hydroponics Tower 1"
+  board: nodemcuv2
+  platform: ESP8266
+  log_level: DEBUG
+
+packages:
+  wifi: !include common/wifi.yaml
+  logger: !include common/logger.yaml
+  web: !include common/web.yaml
+
+esphome:
+  friendly_name: ${device_verbose_name}
+  name: ${node_name}
+  build_path: ./build/${node_name}
+  platform: ${platform}
+  board: ${board}
+  esp8266_restore_from_flash: true
+  
+api:
+  reboot_timeout: 1h
+  encryption:
+    key: "L5c70vC3sMvjU4GuDYR+xhi4Qbvaq0I94Vvuua9KAwM="
+
+ota:
+  safe_mode: true
+  password: "TGX7isVrSUM6MRmG4BtU"
+
+text_sensor:
+  - <<: !include common/text_sensor/uptime.yaml
+  - platform: template
+    icon: mdi:receipt-text-clock
+    id: water_automation_state
+    name: "Water automation"
+  - platform: template
+    icon: mdi:receipt-text-clock
+    id: light_automation_state
+    name: "Grow light automation"
+
+sensor:
+  - <<: !include common/sensor/uptime.yaml
+  - <<: !include common/sensor/wifi_signal.yaml
+
+binary_sensor:
+  - <<: !include common/binary_sensor/connection_status.yaml
+  - platform: gpio
+    id: water_level
+    icon: mdi:waves-arrow-up
+    pin:
+      number: GPIO4 #D2
+      inverted: true
+      mode: INPUT_PULLUP
+    name: "Minimum water level reached"
+    device_class: problem
+    filters:
+      - delayed_on: 10s
+    on_press:
+      then:
+        - if:
+            condition:
+              switch.is_off: level_override
+            then:
+              switch.turn_off: water_override
+
+
+button:
+  - <<: !include common/button/restart.yaml
+
+number:
+  - platform: template
+    icon: mdi:water-check
+    id: water_on_time
+    name: "Water on time"
+    min_value: 1
+    step: 1
+    max_value: 60
+    unit_of_measurement: minutes
+    optimistic: true
+    restore_value: true
+  - platform: template
+    icon: mdi:water-remove
+    id: water_off_time
+    name: "Water off time"
+    min_value: 1
+    step: 1
+    max_value: 60
+    unit_of_measurement: minutes
+    optimistic: true
+    restore_value: true
+  - platform: template
+    icon: mdi:led-strip-variant
+    id: light_on_time
+    name: "Grow light on time"
+    min_value: 1
+    step: 1
+    max_value: 24
+    unit_of_measurement: hours
+    optimistic: true
+    restore_value: true
+  - platform: template
+    icon: mdi:led-strip-variant-off
+    id: light_off_time
+    name: "Grow light off time"
+    min_value: 1
+    step: 1
+    max_value: 24
+    unit_of_measurement: hours
+    optimistic: true
+    restore_value: true
+
+switch:
+  - platform: template
+    id: level_override
+    name: "Override minimum level sensor"
+    optimistic: True
+    restore_mode: ALWAYS_OFF
+    on_turn_off:
+      then:
+        - if:
+            condition:
+              - binary_sensor.is_on: water_level
+            then:
+              - logger.log: "No water, turning pump off"
+              - output.turn_off: water_pump
+              - switch.turn_off: water_override
+  - platform: template
+    id: water_override
+    name: "Water Pump"
+    optimistic: true
+    restore_mode: ALWAYS_OFF
+    icon: mdi:water-pump
+    on_turn_on:
+      then:
+        if:
+          condition:
+            - binary_sensor.is_off: water_level
+          then:
+            - output.turn_on: water_pump
+          else:
+            - if:
+                condition:
+                  - switch.is_off: level_override
+                then:
+                  - logger.log: "No water, keeping off"
+                  - delay:
+                      seconds: 1
+                  - switch.turn_off: water_override
+                else:
+                  - output.turn_on: water_pump
+    on_turn_off:
+      then:
+        - output.turn_off: water_pump
+  - platform: template
+    icon: mdi:refresh-auto
+    id: water_run_auto
+    name: "Auto control water"
+    restore_mode: RESTORE_DEFAULT_ON
+    optimistic: true
+    on_turn_on:
+      then:
+        - text_sensor.template.publish:
+            id: water_automation_state
+            state: !lambda 'return "Starting";'
+        - delay:
+            seconds: 10
+        - script.execute: water_automation
+    on_turn_off:
+      then:
+        - script.stop: water_automation
+        - switch.turn_off: water_override
+        - text_sensor.template.publish:
+            id: water_automation_state
+            state: !lambda 'return "Stopped";'
+  - platform: template
+    icon: mdi:lightbulb-auto
+    id: light_run_auto
+    name: "Auto control light"
+    restore_mode: RESTORE_DEFAULT_ON
+    optimistic: true
+    on_turn_on:
+      then:
+        - text_sensor.template.publish:
+            id: light_automation_state
+            state: !lambda 'return "Starting";'
+        - delay:
+            seconds: 10
+        - script.execute: light_automation
+    on_turn_off:
+      then:
+        - script.stop: light_automation
+        - light.turn_off: light_grow_override
+        - text_sensor.template.publish:
+            id: light_automation_state
+            state: !lambda 'return "Stopped";'
+  - platform: gpio
+    id: out_1
+    name: "Output 1"
+    pin: GPIO14 # D5
+    inverted: true
+  - platform: gpio
+    id: out_2
+    name: "Output 2" 
+    pin: GPIO12 # D6
+    inverted: true
+
+light:
+  - platform: binary
+    id: light_grow_override
+    name: "Grow Light"
+    output: light_grow
+    restore_mode: RESTORE_DEFAULT_OFF
+    icon: mdi:light-flood-down
+
+output:
+  - platform: gpio
+    id: water_pump
+    pin: GPIO0 #D3
+    inverted: true
+  - platform: gpio
+    id: light_grow
+    pin: GPIO13 #D7
+    inverted: true
+
+time:
+  - platform: sntp
+    id: sntp_time
+
+script:
+  - id: water_automation
+    mode: restart
+    then:
+      - while:
+          condition:
+            - switch.is_on: water_run_auto
+          then:
+            - if:
+                condition:
+                  - binary_sensor.is_off: water_level
+                then:
+                  - text_sensor.template.publish:
+                      id: water_automation_state
+                      state: !lambda 'return "Running";'
+                  - delay: !lambda 'return (id(water_off_time).state*1000*60);'
+                  - logger.log: "Automation turning on pump"
+                  - switch.turn_on: water_override
+                  - delay: !lambda 'return (id(water_on_time).state*1000*60);'
+                  - logger.log: "Automation turning off pump"
+                  - switch.turn_off: water_override
+                else:
+                  - while:
+                      condition:
+                        and:
+                          - switch.is_on: water_run_auto
+                          - binary_sensor.is_on: water_level
+                      then:
+                        - text_sensor.template.publish:
+                            id: water_automation_state
+                            state: !lambda 'return "Paused (Water low)";'
+                        - switch.turn_off: water_override
+                        - delay:
+                            seconds: 10
+
+  - id: light_automation
+    mode: restart
+    then:
+      - while:
+          condition:
+            - switch.is_on: light_run_auto
+          then:
+            - text_sensor.template.publish:
+                id: light_automation_state
+                state: !lambda 'return "Running";'
+            - delay: !lambda 'return (id(light_off_time).state*1000*60*60);'
+            - logger.log: "Automation turning on light"
+            - light.turn_on: light_grow_override
+            - delay: !lambda 'return (id(light_on_time).state*1000*60*60);'
+            - logger.log: "Automation turning off lightpump"
+            - light.turn_off: light_grow_override

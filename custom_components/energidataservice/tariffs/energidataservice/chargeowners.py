@@ -24,7 +24,7 @@ CHARGEOWNERS = {
     "N1": {
         "gln": "5790001089030",
         "company": "N1 A/S - 131",
-        "type": ["CD", "CD R"],
+        "type": ["CD"],
     },
     "Dinel": {
         "gln": "5790000610099",
@@ -140,5 +140,10 @@ CHARGEOWNERS = {
         "gln": "5790001095444",
         "company": "Sunds Net A.m.b.A",
         "type": ["SEF-NT-05"],
+    },
+    "Aal El-Net": {
+        "gln": "5790001095451",
+        "company": "Aal El-Net A.m.b.A",
+        "type": ["AAL-NT-05"],
     },
 }

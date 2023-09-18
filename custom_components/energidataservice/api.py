@@ -1,12 +1,13 @@
 """EDS API."""
 from __future__ import annotations
 
+import json
 from datetime import datetime, timedelta
 from functools import partial
 from importlib import import_module
-import json
 from logging import getLogger
 
+import voluptuous as vol
 from aiohttp import ServerDisconnectedError
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_API_KEY, CONF_EMAIL
@@ -14,7 +15,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.event import async_call_later
-import voluptuous as vol
+from pytz import timezone
 
 from .connectors import Connectors
 from .const import (
@@ -87,7 +88,7 @@ class APIConnector:
         self._carnot_apikey = entry.options.get(CONF_API_KEY) or None
 
     async def update(self, dt=None) -> None:  # type: ignore pylint: disable=unused-argument,invalid-name
-        """Fetch latest prices from API"""
+        """Fetch latest prices from API."""
         _LOGGER.debug("Updating data for '%s'", self._region.region)
         connectors = self._connectors.get_connectors(self._region.region)
         _LOGGER.debug(
@@ -146,12 +147,13 @@ class APIConnector:
                 midnight = datetime.strptime("23:59:59", "%H:%M:%S")
                 refresh = datetime.strptime(self.next_data_refresh, "%H:%M:%S")
                 now = datetime.utcnow()
+                now_local = datetime.now().astimezone(timezone(self._tz))
 
                 _LOGGER.debug(
-                    "Now: %s:%s:%s (UTC)",
-                    f"{now.hour:02d}",
-                    f"{now.minute:02d}",
-                    f"{now.second:02d}",
+                    "Now: %s:%s:%s (local time)",
+                    f"{now_local.hour:02d}",
+                    f"{now_local.minute:02d}",
+                    f"{now_local.second:02d}",
                 )
                 _LOGGER.debug(
                     "Refresh: %s:%s:%s (local time)",
@@ -161,9 +163,9 @@ class APIConnector:
                 )
                 if (
                     f"{midnight.hour}:{midnight.minute}:{midnight.second}"
-                    > f"{now.hour:02d}:{now.minute:02d}:{now.second:02d}"
+                    > f"{now_local.hour:02d}:{now_local.minute:02d}:{now_local.second:02d}"
                     and f"{refresh.hour:02d}:{refresh.minute:02d}:{refresh.second:02d}"
-                    <= f"{now.hour:02d}:{now.minute:02d}:{now.second:02d}"
+                    <= f"{now_local.hour:02d}:{now_local.minute:02d}:{now_local.second:02d}"
                 ):
                     retry_update(self)
                 else:
@@ -195,23 +197,24 @@ class APIConnector:
                 self._carnot_apikey, self._carnot_user
             )
 
-            self.predictions[:] = (
-                value
-                for value in self.predictions
-                if value.hour.day >= (datetime.now() + timedelta(days=1)).day
-                or value.hour.month > (datetime.now() + timedelta(days=1)).month
-                or value.hour.year > datetime.now().year
-            )
-
-            if self._tomorrow_valid:
-                # Remove tomorrows predictions, as we have the actual values
+            if not isinstance(self.predictions, type(None)):
                 self.predictions[:] = (
                     value
                     for value in self.predictions
-                    if value.hour.day != (datetime.now() + timedelta(days=1)).day
+                    if value.hour.day >= (datetime.now() + timedelta(days=1)).day
+                    or value.hour.month > (datetime.now() + timedelta(days=1)).month
+                    or value.hour.year > datetime.now().year
                 )
 
-            self.api_predictions = self.predictions
+                if self._tomorrow_valid:
+                    # Remove tomorrows predictions, as we have the actual values
+                    self.predictions[:] = (
+                        value
+                        for value in self.predictions
+                        if value.hour.day != (datetime.now() + timedelta(days=1)).day
+                    )
+
+                self.api_predictions = self.predictions
 
     async def async_get_tariffs(self) -> None:
         """Get tariff data."""
@@ -231,17 +234,17 @@ class APIConnector:
 
     @property
     def tomorrow_valid(self) -> bool:
-        """Is tomorrows prices valid?"""
+        """Is tomorrows prices valid?."""
         return self._tomorrow_valid
 
     @property
     def source(self) -> str:
-        """Who was the source for the data?"""
+        """Who was the source for the data?."""
         return self._source
 
     @property
     def next_data_refresh(self) -> str:
-        """When is next data update?"""
+        """When is next data update?."""
         return f"13:{self._rand_min:02d}:{self._rand_sec:02d}"
 
     @property

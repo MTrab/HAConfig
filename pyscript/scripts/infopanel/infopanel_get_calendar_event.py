@@ -1,4 +1,5 @@
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 @service
 def infopanel_get_calendar_event(count=0):
@@ -20,10 +21,13 @@ fields:
     num = 1
     events = ""
 
+    now = datetime.now(tz=ZoneInfo("Europe/Copenhagen"))
+
     for i in range(10):
       if num > int(count):
         log.debug("Reached max count - breaking loop")
         break
+
       cal = state.getattr("sensor.ical_all_events_event_" + str(i))
       description = cal["summary"].replace("#heat","").replace("#dnd","")
 
@@ -32,10 +36,11 @@ fields:
 
         event_text = ""
 
+        log.debug(cal["start"])
         if allday:
           start = cal["start"].strftime('%d/%m')
           event_text = start + ": " + description
-        else:
+        elif cal["end"] > now:
           start = cal["start"].strftime('%d/%m %H.%M')
           event_text = start + ": " + description
 
@@ -46,5 +51,5 @@ fields:
         events += event_text
 
         num += 1
-      
+        
       state.set("sensor.infopanel_calendar_events", events)
