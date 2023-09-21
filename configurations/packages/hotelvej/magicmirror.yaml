@@ -1,0 +1,10 @@
+# pack_magicmirror:
+#   rest_command:
+#   turn_off_mm_screen:
+#     url: http://10.254.254.40:8080/api/monitor/off
+#   turn_on_mm_screen:
+#     url: http://10.254.254.40:8080/api/monitor/on
+#   dim_mm_screen:
+#     url: http://10.254.254.40:8080/api/brightness/75
+#   undim_mm_screen:
+#     url: http://10.254.254.40:8080/api/brightness/100

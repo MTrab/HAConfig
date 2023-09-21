@@ -613,9 +613,9 @@
       - service: media_player.media_stop
         entity_id: all
         data: {}
-      - device_id: 8af98a436fdd76e2bd241402247108d0
+      - device_id: 58ccf7ba65f0fa80f5056863c184485d
         domain: button
-        entity_id: b33ee7927bcf4cdd14f4e456154434eb
+        entity_id: 58c6855fb17d264399c4f0c8f7330a7f
         type: press
       - service: light.turn_off
         data: {}
@@ -671,9 +671,9 @@
           - light.digiclock_dots_lights
           - light.digiclock_hours_lights
           - light.digiclock_minutes_lights
-      - device_id: 8af98a436fdd76e2bd241402247108d0
+      - device_id: 58ccf7ba65f0fa80f5056863c184485d
         domain: button
-        entity_id: d87ce4f1b1a0a8e82cbd451f309e363b
+        entity_id: f09f95203189f7b4df18a64605715888
         type: press
     default: []
   mode: single
@@ -2133,7 +2133,7 @@
     entity_id: c95a5305c7d74751bf36458c1c2bfdc6
     type: paused
     id: pause
-    enabled: false
+    enabled: true
   - platform: state
     entity_id:
     - media_player.android_tv
@@ -2303,3 +2303,39 @@
       logbook_message_later: Postpone Night Medication Reminder
       logbook_message_skip: Night Medication Reminder Skipped
       ask_later_wait_time: 60
+- id: '1695198715635'
+  alias: Notification - Medical reminder - HRT
+  description: ''
+  use_blueprint:
+    path: mtrab/medication_reminder_weekday.yaml
+    input:
+      reminder_time: '19:00:00'
+      notify_device: 5a203dc793181fba91d8220b160558c1
+      input_boolean: input_boolean.husket_medicin_hormon_plaster
+      notification_title: Husk at skifte hormon plaster
+      notification_message: Du skal skifte hormon plaster
+      notification_action_taken: Skiftet
+      notification_action_later: Senere
+      logbook_message_remind: Hormon plaster reminder sendt
+      logbook_message_taken: Hormon plaster skiftet
+      logbook_message_later: Hormon plaster skift udsat
+      logbook_message_no_answer: Hormon plaster reminder sendt igen
+      optional_action: []
+- id: '1695223744047'
+  alias: Light - Dimming Desktop
+  description: ''
+  use_blueprint:
+    path: mtrab/ZHA - IKEA on off dimmer.yaml
+    input:
+      remote: 0c217534fa16479f6fe7d4c595edea3d
+      light:
+        device_id: 1e97980e04e111eb800287a8184cbf3d
+- id: '1695223866267'
+  alias: Light - Dimming - Diningtable
+  description: ''
+  use_blueprint:
+    path: mtrab/ZHA - IKEA on off dimmer.yaml
+    input:
+      remote: c7191429c1bd2426c678ef55d9e5e5e8
+      light:
+        device_id: 5e2dcf9304e111eb9a30e3199109ec3d

@@ -60,6 +60,7 @@ rest: !include_dir_merge_list configurations/rest
 sensor: !include_dir_merge_list configurations/sensor
 shell_command: !include configurations/shell_commands.yaml
 switch: !include_dir_merge_list configurations/switch
+template: !include_dir_merge_list configurations/template
 tts: !include configurations/tts.yaml
 zha: !include configurations/zha.yaml
 # logger:
