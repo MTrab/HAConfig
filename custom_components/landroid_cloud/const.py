@@ -46,7 +46,6 @@ SERVICE_CONFIG = "config"
 SERVICE_PARTYMODE = "partymode"
 SERVICE_SETZONE = "setzone"
 SERVICE_LOCK = "lock"
-SERVICE_REFRESH = "refresh"
 SERVICE_RESTART = "restart"
 SERVICE_EDGECUT = "edgecut"
 SERVICE_OTS = "ots"
@@ -62,6 +61,7 @@ STATE_MOWING = "mowing"
 STATE_STARTING = "starting"
 STATE_ZONING = "zoning"
 STATE_EDGECUT = "edgecut"
+STATE_ESCAPED_DIGITAL_FENCE = "escaped_digital_fence"
 
 # Service attributes
 ATTR_MULTIZONE_DISTANCES = "multizone_distances"
@@ -159,6 +159,7 @@ STATE_MAP = {
     10: STATE_ERROR,
     11: STATE_ERROR,
     12: STATE_MOWING,
+    13: STATE_ESCAPED_DIGITAL_FENCE,
     30: STATE_RETURNING,
     31: STATE_ZONING,
     32: STATE_EDGECUT,
@@ -282,8 +283,7 @@ class LandroidFeatureSupport(IntEnum):
     CONFIG = 512
     SCHEDULES = 1024
     TORQUE = 2048
-    REFRESH = 4096
-    RAW = 8192
+    RAW = 4096
 
 
 API_TO_INTEGRATION_FEATURE_MAP = {

@@ -1,10 +1,4 @@
-# pack_magicmirror:
-#   rest_command:
-#   turn_off_mm_screen:
-#     url: http://10.254.254.40:8080/api/monitor/off
-#   turn_on_mm_screen:
-#     url: http://10.254.254.40:8080/api/monitor/on
-#   dim_mm_screen:
-#     url: http://10.254.254.40:8080/api/brightness/75
-#   undim_mm_screen:
-#     url: http://10.254.254.40:8080/api/brightness/100
+pack_magicmirror:
+  rest_command:
+    dim_mm_screen:
+      url: "http://10.254.254.40:8080/api/brightness/{{ states('input_number.magicmirror_screen_brightness') | int(0) }}?apiKey=8f7f78645c4a11ee8c990242ac120002"

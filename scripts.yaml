@@ -195,7 +195,7 @@ control_desktop_power_off:
     - conditions:
       - condition: numeric_state
         entity_id: sensor.skrivebord_power
-        below: '100'
+        below: 90
       sequence:
       - type: turn_off
         device_id: d23fd4714c9b7008d771a5e948643bbc

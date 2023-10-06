@@ -19,24 +19,24 @@
           {{ old_val }}
         {%- endif %}
 
-    - name: "Kamstrup Meter Reading Without Sensors"
-      device_class: energy
-      state_class: total_increasing
-      unit_of_measurement: kWh
-      state: >
-        {% set ns = namespace(sensors=[],ok_sensors=(states.sensor | rejectattr('state','in',['unavailable','unknown','none']) | list)) %}
-        {%- for sensor in ns.ok_sensors %}
-          {%- if "utility_meter_" in sensor.entity_id and "_cost" not in sensor.entity_id %}
-            {% set ns.sensors = ns.sensors + [sensor] %}
-          {%- endif %}
-        {%- endfor %}
+    # - name: "Kamstrup Meter Reading Without Sensors"
+    #   device_class: energy
+    #   state_class: total_increasing
+    #   unit_of_measurement: kWh
+    #   state: >
+    #     {% set ns = namespace(sensors=[],ok_sensors=(states.sensor | rejectattr('state','in',['unavailable','unknown','none']) | list)) %}
+    #     {%- for sensor in ns.ok_sensors %}
+    #       {%- if "utility_meter_" in sensor.entity_id and "_cost" not in sensor.entity_id %}
+    #         {% set ns.sensors = ns.sensors + [sensor] %}
+    #       {%- endif %}
+    #     {%- endfor %}
 
-        {% set master = (states('sensor.ams_tpi') | float(0)) %}
-        {% set old_state = (states('sensor.kamstrup_meter_reading_without_sensors') | float(0)) %}
-        {% set new_state = (master - (ns.sensors | map(attribute='state') | map('float') | sum()) | round(2)) %}
+    #     {% set master = (states('sensor.ams_tpi') | float(0)) %}
+    #     {% set old_state = (states('sensor.kamstrup_meter_reading_without_sensors') | float(0)) %}
+    #     {% set new_state = (master - (ns.sensors | map(attribute='state') | map('float') | sum()) | round(2)) %}
 
-        {% if (new_state | float(0)) > (old_state | float(0)) and is_number(new_state) and is_number(sensor.utility_meters_total) %}
-          {{ ((new_state | float(0)) | round(2)) }}
-        {% else %}
-          {{ old_state }}
-        {% endif %}
+    #     {% if (new_state | float(0)) > (old_state | float(0)) and is_number(new_state) and is_number(sensor.utility_meters_total) %}
+    #       {{ ((new_state | float(0)) | round(2)) }}
+    #     {% else %}
+    #       {{ old_state }}
+    #     {% endif %}

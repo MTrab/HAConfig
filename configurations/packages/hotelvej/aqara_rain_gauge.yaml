@@ -1,0 +1,36 @@
+#################################################################
+# Rain gauge using an Aqara Door/Window sensor                  #
+# Source:                                                       #
+#   https://smartsolutions4home.com/ss4h-zrg-zigbee-rain-gauge/ #
+#################################################################
+
+pack_aqara_rain_gauge:
+  sensor:
+    - platform: history_stats
+      name: "Aqara Rainsensor flips/on"
+      entity_id: binary_sensor.custom_rain_gauge_opening
+      state: "on"
+      type: count
+      start: "{{ now() - timedelta(hours=24)}}"
+      end: "{{ now() }}"
+    - platform: history_stats
+      name: "Aqara Rainsensor flips/off"
+      entity_id: binary_sensor.custom_rain_gauge_openings
+      state: "off"
+      type: count
+      start: "{{ now() - timedelta(hours=24)}}"
+      end: "{{ now() }}"
+
+  template:
+    - sensor:
+        - name: Rainfall [day]
+          state_class: measurement
+          unique_id: aqara_rainfall_day
+          unit_of_measurement: mm
+          icon: mdi:weather-pouring
+          state: >-
+            {% set count = (states('sensor.aqara_rainsensor_flips_on') | int(0)) + (states('sensor.aqara_rainsensor_flips_off') | int(0)) %}
+            {% set mm = count * 0.52615 %}
+            {% if count >= 0 %}
+              {{ mm|round(1, 'floor') }}
+            {% endif %}

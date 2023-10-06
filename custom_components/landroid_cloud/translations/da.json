@@ -24,6 +24,7 @@
             "landroid_cloud": {
                 "state": {
                     "edgecut": "Klipper kant",
+                    "escaped_digital_fence": "Udenfor digitalt hegn",
                     "initializing": "Initialiserer",
                     "mowing": "Slår græs",
                     "offline": "Afbrudt",
@@ -88,10 +89,6 @@
                 }
             },
             "name": "PartyMode"
-        },
-        "refresh": {
-            "description": "Send en kommando til enheden for at starte en data opdatering - BENYT KUN I SJÆLDNE TILFÆLDE",
-            "name": "Opdater enheds  informationer"
         },
         "restart": {
             "description": "Genstarter enheden",
@@ -192,7 +189,7 @@
             "name": "Indstil eller rediger plan"
         },
         "send_raw": {
-            "description": "Send en raw JSON kommando til enheden",
+            "description": "Send en RAW JSON kommando til enheden",
             "fields": {
                 "json": {
                     "description": "Data der skal sendes, formateret som gyldig JSON",

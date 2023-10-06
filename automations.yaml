@@ -523,19 +523,47 @@
   trigger:
   - type: motion
     platform: device
-    device_id: 16ca24c77ca1daa4dfb487e96a3ee80a
-    entity_id: binary_sensor.pir_outside
+    device_id: 994b8fc8a7d26661aeeb06db2c67c9bd
+    entity_id: b11017756d5fcec64a9225f7b73fe944
     domain: binary_sensor
     id: 'on'
   - type: no_motion
     platform: device
-    device_id: 16ca24c77ca1daa4dfb487e96a3ee80a
-    entity_id: binary_sensor.pir_outside
+    device_id: 994b8fc8a7d26661aeeb06db2c67c9bd
+    entity_id: b11017756d5fcec64a9225f7b73fe944
+    domain: binary_sensor
+    id: 'off'
+  - platform: state
+    entity_id:
+    - binary_sensor.door_person_occupancy
+    from: 'off'
+    to: 'on'
+    id: 'on'
+  - platform: state
+    entity_id:
+    - binary_sensor.door_person_occupancy
+    from: 'on'
+    to: 'off'
+    for:
+      hours: 0
+      minutes: 3
+      seconds: 0
+    id: 'off'
+  - type: opened
+    platform: device
+    device_id: f717a0cbeca42322e0440d68a708e8ef
+    entity_id: 8218e5d12b3e697845ab7fc4467d1b09
+    domain: binary_sensor
+    id: 'on'
+  - type: not_opened
+    platform: device
+    device_id: f717a0cbeca42322e0440d68a708e8ef
+    entity_id: 8218e5d12b3e697845ab7fc4467d1b09
     domain: binary_sensor
     id: 'off'
     for:
       hours: 0
-      minutes: 2
+      minutes: 3
       seconds: 0
   condition:
   - condition: device
@@ -564,7 +592,7 @@
         domain: light
         brightness_pct: 1
     default: []
-  mode: single
+  mode: restart
 - id: '1612506618068'
   alias: Auto - Turn off at dawn
   description: ''
@@ -2339,3 +2367,78 @@
       remote: c7191429c1bd2426c678ef55d9e5e5e8
       light:
         device_id: 5e2dcf9304e111eb9a30e3199109ec3d
+- id: '1695583504741'
+  alias: MagicMirror - Dim Screen
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - input_number.magicmirror_screen_brightness
+  condition: []
+  action:
+  - service: rest_command.dim_mm_screen
+    data: {}
+  mode: single
+- id: '1696515470263'
+  alias: Notification - Extra Freezer Temperature
+  description: ''
+  trigger:
+  - device_id: 83f76589b1625127d4f7d5f520763fd5
+    domain: zha
+    platform: device
+    type: device_offline
+    subtype: device_offline
+    id: offline
+  - type: temperature
+    platform: device
+    device_id: 83f76589b1625127d4f7d5f520763fd5
+    entity_id: 0917becc67d94a8b300cb5b2d0ba8abf
+    domain: sensor
+    id: high
+    above: -15
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  - type: temperature
+    platform: device
+    device_id: 83f76589b1625127d4f7d5f520763fd5
+    entity_id: 0917becc67d94a8b300cb5b2d0ba8abf
+    domain: sensor
+    id: low
+    below: -22
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - offline
+      sequence:
+      - service: notify.mobile_app_mtopnord2
+        data:
+          message: Extra fryser sensor er offline!
+          title: Sensor offline
+    - conditions:
+      - condition: trigger
+        id:
+        - high
+      sequence:
+      - service: notify.mobile_app_mtopnord2
+        data:
+          message: Temperatur i extra fryser er for høj!
+          title: '!! FOR HØJ TEMPERATUR I FRYSEREN !!'
+    - conditions:
+      - condition: trigger
+        id:
+        - low
+      sequence:
+      - service: notify.mobile_app_mtopnord2
+        data:
+          message: Temperaturen i extra fryser er for lav
+          title: For lav temperatur i fryseren
+  mode: restart
