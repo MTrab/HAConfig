@@ -1,46 +1,23 @@
-lock:
-  description: Toggle device lock
-  target:
-    entity:
-      integration: landroid_cloud
-      domain: vacuum
-
 restart:
   description: Restart device
   target:
     entity:
       integration: landroid_cloud
-      domain: vacuum
+      domain: lawn_mower
 
 edgecut:
   description: Start edgecut (if supported)
   target:
     entity:
       integration: landroid_cloud
-      domain: vacuum
-
-partymode:
-  description: Toggle or set PartyMode (if supported)
-  target:
-    entity:
-      integration: landroid_cloud
-      domain: vacuum
-  fields:
-    party_mode_enabled:
-      name: Partymode
-      description: Partymode enabled
-      required: false
-      example: false
-      default: false
-      selector:
-        boolean:
+      domain: lawn_mower
 
 setzone:
   description: Set which zone to be mowed next
   target:
     entity:
       integration: landroid_cloud
-      domain: vacuum
+      domain: lawn_mower
   fields:
     zone:
       name: Zone
@@ -61,7 +38,7 @@ config:
   target:
     entity:
       integration: landroid_cloud
-      domain: vacuum
+      domain: lawn_mower
   fields:
     raindelay:
       name: Rain delay
@@ -103,7 +80,7 @@ ots:
   target:
     entity:
       integration: landroid_cloud
-      domain: vacuum
+      domain: lawn_mower
   fields:
     boundary:
       name: Boundary
@@ -132,7 +109,7 @@ schedule:
   target:
     entity:
       integration: landroid_cloud
-      domain: vacuum
+      domain: lawn_mower
   fields:
     type:
       name: Schedule type
@@ -277,7 +254,7 @@ torque:
   target:
     entity:
       integration: landroid_cloud
-      domain: vacuum
+      domain: lawn_mower
   fields:
     torque:
       name: Wheel torque
@@ -298,7 +275,7 @@ send_raw:
   target:
     entity:
       integration: landroid_cloud
-      domain: vacuum
+      domain: lawn_mower
   fields:
     json:
       name: JSON data

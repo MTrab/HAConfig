@@ -1,0 +1,51 @@
+substitutions:
+  node_name: "btproxy01"
+  device_verbose_name: "BT Proxy 1"
+  board: esp32dev
+  log_level: DEBUG
+
+packages:
+  wifi: !include common/wifi.yaml
+  logger: !include common/logger.yaml
+  # web: !include common/web.yaml
+
+esphome:
+  friendly_name: ${device_verbose_name}
+  name: ${node_name}
+  build_path: ./build/${node_name}
+
+esp32:
+  board: ${board}
+  framework:
+    type: esp-idf
+
+api:
+  reboot_timeout: 1h
+  encryption:
+    key: "ykst7UIy4eBjz3NW+eZH64Shr83IAvx+Fv/PjGCXQRo="
+
+ota:
+  safe_mode: true
+  password: "Cg43v3kbRHcuZP"
+
+esp32_ble_tracker:
+  scan_parameters:
+    interval: 1100ms
+    window: 1100ms
+    active: true
+
+bluetooth_proxy:
+  active: true
+
+# text_sensor:
+#   - <<: !include common/text_sensor/uptime.yaml
+
+# sensor:
+#   - <<: !include common/sensor/uptime.yaml
+#   - <<: !include common/sensor/wifi_signal.yaml
+
+# binary_sensor:
+#   - <<: !include common/binary_sensor/connection_status.yaml
+
+# button:
+#   - <<: !include common/button/restart.yaml

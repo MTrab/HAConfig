@@ -76,24 +76,6 @@ godnat_tts:
       device: bedroom
     enabled: true
   mode: single
-turn_on_webasto:
-  alias: Turn on Webasto
-  sequence:
-  - condition: template
-    value_template: '{{ states(''sensor.webasto_temperature'') < states(''input_number.webasto_low_point'')
-      }}'
-  - condition: state
-    entity_id: input_boolean.is_home
-    state: 'off'
-  - condition: state
-    entity_id: switch.webasto
-    state: 'off'
-  - service: shell_command.parsehub_run
-    data_template:
-      token: t2JPRLvvEm1r
-      command: 'on'
-  mode: single
-  icon: mdi:radiator
 staa_position:
   alias: Stå Position
   sequence:
@@ -204,3 +186,12 @@ control_desktop_power_off:
     default: []
   mode: single
   icon: mdi:electric-switch
+update_ns1_glue_record:
+  alias: Update NS1 Glue Record
+  sequence:
+  - service: shell_command.parsehub_run
+    data_template:
+      token:
+      key: new_ip
+      value: '{{ states(''sensor.myip'') }}'
+  mode: single

@@ -33,10 +33,6 @@ text_sensor:
 sensor:
   - <<: !include common/sensor/uptime.yaml
   - <<: !include common/sensor/wifi_signal.yaml
-  - platform: homeassistant
-    id: "rain"
-    name: "Rain today"
-    entity_id: sensor.netatmo_public_rain_today
 
 binary_sensor:
   - <<: !include common/binary_sensor/connection_status.yaml
@@ -85,18 +81,3 @@ switch:
     optimistic: true
     on_turn_on:
       - switch.turn_on: auto_off
-
-time:
-  - platform: sntp
-    id: sntp_time
-    on_time: 
-      - seconds: 0
-        minutes: 0
-        hours: 23
-        then:
-          if:
-            condition:
-              - lambda: 'return id(rain).state < 1;'
-              - switch.is_on: auto_on
-            then:
-              - switch.turn_on: ch01

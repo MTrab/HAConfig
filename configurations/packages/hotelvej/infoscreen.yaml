@@ -126,11 +126,11 @@ pack_infoscreen:
 
             {{
               currentCondition + ";" +
-              (states.sensor.netatmo_public_temperature.state)  | round(0) | string + ";" +
-              states.sensor.netatmo_public_humidity.state + ";" +
-              states.sensor.netatmo_public_pressure.state + ";" +
-              states.sensor.netatmo_public_rain_today.state + ";" +
-              states.sensor.netatmo_public_rain_last_hour.state + ";" +
+              (states.sensor.th_outside_temperature.state)  | round(0) | string + ";" +
+              states.sensor.th_outside_temperature_humidity.state + ";" +
+              states.sensor.th_outside_pressure.state + ";" +
+              states.sensor.rainfall_day.state + ";" +
+              states.sensor.rainfall_1h.state + ";" +
               wind + ";" +
               gust + ";" +
               bearing

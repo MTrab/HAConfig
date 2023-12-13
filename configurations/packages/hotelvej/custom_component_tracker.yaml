@@ -28,3 +28,17 @@ pack_custom_component_tracker:
           json_attributes_path: "$.landroid_cloud"
           json_attributes:
             - "versions"
+        - name: My Components - Webasto Connect
+          value_template: >
+            {{ value_json.webastoconnect.get("total") }}
+          unit_of_measurement: "installs"
+          json_attributes_path: "$.webastoconnect"
+          json_attributes:
+            - "versions"
+        - name: My Components - Vector
+          value_template: >
+            {{ value_json.vector.get("total") }}
+          unit_of_measurement: "installs"
+          json_attributes_path: "$.vector"
+          json_attributes:
+            - "versions"

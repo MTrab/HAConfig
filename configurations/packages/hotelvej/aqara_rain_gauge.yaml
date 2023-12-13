@@ -11,14 +11,42 @@ pack_aqara_rain_gauge:
       entity_id: binary_sensor.custom_rain_gauge_opening
       state: "on"
       type: count
-      start: "{{ now() - timedelta(hours=24)}}"
+      start: "{{ now().replace(hour=0,minute=0,second=0) }}"
       end: "{{ now() }}"
     - platform: history_stats
       name: "Aqara Rainsensor flips/off"
-      entity_id: binary_sensor.custom_rain_gauge_openings
+      entity_id: binary_sensor.custom_rain_gauge_opening
       state: "off"
       type: count
-      start: "{{ now() - timedelta(hours=24)}}"
+      start: "{{ now().replace(hour=0,minute=0,second=0) }}"
+      end: "{{ now() }}"
+    - platform: history_stats
+      name: "Aqara Rainsensor flips/on 24h"
+      entity_id: binary_sensor.custom_rain_gauge_opening
+      state: "on"
+      type: count
+      start: "{{ now() - timedelta(hours=24) }}"
+      end: "{{ now() }}"
+    - platform: history_stats
+      name: "Aqara Rainsensor flips/off 24h"
+      entity_id: binary_sensor.custom_rain_gauge_opening
+      state: "off"
+      type: count
+      start: "{{ now() - timedelta(hours=24) }}"
+      end: "{{ now() }}"
+    - platform: history_stats
+      name: "Aqara Rainsensor flips/on 1h"
+      entity_id: binary_sensor.custom_rain_gauge_opening
+      state: "on"
+      type: count
+      start: "{{ now() - timedelta(hours=1) }}"
+      end: "{{ now() }}"
+    - platform: history_stats
+      name: "Aqara Rainsensor flips/off 1h"
+      entity_id: binary_sensor.custom_rain_gauge_opening
+      state: "off"
+      type: count
+      start: "{{ now() - timedelta(hours=1) }}"
       end: "{{ now() }}"
 
   template:
@@ -29,7 +57,29 @@ pack_aqara_rain_gauge:
           unit_of_measurement: mm
           icon: mdi:weather-pouring
           state: >-
-            {% set count = (states('sensor.aqara_rainsensor_flips_on') | int(0)) + (states('sensor.aqara_rainsensor_flips_off') | int(0)) %}
+            {% set count = ((states('sensor.aqara_rainsensor_flips_on') | int(0)) + (states('sensor.aqara_rainsensor_flips_off') | int(0)) - 1) %}
+            {% set mm = count * 0.52615 %}
+            {% if count >= 0 %}
+              {{ mm|round(1, 'floor') }}
+            {% endif %}
+        - name: Rainfall [24h]
+          state_class: measurement
+          unique_id: aqara_rainfall_24h
+          unit_of_measurement: mm
+          icon: mdi:weather-pouring
+          state: >-
+            {% set count = ((states('sensor.aqara_rainsensor_flips_on_24h') | int(0)) + (states('sensor.aqara_rainsensor_flips_off_24h') | int(0)) - 1) %}
+            {% set mm = count * 0.52615 %}
+            {% if count >= 0 %}
+              {{ mm|round(1, 'floor') }}
+            {% endif %}
+        - name: Rainfall [1h]
+          state_class: measurement
+          unique_id: aqara_rainfall_1h
+          unit_of_measurement: mm
+          icon: mdi:weather-pouring
+          state: >-
+            {% set count = ((states('sensor.aqara_rainsensor_flips_on_1h') | int(0)) + (states('sensor.aqara_rainsensor_flips_off_1h') | int(0)) - 1) %}
             {% set mm = count * 0.52615 %}
             {% if count >= 0 %}
               {{ mm|round(1, 'floor') }}

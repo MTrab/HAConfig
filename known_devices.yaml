@@ -12,3 +12,10 @@ honda_nc750x:
   icon: mdi:motorbike
   picture:
   track: true
+
+malene:
+  name: malene
+  mac:
+  icon:
+  picture:
+  track: true

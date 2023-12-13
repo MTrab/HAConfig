@@ -13,6 +13,7 @@ http:
     - 10.254.254.9
     - 172.16.201.2
     - 172.30.33.0/24
+    - 192.168.1.190
   ip_ban_enabled: false
   login_attempts_threshold: 5
 
@@ -41,7 +42,6 @@ scene: !include scenes.yaml
 # Integrations without configuration
 media_extractor:
 wake_on_lan:
-zha_toolkit:
 
 ######################################
 # Configurations
@@ -57,13 +57,15 @@ proximity: !include_dir_named configurations/proximity
 pyscript: !include configurations/pyscript.yaml
 recorder: !include configurations/recorder.yaml
 rest: !include_dir_merge_list configurations/rest
+rest_command: !include configurations/rest_command.yaml
 sensor: !include_dir_merge_list configurations/sensor
 shell_command: !include configurations/shell_commands.yaml
 switch: !include_dir_merge_list configurations/switch
 template: !include_dir_merge_list configurations/template
 tts: !include configurations/tts.yaml
 zha: !include configurations/zha.yaml
+
 # logger:
-#   default: info
+#   default: warning
 #   logs:
-#     custom_components.pyscript.scripts.infopanel.infopanel_get_calendar_event.infopanel_get_calendar_event: debug
+#     homeassistant.components.person: debug

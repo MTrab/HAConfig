@@ -1,0 +1,91 @@
+pack_zha_channel_stats:
+  sensor:
+    - platform: rest
+      resource: http://10.254.254.9:8123/api/diagnostics/config_entry/f2b319f5a7e2ebc4d120c0fa25cb5fe8
+      unique_id: zha_diagnostics
+      name: zha_diagnostics
+      # value_template: '{{ value_json.data.energy_scan[0] }}'
+      value_template: "OK"
+      json_attributes_path: "$.data"
+      json_attributes:
+        - "energy_scan"
+        - "application_state"
+      method: GET
+      scan_interval: 600
+      headers:
+        Authorization: !secret longLivedToken
+        Content-Type: application/json
+
+  template:
+    - sensor:
+        - name: ZHA Channel
+          state: "{{ state_attr('sensor.zha_diagnostics', 'application_state')['network_info']['channel'] }}"
+          unique_id: zha_diagnostics_current_channel
+        - name: ZHA Utilization
+          state: "{{ state_attr('sensor.zha_diagnostics', 'energy_scan')[states('sensor.zha_channel')] }}"
+          unit_of_measurement: "%"
+          unique_id: zha_diagnostics_current_channel_utilization
+        - name: ZHA Channel 11 Utilization
+          state: "{{ state_attr('sensor.zha_diagnostics', 'energy_scan')['11'] }}"
+          unit_of_measurement: "%"
+          unique_id: zha_diagnostics_channel_11
+        - name: ZHA Channel 12 Utilization
+          state: "{{ state_attr('sensor.zha_diagnostics', 'energy_scan')['12'] }}"
+          unit_of_measurement: "%"
+          unique_id: zha_diagnostics_channel_12
+        - name: ZHA Channel 13 Utilization
+          state: "{{ state_attr('sensor.zha_diagnostics', 'energy_scan')['13'] }}"
+          unit_of_measurement: "%"
+          unique_id: zha_diagnostics_channel_13
+        - name: ZHA Channel 14 Utilization
+          state: "{{ state_attr('sensor.zha_diagnostics', 'energy_scan')['14'] }}"
+          unit_of_measurement: "%"
+          unique_id: zha_diagnostics_channel_14
+        - name: ZHA Channel 15 Utilization
+          state: "{{ state_attr('sensor.zha_diagnostics', 'energy_scan')['15'] }}"
+          unit_of_measurement: "%"
+          unique_id: zha_diagnostics_channel_15
+        - name: ZHA Channel 16 Utilization
+          state: "{{ state_attr('sensor.zha_diagnostics', 'energy_scan')['16'] }}"
+          unit_of_measurement: "%"
+          unique_id: zha_diagnostics_channel_16
+        - name: ZHA Channel 17 Utilization
+          state: "{{ state_attr('sensor.zha_diagnostics', 'energy_scan')['17'] }}"
+          unit_of_measurement: "%"
+          unique_id: zha_diagnostics_channel_17
+        - name: ZHA Channel 18 Utilization
+          state: "{{ state_attr('sensor.zha_diagnostics', 'energy_scan')['18'] }}"
+          unit_of_measurement: "%"
+          unique_id: zha_diagnostics_channel_18
+        - name: ZHA Channel 19 Utilization
+          state: "{{ state_attr('sensor.zha_diagnostics', 'energy_scan')['19'] }}"
+          unit_of_measurement: "%"
+          unique_id: zha_diagnostics_channel_19
+        - name: ZHA Channel 20 Utilization
+          state: "{{ state_attr('sensor.zha_diagnostics', 'energy_scan')['20'] }}"
+          unit_of_measurement: "%"
+          unique_id: zha_diagnostics_channel_20
+        - name: ZHA Channel 21 Utilization
+          state: "{{ state_attr('sensor.zha_diagnostics', 'energy_scan')['21'] }}"
+          unit_of_measurement: "%"
+          unique_id: zha_diagnostics_channel_21
+        - name: ZHA Channel 22 Utilization
+          state: "{{ state_attr('sensor.zha_diagnostics', 'energy_scan')['22'] }}"
+          unit_of_measurement: "%"
+          unique_id: zha_diagnostics_channel_22
+        - name: ZHA Channel 23 Utilization
+          state: "{{ state_attr('sensor.zha_diagnostics', 'energy_scan')['23'] }}"
+          unit_of_measurement: "%"
+          unique_id: zha_diagnostics_channel_23
+        - name: ZHA Channel 24 Utilization
+          state: "{{ state_attr('sensor.zha_diagnostics', 'energy_scan')['24'] }}"
+          unit_of_measurement: "%"
+          unique_id: zha_diagnostics_channel_24
+        - name: ZHA Channel 25 Utilization
+          state: "{{ state_attr('sensor.zha_diagnostics', 'energy_scan')['25'] }}"
+          unit_of_measurement: "%"
+          unique_id: zha_diagnostics_channel_25
+        - name: ZHA Channel 26 Utilization
+          state: "{{ state_attr('sensor.zha_diagnostics', 'energy_scan')['26'] }}"
+          unit_of_measurement: "%"
+          unique_id: zha_diagnostics_channel_26

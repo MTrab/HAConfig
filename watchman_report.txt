@@ -1,43 +1,51 @@
 -== Watchman Report ==- 
 
--== Congratulations, all 48 services from your config are available!
+-== Missing 1 service(s) from 50 found in your config:
++--------------------------------+---------+--------------------------------------------------------------+
+| Service ID                     | State   | Location                                                     |
++--------------------------------+---------+--------------------------------------------------------------+
+| script.do_speech               | missing | scripts.yaml:73                                              |
++--------------------------------+---------+--------------------------------------------------------------+
 
--== Missing 25 entity(ies) from 233 found in your config:
+-== Missing 28 entity(ies) from 226 found in your config:
 +--------------------------------+---------+--------------------------------------------------------------+
 | Entity ID                      | State   | Location                                                     |
 +--------------------------------+---------+--------------------------------------------------------------+
-| button.skrivebord_m2           | unknown | scripts.yaml:102                                             |
-| button.skrivebord_m1           | unknown | scripts.yaml:110                                             |
-| media_player.android_tv_192_16 | unavail | automations.yaml:68,75                                       |
-| 8_1_199                        |         |                                                              |
-| sensor.switch_doorbell_click   | missing | automations.yaml:258                                         |
-| light.digiclock_dots_lights    | unavail | automations.yaml:625,626,671                                 |
-| light.digiclock_minutes_lights | unavail | automations.yaml:627,673                                     |
-| light.digiclock_hours_lights   | unavail | automations.yaml:672                                         |
-| group.dw_diningroom            | unknown | automations.yaml:1518,1653                                   |
-| sensor.outside_energy          | missing | configurations/groups/energy_sensors.yaml:11                 |
-| binary_sensor.dw_livingroom_ri | missing | configurations/groups/dw_livingroom.yaml:7                   |
-| ght_bottom_right               |         |                                                              |
-| binary_sensor.dw_diningroom_bo | missing | configurations/groups/dw_diningroom.yaml:6                   |
-| ttom_right_bottom_right        |         |                                                              |
-| vacuum.robert                  | missing | configurations/packages/horsensvej/landroid.yaml:8,12,17     |
-| media_player.all_house         | missing | configurations/packages/hotelvej/speech_notifications.yaml:3 |
-|                                |         | 1                                                            |
-| switch.core_a8_shutdown_system | unknown | configurations/packages/hotelvej/octoprint_core_a8.yaml:391  |
-| sensor.extensioncord_energy    | missing | configurations/packages/hotelvej/ladetid.yaml:230            |
-| sensor.th_fridge               | missing | configurations/sensor/statistics.yaml:3                      |
-| light.kitchen_1                | missing | configurations/sensor/manual_powercalc.yaml:33,50            |
-| switch.adaptive_lighting_defau | missing | custom_components/adaptive_lighting/services.yaml:6,30       |
-| lt                             |         |                                                              |
+| button.skrivebord_m2           | unavail | scripts.yaml:85                                              |
+| button.skrivebord_m1           | unavail | scripts.yaml:93                                              |
+| media_player.stue              | unavail | scripts.yaml:102,111,115,129,165                             |
+| media_player.android_tv        | unavail | automations.yaml:64,71,2116,2121,2126,2131,2137,2143         |
+| switch.store_stearinlys        | missing | automations.yaml:119,232,617,810                             |
+| binary_sensor.anet_a8_printing | unavail | automations.yaml:1272                                        |
+| vacuum.wall_e                  | unavail | automations.yaml:1715,1721,1727                              |
+| media_player.android_tv_2      | unavail | automations.yaml:2151                                        |
+| sensor.webasto_temperature     | missing | automations.yaml:2481                                        |
+| sensor.bedroom_ceiling_energy  | unavail | configurations/groups/energy_sensors.yaml:6                  |
+| sensor.th_outside_temperature_ | missing | configurations/packages/hotelvej/infoscreen.yaml:130         |
+| humidity                       |         |                                                              |
+| sensor.th_outside_pressure     | missing | configurations/packages/hotelvej/infoscreen.yaml:131         |
+| sensor.netatmo_public_rain_tod | missing | configurations/packages/hotelvej/infoscreen.yaml:132         |
+| ay                             |         |                                                              |
+| sensor.netatmo_public_rain_las | missing | configurations/packages/hotelvej/infoscreen.yaml:133         |
+| t_hour                         |         |                                                              |
+| switch.core_a8_shutdown_system | unknown | configurations/packages/hotelvej/octoprint_core_a8_orange.ya |
+|                                |         | ml:406                                                       |
+| sensor.core_a8_print_time_left | unavail | configurations/intent_script/PrintTimeToFinish.yaml:7        |
 | switch.schedule_abcdef         | missing | custom_components/scheduler/services.yaml:8,29,94,154        |
 | light.my_lamp                  | missing | custom_components/scheduler/services.yaml:64,124             |
 | media_player.mibox4            | missing | custom_components/dash_cast/services.yaml:7                  |
-| sensor.example                 | missing | custom_components/zha_toolkit/services.yaml:170,456,601,1316 |
 | input_boolean.foo              | missing | custom_components/var/services.yaml:12                       |
 | input_boolean.bar              | missing | custom_components/var/services.yaml:20                       |
-| switch.is_on                   | missing | esphome/infopanel.yaml:47                                    |
+| switch.is_on                   | missing | esphome/water-valve.yaml:66                                  |
+| sensor.infopanel_weather_curre | unavail | esphome/infopanel.yaml:404                                   |
+| nt_conditions                  |         |                                                              |
+| switch.is_off                  | missing | esphome/trash/hydro_tower_1.yaml:62,143                      |
+| binary_sensor.is_on            | missing | esphome/trash/hydro_tower_1.yaml:122,255                     |
+| binary_sensor.is_off           | missing | esphome/trash/hydro_tower_1.yaml:137,239                     |
+| script.execute                 | missing | esphome/trash/hydro_tower_1.yaml:167,188                     |
+| script.stop                    | missing | esphome/trash/hydro_tower_1.yaml:170,191                     |
 +--------------------------------+---------+--------------------------------------------------------------+
 
--== Report created on 12 Mar 2023 12:29:23
--== Parsed 109 files in 1.10s., ignored 0 files 
--== Generated in: 0.01s. Validated in: 0.00s.
+-== Report created on 01 Dec 2023 12:40:14
+-== Parsed 611 files in 2.94s., ignored 0 files 
+-== Generated in: 0.03s. Validated in: 0.00s.

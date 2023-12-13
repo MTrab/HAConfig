@@ -11,6 +11,7 @@ CONF_NODE = "node"
 CONF_NODES = "nodes"
 CONF_VMS = "vms"
 CONF_CONTAINERS = "containers"
+CONF_DISKS_ENABLE = "disks_enable"
 
 COORDINATORS = "coordinators"
 
@@ -28,9 +29,11 @@ CONF_NODES = "nodes"
 CONF_QEMU = "qemu"
 CONF_REALM = "realm"
 CONF_VMS = "vms"
+CONF_STORAGE="storage"
 
 PROXMOX_CLIENT = "proxmox_client"
 
+INTEGRATION_TITLE = "Proxmox VE"
 VERSION_REMOVE_YAML = "2023.8"
 
 
@@ -41,6 +44,9 @@ class ProxmoxType(StrEnum):
     Node = "node"
     QEMU = "qemu"
     LXC = "lxc"
+    Storage = "storage"
+    Update = "update"
+    Disk = "disk"
 
 
 class ProxmoxCommand(StrEnum):
@@ -78,3 +84,6 @@ class ProxmoxKeyAPIParse(StrEnum):
     NAME = "name"
     NETWORK_IN = "network_in"
     NETWORK_OUT = "network_out"
+    UPDATE_TOTAL = "total"
+    UPDATE_LIST = "updates_list"
+    UPDATE_AVAIL = "update"

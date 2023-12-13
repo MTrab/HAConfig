@@ -1,0 +1,123 @@
+blueprint:
+  name: Single button dim switch
+  description: Switch a light on/off by pressing a button.
+    Dim it up/down (depending on it's current state) by holding the same button.
+  domain: automation
+  input:
+    button:
+      name: Push button
+      description:
+        Entity representing a physical push button (which restores its position
+        when released). It must emit a square signal on press.
+        This automation is triggered by its falling edge.
+      selector:
+        entity:
+          domain: binary_sensor
+    light:
+      name: Light
+      selector:
+        entity:
+          domain: light
+    hold_threshold:
+      name: Hold threshold
+      description: Time to consider button is being held, instead of just pushed.
+      default: "0.8"
+      selector:
+        number:
+          min: "0.05"
+          max: "10"
+          step: "0.05"
+          unit_of_measurement: s
+    brightness_threshold:
+      name: Brightness threshold
+      description: If the light brightness is above this value,
+        the light is going to dim down when holding the button.
+      default: "130"
+      selector:
+        number:
+          min: "0"
+          max: "255"
+    brightness_step_pct:
+      name: Brightness step
+      description: Percentage brightness increase/decrease in each transition step.
+      default: "20"
+      selector:
+        number:
+          min: "1"
+          max: "100"
+          unit_of_measurement: "%"
+    transition_step_length:
+      name: Transition step lenght
+      description: Length of each transition step.
+      default: "0.1"
+      selector:
+        number:
+          min: "0"
+          max: "5"
+          step: "0.01"
+          unit_of_measurement: s
+
+mode: single
+
+trigger:
+  - platform: state
+    entity_id: !input button
+    to: "on"
+
+action:
+  - variables:
+      brightness_step_pct_positive: !input brightness_step_pct
+  - variables:
+      brightness_step_pct_negative: "{{ brightness_step_pct_positive|int * -1 }}"
+  - wait_for_trigger:
+      - platform: state
+        entity_id: !input button
+        to: "off"
+        from: "on"
+    timeout: !input hold_threshold
+    continue_on_timeout: true
+  - choose:
+      - conditions:
+          # when no trigger came (button has not been switched back to
+          # off state during timeout) = button is being held
+          - condition: template
+            value_template: "{{ wait.trigger == none }}"
+        sequence:
+          - choose:
+              - conditions:
+                  # when brightness level is high
+                  - condition: numeric_state
+                    entity_id: !input light
+                    attribute: brightness
+                    above: !input brightness_threshold
+                sequence:
+                  # dim down
+                  - repeat:
+                      while:
+                        - condition: state
+                          entity_id: !input button
+                          state: "on"
+                      sequence:
+                        - service: light.turn_on
+                          data:
+                            transition: !input transition_step_length
+                            brightness_step_pct: "{{ brightness_step_pct_negative }}"
+                          entity_id: !input light
+            default:
+              # otherwise, dim up
+              - repeat:
+                  while:
+                    - condition: state
+                      entity_id: !input button
+                      state: "on"
+                  sequence:
+                    - service: light.turn_on
+                      data:
+                        transition: !input transition_step_length
+                        brightness_step_pct: "{{ brightness_step_pct_positive }}"
+                      entity_id: !input light
+
+    # when trigger came (button has been released within timeout)
+    default:
+      - service: light.toggle
+        entity_id: !input light

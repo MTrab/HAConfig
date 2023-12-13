@@ -1,0 +1,42 @@
+substitutions:
+  node_name: "uart-debug"
+  device_verbose_name: "UART debug"
+  board: nodemcuv2
+  platform: ESP8266
+  log_level: DEBUG
+
+packages:
+  wifi: !include common/wifi.yaml
+  logger: !include common/logger.yaml
+  # web: !include common/web.yaml
+
+esphome:
+  friendly_name: ${device_verbose_name}
+  name: ${node_name}
+  build_path: ./build/${node_name}
+  platform: ${platform}
+  board: ${board}
+  esp8266_restore_from_flash: true
+  
+api:
+  reboot_timeout: 1h
+  encryption:
+    key: "ykst7UIy4eBjz3NW+eZH64Shr83IAvx+Fv/PjGCXQRo="
+
+ota:
+  safe_mode: true
+  password: "Cg43v3kbRHcuZP"
+
+uart:
+  - id: desk_uart
+    baud_rate: 9600
+    tx_pin: GPIO1
+    rx_pin: GPIO3
+    parity: NONE
+    debug:
+      direction: RX
+      dummy_receiver: true
+      after:
+        bytes: 4
+      sequence:     
+        - lambda: UARTDebug::log_int(direction, bytes, ',');

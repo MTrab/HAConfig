@@ -80,7 +80,9 @@ class TuyaLocalLight(TuyaLocalEntity, LightEntity):
                     return [mode]
             except ValueError:
                 _LOGGER.warning(
-                    "Unrecognised color mode %s ignored",
+                    "%s/%s: Unrecognised color mode %s ignored",
+                    self._config._device.config,
+                    self.name or "light",
                     self.color_mode,
                 )
         return []
@@ -247,6 +249,13 @@ class TuyaLocalLight(TuyaLocalEntity, LightEntity):
                 color_mode = ColorMode.COLOR_TEMP
 
             color_temp = params.get(ATTR_COLOR_TEMP_KELVIN)
+            # Light groups use the widest range from the lights in the
+            # group, so we are expected to silently handle out of range values
+            if color_temp < self.min_color_temp_kelvin:
+                color_temp = self.min_color_temp_kelvin
+            if color_temp > self.max_color_temp_kelvin:
+                color_temp = self.max_color_temp_kelvin
+
             _LOGGER.debug("Setting color temp to %d", color_temp)
             settings = {
                 **settings,
@@ -298,7 +307,9 @@ class TuyaLocalLight(TuyaLocalEntity, LightEntity):
                     val = round(rgbhsv[n] * scale)
                     if val < r["min"]:
                         _LOGGER.warning(
-                            "Color data %s=%d constrained to be above %d",
+                            "%s/%s: Color data %s=%d constrained to be above %d",
+                            self._config._device.config,
+                            self.name or "light",
                             n,
                             val,
                             r["min"],

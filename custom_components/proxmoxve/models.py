@@ -48,56 +48,101 @@ class ProxmoxSwitchDescription(SwitchEntityDescription):
 class ProxmoxNodeData:
     """Data parsed from the Proxmox API for Node."""
 
-    model: str
-    status: str
-    version: str
-    uptime: int
+    type: str
     cpu: float
     disk_total: float
     disk_used: float
+    model: str
     memory_total: float
     memory_used: float
     memory_free: float
+    status: str
     swap_total: float
     swap_free: float
     swap_used: float
+    uptime: int
+    version: str
 
 
 @dataclasses.dataclass
 class ProxmoxVMData:
     """Data parsed from the Proxmox API for QEMU."""
 
+    type: str
     name: str
-    status: str
     node: str
-    health: str
-    uptime: int
     cpu: float
+    disk_total: float
+    disk_used: float
+    health: str
     memory_total: float
     memory_used: float
     memory_free: float
     network_in: float
     network_out: float
-    disk_total: float
-    disk_used: float
+    status: str
+    uptime: int
 
 
 @dataclasses.dataclass
 class ProxmoxLXCData:
     """Data parsed from the Proxmox API for LXC."""
 
+    type: str
     name: str
-    status: str
     node: str
-    uptime: int
     cpu: float
+    disk_total: float
+    disk_used: float
     memory_total: float
     memory_used: float
     memory_free: float
     network_in: float
     network_out: float
-    disk_total: float
-    disk_used: float
+    status: str
     swap_total: float
     swap_free: float
     swap_used: float
+    uptime: int
+
+
+
+@dataclasses.dataclass
+class ProxmoxStorageData:
+    """Data parsed from the Proxmox API for Storage."""
+
+    type: str
+    node: str
+    content: str
+    disk_free: float
+    disk_used: float
+    disk_total: float
+
+
+@dataclasses.dataclass
+class ProxmoxUpdateData:
+    """Data parsed from the Proxmox API for Updates."""
+
+    type: str
+    node: str
+    updates_list: list
+    total: float
+    update: bool
+
+
+@dataclasses.dataclass
+class ProxmoxDiskData:
+    """Data parsed from the Proxmox API for Disks."""
+
+    type: str
+    node: str
+    size: float
+    health: str
+    serial: str
+    model: str
+    vendor: str
+    path: str
+    disk_rpm: float
+    disk_type: str
+    temperature: float
+    power_cycles: int

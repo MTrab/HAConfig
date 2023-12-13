@@ -152,16 +152,11 @@
           - automation.auto_webasto_turn_on_at_calculated_start_time
           - automation.light_motion_bathroom
           - automation.light_motion_hall
-          - automation.notify_prepare_dinner
           - automation.notification_remind_departure
-          - automation.tts_bedtime
-          - automation.tts_calendar_notification
-          - automation.tts_departure_time_reached
-          - automation.tts_dinner_reminder
-          - automation.tts_dj_skoge_stremer_new
-          - automation.tts_doren_er_aben_new
-          - automation.tts_greeting_when_coming_home
           - automation.vacuum_automate_run_and_dock
+          - automation.tts_chatgpt_bedtime
+          - automation.tts_chatgpt_departure_time
+          - automation.tts_chatgpt_djskoge_streamer
           area_id:
           - gang
           - 8868a58504c411eb945e45ca1102362e
@@ -212,16 +207,15 @@
         - automation.auto_webasto_turn_on_at_calculated_start_time
         - automation.light_motion_bathroom
         - automation.light_motion_hall
-        - automation.notify_prepare_dinner
         - automation.notification_remind_departure
-        - automation.tts_bedtime
         - automation.tts_calendar_notification
-        - automation.tts_departure_time_reached
         - automation.tts_dinner_reminder
-        - automation.tts_dj_skoge_stremer_new
         - automation.tts_doren_er_aben_new
         - automation.tts_greeting_when_coming_home
         - automation.vacuum_automate_run_and_dock
+        - automation.tts_chatgpt_bedtime
+        - automation.tts_chatgpt_departure_time
+        - automation.tts_chatgpt_djskoge_streamer
       data: {}
   mode: single
 - id: '1606586819683'
@@ -240,52 +234,6 @@
       - light.outside_1
     data: {}
   mode: single
-- id: '1608025961275'
-  alias: Alert - Doorbell
-  description: Afspil lyd i Sonos, ved tryk på dørklokke knappen
-  trigger:
-  - platform: state
-    entity_id: sensor.switch_doorbell_click
-    to: 'on'
-  condition:
-  - condition: time
-    after: 06:00:00
-    before: '22:00'
-  action:
-  - choose:
-    - conditions:
-      - condition: template
-        value_template: '{{ states(''person.malene_trab'') != ''home'' }}'
-      sequence:
-      - service: notify.mobile_app_mtopnord2
-        data:
-          message: Det ringede på døren {{ now().strftime("%H:%M %d-%m-%Y") }}
-          data:
-            subject: Det ringer på døren
-            group: Doorbell
-            channel: Doorbell
-            importance: high
-            vibrationPattern: 100, 200, 50, 200, 100, 200, 50, 200
-    default: []
-  - service: sonos.snapshot
-    data: {}
-    entity_id: media_player.stue, media_player.sovevaerelse_2
-  - service: media_player.volume_set
-    data:
-      volume_level: 0.4
-    entity_id: media_player.stue, media_player.sovevaerelse_2
-  - service: media_player.play_media
-    data:
-      media_content_id: https://home.trab.dk/local/doorbell/jetsons.mp3
-      media_content_type: music
-    target:
-      entity_id: media_player.stue, media_player.sovevaerelse_2
-  - delay: 00:00:05
-  - service: sonos.restore
-    data: {}
-    entity_id: media_player.stue, media_player.sovevaerelse_2
-  - delay: 00:00:05
-  mode: single
 - id: '1608633503593'
   alias: Light - Kitchen - Motion
   description: ''
@@ -302,6 +250,10 @@
     entity_id: sensor.pir_kitchen_illuminance
     domain: sensor
     below: 45
+  - condition: state
+    entity_id: group.any_home
+    state: home
+    alias: Confirm Any At Home
   action:
   - choose:
     - conditions:
@@ -645,22 +597,16 @@
         domain: button
         entity_id: 58c6855fb17d264399c4f0c8f7330a7f
         type: press
-      - service: light.turn_off
+      - service: homeassistant.turn_off
         data: {}
         target:
           entity_id:
           - light.dartskab
-          - light.digiclock_dots_lights
-          - light.digiclock_dots_lights
-          - light.digiclock_minutes_lights
           - light.bedroom_ceiling_1
           - light.bedroom_ceiling_2
           - light.bedside_1
           - light.bedside_2
           - light.deathstar
-          - light.kitchen_2
-          - light.kitchen_3
-          - light.kitchen
           - light.bedroom_ceiling
           - light.gang_loftlys
           - light.sengelys
@@ -668,9 +614,10 @@
           - light.spisebord
           - light.toilet
           - light.vitrine
-          - light.store_stearinlys
+          - switch.store_stearinlys
           - light.spisebord
           - light.outside_1
+          - light.kitchen
       - service: script.control_desktop_power_off
         data: {}
     - conditions:
@@ -696,9 +643,6 @@
           entity_id:
           - switch.skrivebord
           - switch.hifi
-          - light.digiclock_dots_lights
-          - light.digiclock_hours_lights
-          - light.digiclock_minutes_lights
       - device_id: 58ccf7ba65f0fa80f5056863c184485d
         domain: button
         entity_id: f09f95203189f7b4df18a64605715888
@@ -757,6 +701,10 @@
     entity_id: sensor.pir_hall_illuminance
     domain: sensor
     below: 130
+  - condition: state
+    entity_id: group.any_home
+    state: home
+    alias: Confirm Any At Home
   action:
   - service: light.turn_on
     target:
@@ -787,7 +735,11 @@
     device_id: bbf250698a4a53bbca8c2b5e919cc617
     entity_id: binary_sensor.pir_bathroom
     domain: binary_sensor
-  condition: []
+  condition:
+  - condition: state
+    entity_id: group.any_home
+    state: home
+    alias: Confirm Any At Home
   action:
   - service: switch.turn_on
     target:
@@ -872,8 +824,8 @@
   - wait_for_trigger:
     - type: opened
       platform: device
-      device_id: c12ce562bdd0902af02be20da6f3c253
-      entity_id: binary_sensor.dw_frontdoor
+      device_id: f717a0cbeca42322e0440d68a708e8ef
+      entity_id: 8218e5d12b3e697845ab7fc4467d1b09
       domain: binary_sensor
     continue_on_timeout: false
     timeout: 00:05:00
@@ -886,8 +838,8 @@
   - wait_for_trigger:
     - type: motion
       platform: device
-      device_id: c8fef595bc035fcad424970497243a13
-      entity_id: binary_sensor.pir_kitchen
+      device_id: 7565b2d2c98ed8355cac357b12cfd5ea
+      entity_id: 8c73e13bd3ca4ff14d4d400bb58f5392
       domain: binary_sensor
     continue_on_timeout: false
     timeout: 00:05:00
@@ -913,8 +865,8 @@
   condition:
   - type: is_open
     condition: device
-    device_id: c12ce562bdd0902af02be20da6f3c253
-    entity_id: binary_sensor.dw_frontdoor
+    device_id: f717a0cbeca42322e0440d68a708e8ef
+    entity_id: 8218e5d12b3e697845ab7fc4467d1b09
     domain: binary_sensor
   action:
   - service: sonos.snapshot
@@ -1126,26 +1078,6 @@
       logbook_message_later: Postpone Morning Medication Reminder
       logbook_message_skip: Morning Medication Reminder Skipped
       ask_later_wait_time: 60
-- id: '1640077919167'
-  alias: Notification - Prepare dinner
-  description: ''
-  use_blueprint:
-    path: Aohzan/medication_reminder.yaml
-    input:
-      logbook_message_no_answer: No answer time out for dinner reminder
-      notify_device: 5a203dc793181fba91d8220b160558c1
-      notification_title: Det er tid for aftensmad
-      notification_message: Husk at du skal lave aftensmad
-      notification_action_taken: Igang
-      notification_action_later: Senere
-      notification_action_skip: Ikke i dag
-      logbook_message_remind: Reminder sent for dinner
-      logbook_message_taken: Dinner done
-      logbook_message_later: Dinner later
-      logbook_message_skip: Dinner skipped
-      optional_action: []
-      reminder_time: '18:00:00'
-      input_boolean: input_boolean.dinner_reminder
 - id: '1640082213543'
   alias: TTS - ChatGPT - Dinner
   description: Påmindelse for aftensmad
@@ -1273,8 +1205,8 @@
   - wait_for_trigger:
     - type: motion
       platform: device
-      device_id: a89a886abb2c1885c1a34dc3e2bd18de
-      entity_id: binary_sensor.pir_hall
+      device_id: 24ba3139aa039e754aa5e126a868c1f5
+      entity_id: 775c74fbe4e193f131d031f52243a75b
       domain: binary_sensor
     timeout: 01:00:00
     continue_on_timeout: false
@@ -1296,6 +1228,12 @@
     data:
       media_content_id: http://live-icy.dr.dk/A/A14H.mp3
       media_content_type: music
+    target:
+      entity_id: media_player.stue
+  - service: media_player.join
+    data:
+      group_members:
+      - media_player.sonos_spisestue
     target:
       entity_id: media_player.stue
   - service: media_player.volume_mute
@@ -1514,6 +1452,7 @@
       hours: 0
       minutes: 5
       seconds: 0
+    enabled: true
   - platform: state
     entity_id:
     - binary_sensor.dw_bathroom
@@ -1821,30 +1760,6 @@
           - climate.stue
           - climate.kokken
           - climate.spisestue
-  mode: single
-- id: '1661776831305'
-  alias: Auto - Shutdown charger on high temperature
-  description: ''
-  trigger:
-  - type: temperature
-    platform: device
-    device_id: 12b849a1984b12b6e6dae365c9dd84cc
-    entity_id: sensor.extensioncord_device_temperature
-    domain: sensor
-    above: 50
-    for:
-      hours: 0
-      minutes: 2
-      seconds: 0
-  condition: []
-  action:
-  - type: turn_off
-    device_id: 008d5a039a6e092ade04909a8299a89c
-    entity_id: switch.extensioncord
-    domain: switch
-  - service: notify.mobile_app_mtopnord2
-    data:
-      message: Kontakt til billader er for varm og er blevet slukket automatisk!
   mode: single
 - id: '1670269254038'
   alias: Auto - Blinds - Close
@@ -2199,7 +2114,7 @@
   - condition: not
     conditions:
     - condition: state
-      entity_id: media_player.android_tv_2
+      entity_id: media_player.android_tv
       attribute: app_id
       state: tv.twitch.android.app
   action:
@@ -2395,7 +2310,7 @@
     entity_id: 0917becc67d94a8b300cb5b2d0ba8abf
     domain: sensor
     id: high
-    above: -15
+    above: -10
     for:
       hours: 0
       minutes: 5
@@ -2406,7 +2321,7 @@
     entity_id: 0917becc67d94a8b300cb5b2d0ba8abf
     domain: sensor
     id: low
-    below: -22
+    below: -25
     for:
       hours: 0
       minutes: 5
@@ -2441,4 +2356,220 @@
         data:
           message: Temperaturen i extra fryser er for lav
           title: For lav temperatur i fryseren
+  mode: restart
+- id: '1697009564527'
+  alias: Auto - Webasto - Get next departure time
+  description: Reads next start time from calendar event and deducts travel time
+  trigger:
+  - platform: state
+    entity_id: calendar.heating
+    to: 'off'
+  - platform: time_pattern
+    hours: /1
+    minutes: 5
+  condition: []
+  action:
+  - service: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.webasto_next_departure_time
+    data:
+      datetime: '{{ as_datetime(((as_timestamp(state_attr("calendar.heating","start_time"))
+        - (states(''sensor.google_travel_time'')|int(0)*60) - (10*60)))|timestamp_local(default=''0''))
+        }}
+
+        '
+  - service: input_text.set_value
+    target:
+      entity_id: input_text.google_destination
+    data:
+      value: "{% if state_attr(\"calendar.heating\", \"location\") != \"\" %}\n  {{
+        state_attr(\"calendar.heating\", \"location\") }}\n{% else %}\n  home\n{%
+        endif %}\n"
+  mode: single
+- id: '1697009587979'
+  alias: Auto - Webasto - Set next calculated start
+  description: Reads the calculated departure time from sensor.webasto_calculated_start
+  trigger:
+  - platform: state
+    entity_id: sensor.webasto_calculated_start
+  condition: []
+  action:
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 2
+      milliseconds: 0
+  - service: input_datetime.set_datetime
+    target:
+      entity_id: input_datetime.webasto_calculated_departure_time
+    data:
+      datetime: "{% if (states('sensor.calculated_run_time') | float(0)) > 0 %}\n
+        \ {{ states(\"sensor.webasto_calculated_start\") }}\n{% else %}\n  {{ states(\"input_datetime.webasto_next_departure_time\")
+        }}\n{% endif %}\n"
+  mode: restart
+- id: '1697009611723'
+  alias: Auto - Webasto - Turn Off When Getting Near Zone
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: proximity.malene_home
+    below: '15'
+  condition:
+  - condition: state
+    entity_id: proximity.malene_home
+    state: towards
+    attribute: dir_of_travel
+  - condition: state
+    entity_id: switch.kia_heater
+    state: 'on'
+  action:
+  - service: switch.turn_off
+    target:
+      entity_id: switch.kia_heater
+    data: {}
+  mode: single
+- id: '1697009634503'
+  alias: Auto - Webasto - Turn on at calculated start time
+  description: Turns on the heater when input_datetime.webasto_calculated_departure_time
+    is reached
+  trigger:
+  - platform: time
+    at: input_datetime.webasto_calculated_departure_time
+  condition:
+  - condition: and
+    conditions:
+    - condition: template
+      value_template: '{{ (states(''sensor.kia_temperature'') | float(0)) < (states(''input_number.webasto_low_point'')
+        | float(0)) }}'
+  action:
+  - service: switch.turn_on
+    target:
+      entity_id: switch.kia_heater
+    data: {}
+  mode: single
+- id: '1697024611595'
+  alias: Auto - Webasto - Turn on if at DC Randers
+  description: ''
+  trigger:
+  - platform: template
+    value_template: "{% set time_to_leave_mon_thu = \"15:30\" %}\n{% set time_to_leave_fri
+      = \"14:00\" %}\n\n{% set dow = now().strftime('%a').lower() %}\n\n{% if (dow
+      == \"mon\" or dow == \"tue\" or dow == \"wed\" or dow == \"thu\") %}\n  {% set
+      time_to_leave = time_to_leave_mon_thu %}\n{% elif (dow == \"fri\") %}\n  {%
+      set time_to_leave = time_to_leave_fri %}\n{% else %}\n  {% set time_to_leave
+      = \"weekend\" %}\n{% endif %}\n\n{% if (time_to_leave != \"weekend\") %}\n  {%
+      set runtime = states(\"sensor.calculated_run_time\") | int %}\n  {% set departure
+      = strptime(time_to_leave + \":00\", \"%H:%M:%S\") - timedelta(minutes=runtime)
+      %}\n  {% set dep_time = (departure.hour | string) + \":\" + (departure.minute
+      | string) + \":00\" %}\n  {% set now_time = (now().hour | string) + \":\" +
+      (now().minute | string) + \":00\" %}\n\n  {{ dep_time == now_time }}\n{% else
+      %}\nfalse\n{% endif %}"
+  condition:
+  - condition: zone
+    entity_id: device_tracker.kia_location
+    zone: zone.danish_crown_randers_tulipvej
+  - condition: state
+    entity_id: automation.auto_webasto_turn_on_at_calculated_start_time
+    state: 'on'
+  action:
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.kia_heater
+  mode: single
+- id: '1697103017804'
+  alias: Auto - Actions on HomeAssistant Startup
+  description: ''
+  trigger:
+  - platform: homeassistant
+    event: start
+  condition: []
+  action:
+  - type: turn_off
+    device_id: 6de9fe6a5eb1d0abb21bd52d06de2f57
+    entity_id: 7206808666e29ba0d092b66448863f16
+    domain: switch
+  mode: single
+- id: '1698919443190'
+  alias: Notification - Prepare Dinner
+  description: ''
+  use_blueprint:
+    path: mtrab/advanced_reminder_if_home.yaml
+    input:
+      person_home: person.malene_trab
+      reminder_time: '18:00:00'
+      notify_device: 5a203dc793181fba91d8220b160558c1
+      input_boolean: input_boolean.dinner_reminder
+      notification_title: Det er tid for aftensmad
+      notification_message: Husk at du skal lave aftensmad
+      notification_action_taken: Igang
+      notification_action_later: Senere
+      notification_action_skip: Ikke i dag
+      logbook_message_remind: Reminder sent for dinner
+      logbook_message_taken: Dinner done
+      logbook_message_later: Dinner later
+      logbook_message_skip: Dinner skipped
+      logbook_message_no_answer: No answer time out for dinner reminder
+- id: '1699116475988'
+  alias: Auto - Update NS1 Glue Record
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.myip
+    from:
+    to:
+  condition:
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: sensor.myip
+      state: unknown
+    - condition: state
+      entity_id: sensor.myip
+      state: unavailable
+  action:
+  - service: shell_command.parsehub_run
+    data_template:
+      token: tAfPa43Dr0Vp
+      key: new_ip
+      value: '{{ states(''sensor.myip'') }}'
+  - service: notify.mobile_app_mtopnord2
+    data:
+      message: WAN IP address has changed!
+  mode: queued
+  max: 10
+- id: '1701181049862'
+  alias: Auto - Update Kia Niro Location in Traccar Add-On
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - device_tracker.kia_location
+    attribute: latitude
+  - platform: state
+    entity_id:
+    - device_tracker.kia_location
+    attribute: longitude
+  condition: []
+  action:
+  - service: rest_command.update_traccar_niro
+    data: {}
+  mode: restart
+- id: '1701803758766'
+  alias: Auto - Update Malenes Location in Traccar Add-On
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - device_tracker.mtopnord2
+    attribute: latitude
+  - platform: state
+    entity_id:
+    - device_tracker.mtopnord2
+    attribute: longitude
+  condition: []
+  action:
+  - service: rest_command.update_traccar_mt_oneplus
+    data: {}
   mode: restart
