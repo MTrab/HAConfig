@@ -97,12 +97,22 @@
     to: home
     entity_id: person.malene_trab
   - platform: state
-    entity_id: device_tracker.kia_niro
+    entity_id:
+    - device_tracker.kia_location
+    to: home
+  - platform: state
+    entity_id:
+    - person.gaest
     to: home
   condition:
   - condition: state
     entity_id: sun.sun
     state: below_horizon
+  - condition: not
+    conditions:
+    - condition: time
+      after: 02:00:00
+      before: 05:00:00
   action:
   - type: turn_on
     device_id: 3246c312f9e0e5220c923e523158141e
@@ -114,10 +124,6 @@
     entity_id: light.outside_1
     domain: light
     brightness_pct: 1
-  - service: switch.turn_on
-    target:
-      entity_id: switch.store_stearinlys
-    data: {}
   mode: single
 - id: '1605100832268'
   alias: State - Toggle away mode
@@ -909,6 +915,7 @@
   - platform: state
     entity_id: calendar.work_from_home
     id: cal
+    enabled: false
   - platform: state
     entity_id: binary_sensor.workday_sensor
     to: 'off'
@@ -916,6 +923,7 @@
   - platform: time
     at: 00:00:00
     id: time
+    enabled: true
   condition: []
   action:
   - choose:
@@ -962,13 +970,18 @@
         data: {}
     - conditions:
       - condition: trigger
-        id: time
+        id:
+        - time
       sequence:
       - choose:
         - conditions:
           - condition: state
             entity_id: calendar.work_from_home
             state: 'on'
+            enabled: false
+          - condition: template
+            value_template: '{{ (state_attr(''calendar.work_from_home_dc'',''start_time'')
+              | as_datetime).date() == now().date() }}'
           sequence:
           - service: input_boolean.turn_on
             target:
@@ -981,6 +994,10 @@
           - condition: state
             entity_id: calendar.work_from_home
             state: 'off'
+            enabled: false
+          - condition: template
+            value_template: '{{ (state_attr(''calendar.work_from_home_dc'',''start_time'')
+              | as_datetime).date() != now().date() }}'
           sequence:
           - service: input_boolean.turn_off
             target:
@@ -991,11 +1008,21 @@
           target:
             entity_id: input_boolean.is_home
           data: {}
+    - conditions:
+      - condition: trigger
+        id:
+        - cal_off
+      sequence:
+      - service: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.is_home
+        data: {}
     default:
     - service: input_boolean.turn_off
       target:
         entity_id: input_boolean.is_home
       data: {}
+      enabled: false
   mode: single
 - id: '1637178851136'
   alias: Alert - WAN and VPN connections statechange
@@ -2573,3 +2600,75 @@
   - service: rest_command.update_traccar_mt_oneplus
     data: {}
   mode: restart
+- id: '1702748861733'
+  alias: Auto - Control MagicMirror
+  description: ''
+  trigger:
+  - type: motion
+    platform: device
+    device_id: 24ba3139aa039e754aa5e126a868c1f5
+    entity_id: 775c74fbe4e193f131d031f52243a75b
+    domain: binary_sensor
+    id: 'on'
+  - type: not_occupied
+    platform: device
+    device_id: 24ba3139aa039e754aa5e126a868c1f5
+    entity_id: 361a86dc4d489064ad52ec0eb6dede2e
+    domain: binary_sensor
+    id: 'off'
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - 'on'
+      - condition: time
+        after: 05:00:00
+        before: '23:59:59'
+      sequence:
+      - type: turn_on
+        device_id: 2fd9310f92f75ddeed55c86a7de5a38c
+        entity_id: c7317217f562326674ec3ad85d53b01a
+        domain: light
+        brightness_pct: 100
+    - conditions:
+      - condition: trigger
+        id:
+        - 'off'
+      sequence:
+      - type: turn_off
+        device_id: 2fd9310f92f75ddeed55c86a7de5a38c
+        entity_id: c7317217f562326674ec3ad85d53b01a
+        domain: light
+  mode: restart
+- id: '1706091741459'
+  alias: Notification - Someone at the door
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.door_person_occupancy
+    to: 'on'
+  condition:
+  - condition: state
+    entity_id: person.malene_trab
+    state: not_home
+  action:
+  - service: camera.snapshot
+    metadata: {}
+    data:
+      filename: /config/www/person.png
+    target:
+      entity_id: camera.door_person
+  - service: notify.mobile_app_mtopnord2
+    metadata: {}
+    data:
+      message: Der blev detekteret en person ved døren!
+      data:
+        image: /local/person.png
+        actions:
+        - action: URI
+          title: Åbn kamera
+          uri: /lovelace/camera
+  mode: single

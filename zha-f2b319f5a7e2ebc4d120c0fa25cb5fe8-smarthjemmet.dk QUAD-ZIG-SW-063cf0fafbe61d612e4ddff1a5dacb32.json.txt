@@ -1,0 +1,620 @@
+{
+  "home_assistant": {
+    "installation_type": "Home Assistant OS",
+    "version": "2023.12.3",
+    "dev": false,
+    "hassio": true,
+    "virtualenv": false,
+    "python_version": "3.11.6",
+    "docker": true,
+    "arch": "aarch64",
+    "timezone": "Europe/Copenhagen",
+    "os_name": "Linux",
+    "os_version": "6.1.63-haos",
+    "supervisor": "2023.11.6",
+    "host_os": "Home Assistant OS 11.2",
+    "docker_version": "24.0.7",
+    "chassis": "embedded",
+    "run_as_root": true
+  },
+  "custom_components": {
+    "adaptive_lighting": {
+      "version": "1.20.0",
+      "requirements": [
+        "ulid-transform"
+      ]
+    },
+    "landroid_cloud": {
+      "version": "4.0.0",
+      "requirements": [
+        "pyworxcloud==4.1.7"
+      ]
+    },
+    "sonos_cloud": {
+      "version": "0.3.5",
+      "requirements": []
+    },
+    "fuelprices_dk": {
+      "version": "1.6",
+      "requirements": [
+        "beautifulsoup4",
+        "html.parser"
+      ]
+    },
+    "moonraker": {
+      "version": "1.1.0",
+      "requirements": [
+        "moonraker-api==2.0.5"
+      ]
+    },
+    "magicmirror": {
+      "version": "1.3.0",
+      "requirements": []
+    },
+    "ical": {
+      "version": "1.6.7",
+      "requirements": [
+        "icalendar==5.0.7"
+      ]
+    },
+    "ics_calendar": {
+      "version": "4.1.0",
+      "requirements": [
+        "ics>=0.7.2",
+        "recurring_ical_events>=2.0.2",
+        "icalendar>=5.0.4"
+      ]
+    },
+    "proxmoxve": {
+      "version": "3.2.2",
+      "requirements": [
+        "proxmoxer==2.0.1"
+      ]
+    },
+    "androidtv": {
+      "version": "14.01",
+      "requirements": [
+        "adb-shell[async]==0.4.0",
+        "androidtv[async]==0.0.60",
+        "pure-python-adb[async]==0.3.0.dev0"
+      ]
+    },
+    "npm_switches": {
+      "version": "1.0.2",
+      "requirements": []
+    },
+    "unifigateway": {
+      "version": "0.3.3",
+      "requirements": [
+        "pyunifi==2.21"
+      ]
+    },
+    "scheduler": {
+      "version": "v0.0.0",
+      "requirements": []
+    },
+    "twitch_helix": {
+      "version": "1.0.0",
+      "requirements": [
+        "twitchAPI==3.10.0"
+      ]
+    },
+    "webastoconnect": {
+      "version": "0.1.1",
+      "requirements": [
+        "pywebasto==0.1.0"
+      ]
+    },
+    "dash_cast": {
+      "version": "1.0.0",
+      "requirements": []
+    },
+    "my_unifi": {
+      "version": "0.1.5",
+      "requirements": []
+    },
+    "greentel": {
+      "version": "0.1",
+      "requirements": [
+        "beautifulsoup4",
+        "html.parser"
+      ]
+    },
+    "localtuya": {
+      "version": "5.2.1",
+      "requirements": []
+    },
+    "generic_hygrostat": {
+      "version": "0.8.0",
+      "requirements": []
+    },
+    "energidataservice": {
+      "version": "1.4.3",
+      "requirements": [
+        "async-retrying-ng==0.1.3",
+        "CurrencyConverter==0.17.13"
+      ]
+    },
+    "tuya_local": {
+      "version": "2023.12.1",
+      "requirements": [
+        "tinytuya==1.13.1"
+      ]
+    },
+    "powercalc": {
+      "version": "v1.9.10",
+      "requirements": [
+        "numpy>=1.21.1"
+      ]
+    },
+    "places": {
+      "version": "v2.6.0",
+      "requirements": []
+    },
+    "browser_mod": {
+      "version": "2.3.0",
+      "requirements": []
+    },
+    "hacs": {
+      "version": "1.33.0",
+      "requirements": [
+        "aiogithubapi>=22.10.1"
+      ]
+    },
+    "frigate": {
+      "version": "4.0.0",
+      "requirements": [
+        "pytz==2022.7"
+      ]
+    },
+    "google_home": {
+      "version": "1.10.2",
+      "requirements": [
+        "glocaltokens==0.7.0"
+      ]
+    },
+    "watchman": {
+      "version": "0.5.1",
+      "requirements": [
+        "prettytable==3.0.0"
+      ]
+    },
+    "var": {
+      "version": "0.15.0",
+      "requirements": []
+    },
+    "pyscript": {
+      "version": "1.5.0",
+      "requirements": [
+        "croniter==1.3.8",
+        "watchdog==2.3.1"
+      ]
+    }
+  },
+  "integration_manifest": {
+    "domain": "zha",
+    "name": "Zigbee Home Automation",
+    "after_dependencies": [
+      "onboarding",
+      "usb"
+    ],
+    "codeowners": [
+      "@dmulcahey",
+      "@adminiuga",
+      "@puddly",
+      "@TheJulianJES"
+    ],
+    "config_flow": true,
+    "dependencies": [
+      "file_upload"
+    ],
+    "documentation": "https://www.home-assistant.io/integrations/zha",
+    "iot_class": "local_polling",
+    "loggers": [
+      "aiosqlite",
+      "bellows",
+      "crccheck",
+      "pure_pcapy3",
+      "zhaquirks",
+      "zigpy",
+      "zigpy_deconz",
+      "zigpy_xbee",
+      "zigpy_zigate",
+      "zigpy_znp",
+      "universal_silabs_flasher"
+    ],
+    "requirements": [
+      "bellows==0.37.3",
+      "pyserial==3.5",
+      "pyserial-asyncio==0.6",
+      "zha-quirks==0.0.107",
+      "zigpy-deconz==0.22.2",
+      "zigpy==0.60.1",
+      "zigpy-xbee==0.20.1",
+      "zigpy-zigate==0.12.0",
+      "zigpy-znp==0.12.0",
+      "universal-silabs-flasher==0.0.15",
+      "pyserial-asyncio-fast==0.11"
+    ],
+    "usb": [
+      {
+        "vid": "10C4",
+        "pid": "EA60",
+        "description": "*2652*",
+        "known_devices": [
+          "slae.sh cc2652rb stick"
+        ]
+      },
+      {
+        "vid": "1A86",
+        "pid": "55D4",
+        "description": "*sonoff*plus*",
+        "known_devices": [
+          "sonoff zigbee dongle plus v2"
+        ]
+      },
+      {
+        "vid": "10C4",
+        "pid": "EA60",
+        "description": "*sonoff*plus*",
+        "known_devices": [
+          "sonoff zigbee dongle plus"
+        ]
+      },
+      {
+        "vid": "10C4",
+        "pid": "EA60",
+        "description": "*tubeszb*",
+        "known_devices": [
+          "TubesZB Coordinator"
+        ]
+      },
+      {
+        "vid": "1A86",
+        "pid": "7523",
+        "description": "*tubeszb*",
+        "known_devices": [
+          "TubesZB Coordinator"
+        ]
+      },
+      {
+        "vid": "1A86",
+        "pid": "7523",
+        "description": "*zigstar*",
+        "known_devices": [
+          "ZigStar Coordinators"
+        ]
+      },
+      {
+        "vid": "1CF1",
+        "pid": "0030",
+        "description": "*conbee*",
+        "known_devices": [
+          "Conbee II"
+        ]
+      },
+      {
+        "vid": "0403",
+        "pid": "6015",
+        "description": "*conbee*",
+        "known_devices": [
+          "Conbee III"
+        ]
+      },
+      {
+        "vid": "10C4",
+        "pid": "8A2A",
+        "description": "*zigbee*",
+        "known_devices": [
+          "Nortek HUSBZB-1"
+        ]
+      },
+      {
+        "vid": "0403",
+        "pid": "6015",
+        "description": "*zigate*",
+        "known_devices": [
+          "ZiGate+"
+        ]
+      },
+      {
+        "vid": "10C4",
+        "pid": "EA60",
+        "description": "*zigate*",
+        "known_devices": [
+          "ZiGate"
+        ]
+      },
+      {
+        "vid": "10C4",
+        "pid": "8B34",
+        "description": "*bv 2010/10*",
+        "known_devices": [
+          "Bitron Video AV2010/10"
+        ]
+      }
+    ],
+    "zeroconf": [
+      {
+        "type": "_esphomelib._tcp.local.",
+        "name": "tube*"
+      },
+      {
+        "type": "_zigate-zigbee-gateway._tcp.local.",
+        "name": "*zigate*"
+      },
+      {
+        "type": "_zigstar_gw._tcp.local.",
+        "name": "*zigstar*"
+      },
+      {
+        "type": "_uzg-01._tcp.local.",
+        "name": "uzg-01*"
+      },
+      {
+        "type": "_slzb-06._tcp.local.",
+        "name": "slzb-06*"
+      }
+    ],
+    "is_built_in": true
+  },
+  "data": {
+    "ieee": "**REDACTED**",
+    "nwk": 8813,
+    "manufacturer": "smarthjemmet.dk",
+    "model": "QUAD-ZIG-SW",
+    "name": "smarthjemmet.dk QUAD-ZIG-SW",
+    "quirk_applied": false,
+    "quirk_class": "zigpy.device.Device",
+    "quirk_id": null,
+    "manufacturer_code": 64447,
+    "power_source": "Battery or Unknown",
+    "lqi": 184,
+    "rssi": -54,
+    "last_seen": "2023-12-18T07:25:05",
+    "available": true,
+    "device_type": "EndDevice",
+    "signature": {
+      "node_descriptor": "NodeDescriptor(logical_type=<LogicalType.EndDevice: 2>, complex_descriptor_available=0, user_descriptor_available=0, reserved=0, aps_flags=0, frequency_band=<FrequencyBand.Freq2400MHz: 8>, mac_capability_flags=<MACCapabilityFlags.AllocateAddress: 128>, manufacturer_code=64447, maximum_buffer_size=80, maximum_incoming_transfer_size=160, server_mask=0, maximum_outgoing_transfer_size=160, descriptor_capability_field=<DescriptorCapability.NONE: 0>, *allocate_address=True, *is_alternate_pan_coordinator=False, *is_coordinator=False, *is_end_device=True, *is_full_function_device=False, *is_mains_powered=False, *is_receiver_on_when_idle=False, *is_router=False, *is_security_capable=False)",
+      "endpoints": {
+        "1": {
+          "profile_id": "0x0104",
+          "device_type": "0xfffe",
+          "input_clusters": [
+            "0x0000",
+            "0x0001",
+            "0x0007"
+          ],
+          "output_clusters": [
+            "0x0000",
+            "0x0001",
+            "0x0012"
+          ]
+        },
+        "2": {
+          "profile_id": "0x0104",
+          "device_type": "0xfffe",
+          "input_clusters": [
+            "0x0007"
+          ],
+          "output_clusters": [
+            "0x0012"
+          ]
+        },
+        "3": {
+          "profile_id": "0x0104",
+          "device_type": "0xfffe",
+          "input_clusters": [
+            "0x0007"
+          ],
+          "output_clusters": [
+            "0x0012"
+          ]
+        },
+        "4": {
+          "profile_id": "0x0104",
+          "device_type": "0xfffe",
+          "input_clusters": [
+            "0x0007"
+          ],
+          "output_clusters": [
+            "0x0012"
+          ]
+        },
+        "5": {
+          "profile_id": "0x0104",
+          "device_type": "0xfffe",
+          "input_clusters": [
+            "0x0007"
+          ],
+          "output_clusters": [
+            "0x0012"
+          ]
+        }
+      },
+      "manufacturer": "smarthjemmet.dk",
+      "model": "QUAD-ZIG-SW"
+    },
+    "active_coordinator": false,
+    "entities": [
+      {
+        "entity_id": "sensor.smarthjemmet_dk_quad_zig_sw_batteri",
+        "name": "smarthjemmet.dk QUAD-ZIG-SW"
+      }
+    ],
+    "neighbors": [],
+    "routes": [],
+    "endpoint_names": [
+      {
+        "name": "undefined_0xfffe"
+      },
+      {
+        "name": "undefined_0xfffe"
+      },
+      {
+        "name": "undefined_0xfffe"
+      },
+      {
+        "name": "undefined_0xfffe"
+      },
+      {
+        "name": "undefined_0xfffe"
+      }
+    ],
+    "user_given_name": null,
+    "device_reg_id": "063cf0fafbe61d612e4ddff1a5dacb32",
+    "area_id": null,
+    "cluster_details": {
+      "1": {
+        "device_type": {
+          "name": "undefined_0xfffe",
+          "id": 65534
+        },
+        "profile_id": 260,
+        "in_clusters": {
+          "0x0000": {
+            "endpoint_attribute": "basic",
+            "attributes": {
+              "0x0004": {
+                "attribute_name": "manufacturer",
+                "value": "smarthjemmet.dk"
+              },
+              "0x0005": {
+                "attribute_name": "model",
+                "value": "QUAD-ZIG-SW"
+              }
+            },
+            "unsupported_attributes": {}
+          },
+          "0x0001": {
+            "endpoint_attribute": "power",
+            "attributes": {
+              "0x0021": {
+                "attribute_name": "battery_percentage_remaining",
+                "value": 200
+              },
+              "0x0020": {
+                "attribute_name": "battery_voltage",
+                "value": 31
+              }
+            },
+            "unsupported_attributes": {
+              "0x0031": {
+                "attribute_name": "battery_size"
+              },
+              "0x0033": {
+                "attribute_name": "battery_quantity"
+              }
+            }
+          },
+          "0x0007": {
+            "endpoint_attribute": "on_off_config",
+            "attributes": {},
+            "unsupported_attributes": {}
+          }
+        },
+        "out_clusters": {
+          "0x0000": {
+            "endpoint_attribute": "basic",
+            "attributes": {},
+            "unsupported_attributes": {}
+          },
+          "0x0001": {
+            "endpoint_attribute": "power",
+            "attributes": {},
+            "unsupported_attributes": {}
+          },
+          "0x0012": {
+            "endpoint_attribute": "multistate_input",
+            "attributes": {},
+            "unsupported_attributes": {}
+          }
+        }
+      },
+      "2": {
+        "device_type": {
+          "name": "undefined_0xfffe",
+          "id": 65534
+        },
+        "profile_id": 260,
+        "in_clusters": {
+          "0x0007": {
+            "endpoint_attribute": "on_off_config",
+            "attributes": {},
+            "unsupported_attributes": {}
+          }
+        },
+        "out_clusters": {
+          "0x0012": {
+            "endpoint_attribute": "multistate_input",
+            "attributes": {},
+            "unsupported_attributes": {}
+          }
+        }
+      },
+      "3": {
+        "device_type": {
+          "name": "undefined_0xfffe",
+          "id": 65534
+        },
+        "profile_id": 260,
+        "in_clusters": {
+          "0x0007": {
+            "endpoint_attribute": "on_off_config",
+            "attributes": {},
+            "unsupported_attributes": {}
+          }
+        },
+        "out_clusters": {
+          "0x0012": {
+            "endpoint_attribute": "multistate_input",
+            "attributes": {},
+            "unsupported_attributes": {}
+          }
+        }
+      },
+      "4": {
+        "device_type": {
+          "name": "undefined_0xfffe",
+          "id": 65534
+        },
+        "profile_id": 260,
+        "in_clusters": {
+          "0x0007": {
+            "endpoint_attribute": "on_off_config",
+            "attributes": {},
+            "unsupported_attributes": {}
+          }
+        },
+        "out_clusters": {
+          "0x0012": {
+            "endpoint_attribute": "multistate_input",
+            "attributes": {},
+            "unsupported_attributes": {}
+          }
+        }
+      },
+      "5": {
+        "device_type": {
+          "name": "undefined_0xfffe",
+          "id": 65534
+        },
+        "profile_id": 260,
+        "in_clusters": {
+          "0x0007": {
+            "endpoint_attribute": "on_off_config",
+            "attributes": {},
+            "unsupported_attributes": {}
+          }
+        },
+        "out_clusters": {
+          "0x0012": {
+            "endpoint_attribute": "multistate_input",
+            "attributes": {},
+            "unsupported_attributes": {}
+          }
+        }
+      }
+    }
+  }
+}

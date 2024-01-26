@@ -1,0 +1,127 @@
+pack_wd_nas:
+  sensor:
+    - platform: snmp
+      name: "NAS Size"
+      host: 192.168.1.12
+      baseoid: 1.3.6.1.4.1.5127.1.1.1.10.1.9.1.5.1
+      community: "public"
+      version: "2c"
+      value_template: "{{ value.replace('T','') }}"
+      unit_of_measurement: "TB"
+      scan_interval: 300
+
+    - platform: snmp
+      name: "NAS Free Space"
+      host: 192.168.1.12
+      baseoid: 1.3.6.1.4.1.5127.1.1.1.10.1.9.1.6.1
+      community: "public"
+      version: "2c"
+      value_template: "{{ value.replace('T','') }}"
+      unit_of_measurement: "TB"
+      scan_interval: 300
+
+    - platform: snmp
+      name: "NAS Disk 1 Temperature"
+      host: 192.168.1.12
+      baseoid: 1.3.6.1.4.1.5127.1.1.1.10.1.10.1.5.1
+      community: "public"
+      version: "2c"
+      unit_of_measurement: "°C"
+      value_template: "{{ value.split(':')[1] }}"
+      scan_interval: 60
+
+    - platform: snmp
+      name: "NAS Disk 2 Temperature"
+      host: 192.168.1.12
+      baseoid: 1.3.6.1.4.1.5127.1.1.1.10.1.10.1.5.2
+      community: "public"
+      version: "2c"
+      unit_of_measurement: "°C"
+      value_template: "{{ value.split(':')[1] }}"
+      scan_interval: 60
+
+    - platform: snmp
+      name: "NAS Disk 3 Temperature"
+      host: 192.168.1.12
+      baseoid: 1.3.6.1.4.1.5127.1.1.1.10.1.10.1.5.3
+      community: "public"
+      version: "2c"
+      unit_of_measurement: "°C"
+      value_template: "{{ value.split(':')[1] }}"
+      scan_interval: 60
+
+    - platform: snmp
+      name: "NAS Disk 4 Temperature"
+      host: 192.168.1.12
+      baseoid: 1.3.6.1.4.1.5127.1.1.1.10.1.10.1.5.4
+      community: "public"
+      version: "2c"
+      unit_of_measurement: "°C"
+      value_template: "{{ value.split(':')[1] }}"
+      scan_interval: 60
+
+    - platform: snmp
+      name: "NAS Disk 1 Serial Number"
+      host: 192.168.1.12
+      baseoid: 1.3.6.1.4.1.5127.1.1.1.10.1.10.1.4.1
+      community: "public"
+      version: "2c"
+      scan_interval: 300
+      value_template: "{{ value }}"
+
+    - platform: snmp
+      name: "NAS Disk 2 Serial Number"
+      host: 192.168.1.12
+      baseoid: 1.3.6.1.4.1.5127.1.1.1.10.1.10.1.4.2
+      community: "public"
+      version: "2c"
+      scan_interval: 300
+      value_template: "{{ value }}"
+
+    - platform: snmp
+      name: "NAS Disk 3 Serial Number"
+      host: 192.168.1.12
+      baseoid: 1.3.6.1.4.1.5127.1.1.1.10.1.10.1.4.3
+      community: "public"
+      version: "2c"
+      scan_interval: 300
+      value_template: "{{ value }}"
+
+    - platform: snmp
+      name: "NAS Disk 4 Serial Number"
+      host: 192.168.1.12
+      baseoid: 1.3.6.1.4.1.5127.1.1.1.10.1.10.1.4.4
+      community: "public"
+      version: "2c"
+      scan_interval: 300
+      value_template: "{{ value }}"
+
+    - platform: snmp
+      name: "NAS System Temperature"
+      host: 192.168.1.12
+      baseoid: 1.3.6.1.4.1.5127.1.1.1.10.1.7.0
+      community: "public"
+      version: "2c"
+      unit_of_measurement: "°C"
+      value_template: "{{ (value[25:26] + value[27:28]) | int(0) }}"
+      scan_interval: 60
+
+    - platform: snmp
+      name: "NAS Fan Status"
+      host: 192.168.1.12
+      baseoid: 1.3.6.1.4.1.5127.1.1.1.10.1.8.0
+      community: "public"
+      version: "2c"
+      value_template: "{{ value.split(':')[1] }}"
+      scan_interval: 60
+
+    - platform: template
+      sensors:
+        nas_free_pct:
+          friendly_name: "Free Space"
+          value_template: "{{ ( 100 * states('sensor.nas_free_space')|float(0) / states('sensor.nas_size')|float(0) )|round(0) }}"
+          unit_of_measurement: "%"
+        nas_used_pct:
+          friendly_name: "Used Space"
+          value_template: "{{ 100 - (( 100 * states('sensor.nas_free_space')|float(0) / states('sensor.nas_size')|float(0) )|round(0)) }}"
+          unit_of_measurement: "%"

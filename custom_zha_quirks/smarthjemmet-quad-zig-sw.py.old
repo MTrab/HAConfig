@@ -1,0 +1,76 @@
+"""Device handler for Smarthjemmet QUAD-ZIG-SW."""
+from zigpy.profiles import zha
+from zigpy.quirks import CustomDevice
+from zigpy.zcl.clusters.general import Basic, Identify, OnOff, PowerConfiguration
+
+from zhaquirks.const import (
+    BUTTON,
+    COMMAND,
+    COMMAND_OFF,
+    COMMAND_ON,
+    COMMAND_TOGGLE,
+    DEVICE_TYPE,
+    DOUBLE_PRESS,
+    ENDPOINTS,
+    INPUT_CLUSTERS,
+    LONG_PRESS,
+    MODELS_INFO,
+    OUTPUT_CLUSTERS,
+    PROFILE_ID,
+    SHORT_PRESS,
+)
+
+
+class SonoffButton(CustomDevice):
+    """Custom device representing sonoff devices."""
+
+    signature = {
+        # "node_descriptor": "NodeDescriptor(logical_type=<LogicalType.EndDevice: 2>, complex_descriptor_available=0,
+        # user_descriptor_available=0, reserved=0, aps_flags=0, frequency_band=<FrequencyBand.Freq2400MHz: 8>, 
+        # mac_capability_flags=<MACCapabilityFlags.AllocateAddress: 128>, manufacturer_code=64447, 
+        # maximum_buffer_size=80, maximum_incoming_transfer_size=160, server_mask=0, maximum_outgoing_transfer_size=160, 
+        # descriptor_capability_field=<DescriptorCapability.NONE: 0>, *allocate_address=True, 
+        # *is_alternate_pan_coordinator=False, *is_coordinator=False, *is_end_device=True, 
+        # *is_full_function_device=False, *is_mains_powered=False, *is_receiver_on_when_idle=False, 
+        # *is_router=False, *is_security_capable=False)",
+        MODEL: "QUAD-ZIG-SW",
+        ENDPOINTS: {
+            1: {
+                PROFILE_ID: zha.PROFILE_ID,
+                DEVICE_TYPE: zha.DeviceType.ON_OFF_SWITCH,
+                INPUT_CLUSTERS: [
+                    Basic.cluster_id,
+                    PowerConfiguration.cluster_id,
+                    Identify.cluster_id,
+                ],
+                OUTPUT_CLUSTERS: [
+                    Identify.cluster_id,
+                    OnOff.cluster_id,
+                ],
+            },
+        },
+    }
+
+    replacement = {
+        ENDPOINTS: {
+            1: {
+                PROFILE_ID: zha.PROFILE_ID,
+                DEVICE_TYPE: zha.DeviceType.ON_OFF_SWITCH,
+                INPUT_CLUSTERS: [
+                    Basic.cluster_id,
+                    PowerConfiguration.cluster_id,
+                    Identify.cluster_id,
+                ],
+                OUTPUT_CLUSTERS: [
+                    Identify.cluster_id,
+                    OnOff.cluster_id,
+                ],
+            },
+        }
+    }
+
+    device_automation_triggers = {
+        (SHORT_PRESS, BUTTON): {COMMAND: COMMAND_TOGGLE},
+        (DOUBLE_PRESS, BUTTON): {COMMAND: COMMAND_ON},
+        (LONG_PRESS, BUTTON): {COMMAND: COMMAND_OFF},
+    }

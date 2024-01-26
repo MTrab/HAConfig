@@ -49,6 +49,7 @@ from custom_components.powercalc.const import (
     ATTR_SOURCE_DOMAIN,
     ATTR_SOURCE_ENTITY,
     CONF_CALCULATION_ENABLED_CONDITION,
+    CONF_COMPOSITE,
     CONF_DELAY,
     CONF_DISABLE_EXTENDED_ATTRIBUTES,
     CONF_DISABLE_STANDBY_POWER,
@@ -280,7 +281,7 @@ def is_manually_configured(sensor_config: ConfigType) -> bool:
     """
     if CONF_MODEL in sensor_config:
         return False
-    return any(key in sensor_config for key in [CONF_LINEAR, CONF_FIXED, CONF_PLAYBOOK])
+    return any(key in sensor_config for key in [CONF_LINEAR, CONF_FIXED, CONF_PLAYBOOK, CONF_COMPOSITE])
 
 
 def is_fully_configured(config: ConfigType) -> bool:
@@ -448,7 +449,7 @@ class VirtualPowerSensor(SensorEntity, PowerSensor):
             track_templates.append(TrackTemplate(self._standby_power, None, None))
         if self._calculation_enabled_condition:
             track_templates.append(
-                TrackTemplate(self._calculation_enabled_condition, None, None)
+                TrackTemplate(self._calculation_enabled_condition, None, None),
             )
         if track_templates:
             async_track_template_result(
@@ -473,14 +474,10 @@ class VirtualPowerSensor(SensorEntity, PowerSensor):
         if CONF_CALCULATION_ENABLED_CONDITION not in self._sensor_config:
             return
 
-        template = self._sensor_config.get(CONF_CALCULATION_ENABLED_CONDITION)
+        template: Template | str = self._sensor_config.get(CONF_CALCULATION_ENABLED_CONDITION)  # type: ignore
         if isinstance(template, str):
             template = template.replace("[[entity]]", self.source_entity)
             template = Template(template)
-
-        if not isinstance(template, Template):
-            _LOGGER.error("Invalid calculation_enabled_condition: %s", template)
-            return
 
         self._calculation_enabled_condition = template
 
@@ -536,10 +533,7 @@ class VirtualPowerSensor(SensorEntity, PowerSensor):
         if self.source_entity == DUMMY_ENTITY_ID:
             return True
 
-        if state.state == STATE_UNKNOWN:
-            return False
-
-        if not self._ignore_unavailable_state and state.state == STATE_UNAVAILABLE:
+        if not self._ignore_unavailable_state and state.state in [STATE_UNAVAILABLE, STATE_UNKNOWN]:
             return False
 
         return True
