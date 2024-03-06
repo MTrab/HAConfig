@@ -163,15 +163,6 @@
           - automation.tts_chatgpt_bedtime
           - automation.tts_chatgpt_departure_time
           - automation.tts_chatgpt_djskoge_streamer
-          area_id:
-          - gang
-          - 8868a58504c411eb945e45ca1102362e
-          - 8868a7e204c411eb899463fe073850fb
-          - 61bc22cd04e111eb9494c926e661f79b
-          - 8868a1b304c411eb9211dd814829b168
-          - toilet
-          - udendors
-          - unnamed_room
         data: {}
       - service: climate.set_temperature
         data:
@@ -179,20 +170,25 @@
         target:
           device_id:
           - eb8fa3cd070d11eb93e1f3123b152cc3
-          - 87754886a3732e6076a5035700c54e72
-          - 6b1faa3363ae772e16cf4b7ada3ad64d
+          - dcda4e53071311eb96e5c56d002656e1
+          - dcdb16b4071311eb8ae06bbcb7b0ee4d
       - service: climate.set_temperature
+        target:
+          entity_id: climate.bedroom
+        data:
+          temperature: 18
+      - service: climate.set_temperature
+        metadata: {}
         data:
           temperature: 18
         target:
-          entity_id: climate.bedroom
+          entity_id: climate.hall
       - service: climate.set_temperature
+        metadata: {}
         data:
-          temperature: 20
+          temperature: 18
         target:
-          entity_id:
-          - climate.hall
-          - climate.toilet
+          entity_id: climate.toilet
     default:
     - service: homeassistant.turn_on
       target:
@@ -223,6 +219,18 @@
         - automation.tts_chatgpt_departure_time
         - automation.tts_chatgpt_djskoge_streamer
       data: {}
+    - service: climate.set_temperature
+      target:
+        entity_id:
+        - climate.hall
+        - climate.toilet
+      data:
+        temperature: 23
+    - service: climate.set_temperature
+      target:
+        entity_id: climate.bedroom
+      data:
+        temperature: 19
   mode: single
 - id: '1606586819683'
   alias: Auto - Turn off lights if on after 02:00 AM
@@ -2650,23 +2658,28 @@
     entity_id:
     - binary_sensor.door_person_occupancy
     to: 'on'
+    enabled: false
+  - platform: state
+    entity_id:
+    - image.door_person
+    enabled: false
+  - platform: numeric_state
+    entity_id:
+    - sensor.door_person_count
+    above: 0
   condition:
-  - condition: state
-    entity_id: person.malene_trab
-    state: not_home
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: person.malene_trab
+      state: home
   action:
-  - service: camera.snapshot
-    metadata: {}
-    data:
-      filename: /config/www/person.png
-    target:
-      entity_id: camera.door_person
   - service: notify.mobile_app_mtopnord2
     metadata: {}
     data:
       message: Der blev detekteret en person ved døren!
       data:
-        image: /local/person.png
+        image: /api/image_proxy/image.door_person
         actions:
         - action: URI
           title: Åbn kamera

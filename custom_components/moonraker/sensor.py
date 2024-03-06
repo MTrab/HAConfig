@@ -81,41 +81,45 @@ SENSORS: tuple[MoonrakerSensorDescription, ...] = [
         key="extruder_temp",
         name="Extruder Temperature",
         value_fn=lambda sensor: float(
-            sensor.coordinator.data["status"]["extruder"]["temperature"]
+            sensor.coordinator.data["status"]["extruder"]["temperature"] or 0.0
         ),
         subscriptions=[("extruder", "temperature")],
         icon="mdi:printer-3d-nozzle-heat",
         unit=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     MoonrakerSensorDescription(
         key="extruder_target",
         name="Extruder Target",
         value_fn=lambda sensor: float(
-            sensor.coordinator.data["status"]["extruder"]["target"]
+            sensor.coordinator.data["status"]["extruder"]["target"] or 0.0
         ),
         subscriptions=[("extruder", "target")],
         icon="mdi:printer-3d-nozzle-heat",
         unit=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     MoonrakerSensorDescription(
         key="bed_target",
         name="Bed Target",
         value_fn=lambda sensor: float(
-            sensor.coordinator.data["status"]["heater_bed"]["target"]
+            sensor.coordinator.data["status"]["heater_bed"]["target"] or 0.0
         ),
         subscriptions=[("heater_bed", "target")],
         icon="mdi:radiator",
         unit=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     MoonrakerSensorDescription(
         key="bed_temp",
         name="Bed Temperature",
         value_fn=lambda sensor: float(
-            sensor.coordinator.data["status"]["heater_bed"]["temperature"]
+            sensor.coordinator.data["status"]["heater_bed"]["temperature"] or 0.0
         ),
         subscriptions=[("heater_bed", "temperature")],
         icon="mdi:radiator",
         unit=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     MoonrakerSensorDescription(
         key="filename",
@@ -250,6 +254,7 @@ SENSORS: tuple[MoonrakerSensorDescription, ...] = [
         subscriptions=[("heater_bed", "power")],
         icon="mdi:flash",
         unit=PERCENTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     MoonrakerSensorDescription(
         key="extruder_power",
@@ -260,6 +265,7 @@ SENSORS: tuple[MoonrakerSensorDescription, ...] = [
         subscriptions=[("extruder", "power")],
         icon="mdi:flash",
         unit=PERCENTAGE,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     MoonrakerSensorDescription(
         key="total_layer",
@@ -288,6 +294,7 @@ SENSORS: tuple[MoonrakerSensorDescription, ...] = [
         subscriptions=[("toolhead", "position")],
         icon="mdi:axis-x-arrow",
         unit=UnitOfLength.MILLIMETERS,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     MoonrakerSensorDescription(
         key="toolhead_position_y",
@@ -298,6 +305,7 @@ SENSORS: tuple[MoonrakerSensorDescription, ...] = [
         subscriptions=[("toolhead", "position")],
         icon="mdi:axis-y-arrow",
         unit=UnitOfLength.MILLIMETERS,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     MoonrakerSensorDescription(
         key="toolhead_position_z",
@@ -308,6 +316,7 @@ SENSORS: tuple[MoonrakerSensorDescription, ...] = [
         subscriptions=[("toolhead", "position")],
         icon="mdi:axis-z-arrow",
         unit=UnitOfLength.MILLIMETERS,
+        state_class=SensorStateClass.MEASUREMENT,
     ),
     MoonrakerSensorDescription(
         key="object_height",
@@ -368,6 +377,7 @@ async def async_setup_optional_sensors(coordinator, entry, async_add_entities):
                 subscriptions=[(obj, "temperature")],
                 icon="mdi:thermometer",
                 unit=UnitOfTemperature.CELSIUS,
+                state_class=SensorStateClass.MEASUREMENT,
             )
             sensors.append(desc)
         elif split_obj[0] in fan_keys:
@@ -382,6 +392,7 @@ async def async_setup_optional_sensors(coordinator, entry, async_add_entities):
                 subscriptions=[(obj, "speed")],
                 icon="mdi:fan",
                 unit=PERCENTAGE,
+                state_class=SensorStateClass.MEASUREMENT,
             )
             sensors.append(desc)
         elif obj == "fan":
@@ -394,6 +405,7 @@ async def async_setup_optional_sensors(coordinator, entry, async_add_entities):
                 subscriptions=[("fan", "speed")],
                 icon="mdi:fan",
                 unit=PERCENTAGE,
+                state_class=SensorStateClass.MEASUREMENT,
             )
             sensors.append(desc)
         elif obj == "gcode_move":

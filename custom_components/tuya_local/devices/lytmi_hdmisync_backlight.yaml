@@ -16,8 +16,6 @@ primary_entity:
       range:
         min: 10
         max: 1000
-      mapping:
-        - scale: 3.92
     - id: 24
       name: rgbhsv
       type: hex
@@ -151,4 +149,4 @@ secondary_entities:
           - dps_val: "96000000000000000000000000000000"
             value: Scene (Color) - Breath
           - dps_val: "97000000000000000000000000000000"
-            value: Scene (Color) - Pure     
+            value: Scene (Color) - Pure

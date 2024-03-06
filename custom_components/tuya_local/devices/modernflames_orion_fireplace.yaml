@@ -177,7 +177,7 @@ secondary_entities:
         name: brightness
         type: string
         mapping:
-          - dps_val: OFF
+          - dps_val: "OFF"
             value: 0
           - dps_val: DEFAULT
             value: 82
@@ -280,8 +280,6 @@ secondary_entities:
         range:
           min: 0
           max: 100
-        mapping:
-          - scale: 0.392
       - id: 109
         name: effect
         type: string
@@ -313,7 +311,7 @@ secondary_entities:
     dps:
       - id: 111
         type: boolean
-        name: switch        
+        name: switch
   - entity: switch
     name: Ember color cycle
     icon: "mdi:campfire"

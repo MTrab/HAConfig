@@ -19,8 +19,6 @@ primary_entity:
       range:
         min: 10
         max: 1000
-      mapping:
-        - scale: 3.92
     - id: 23
       name: color_temp
       type: integer
@@ -58,10 +56,10 @@ secondary_entities:
         type: string
         name: switch
         mapping:
-        - dps_val: auto
-          value: false
-        - dps_val: manual
-          value: true
+          - dps_val: auto
+            value: false
+          - dps_val: manual
+            value: true
         optional: true
         force: true
   - entity: switch

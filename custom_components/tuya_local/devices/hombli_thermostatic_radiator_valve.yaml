@@ -23,9 +23,10 @@ primary_entity:
       name: temperature
       mapping:
         - scale: 10
+          step: 5
       range:
-          max: 70
-          min: 0
+        max: 300
+        min: 50
     - id: 106
       type: boolean
       name: preset_mode
@@ -59,6 +60,7 @@ secondary_entities:
       - id: 23
         type: string
         name: option
+        optional: true
         mapping:
           - dps_val: "c"
             value: Celsius
@@ -76,10 +78,10 @@ secondary_entities:
         name: value
         mapping:
           - scale: 10
-        range:
-            min: -60
-            max: 60
             step: 5
+        range:
+          min: -60
+          max: 60
   - entity: lock
     name: Child lock
     icon: "mdi:hand-back-right-off"
@@ -116,3 +118,12 @@ secondary_entities:
       - id: 130
         type: boolean
         name: switch
+  - entity: sensor
+    name: Valve
+    category: diagnostic
+    dps:
+      - id: 104
+        type: integer
+        optional: true
+        name: sensor
+        unit: "%"

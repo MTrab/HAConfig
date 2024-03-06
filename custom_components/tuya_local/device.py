@@ -196,7 +196,7 @@ class TuyaLocalDevice(object):
         """Coroutine wrapper for async_receive generator."""
         try:
             async for poll in self.async_receive():
-                if type(poll) is dict:
+                if isinstance(poll, dict):
                     _LOGGER.debug(
                         "%s received %s",
                         self.name,
@@ -427,6 +427,13 @@ class TuyaLocalDevice(object):
             self.name,
             log_json(new_state),
         )
+        if "Err" in new_state:
+            _LOGGER.warning(
+                "%s protocol error %s: %s",
+                self.name,
+                new_state.get("Err"),
+                new_state.get("Error", "message not provided"),
+            )
         _LOGGER.debug(
             "new state (incl pending): %s",
             log_json(self._get_cached_state()),
@@ -521,7 +528,7 @@ class TuyaLocalDevice(object):
             try:
                 if not self._hass.is_stopping:
                     retval = await self._hass.async_add_executor_job(func)
-                    if type(retval) is dict and "Error" in retval:
+                    if isinstance(retval, dict) and "Error" in retval:
                         raise AttributeError(retval["Error"])
                     self._api_protocol_working = True
                     self._api_working_protocol_failures = 0

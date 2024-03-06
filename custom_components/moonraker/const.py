@@ -6,7 +6,7 @@ from homeassistant.const import Platform
 # Base component constants
 DOMAIN = "moonraker"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "1.1.0"
+VERSION = "1.1.1"
 MANIFACTURER = "@marcolivierarsenault"
 
 # Platforms
@@ -24,6 +24,8 @@ CONF_URL = "url"
 CONF_PORT = "port"
 CONF_TLS = "tls"
 CONF_PRINTER_NAME = "printer_name"
+CONF_OPTION_CAMERA_STREAM = "camera_stream_url"
+CONF_OPTION_CAMERA_SNAPSHOT = "camera_snapshot_url"
 
 # API dict keys
 HOSTNAME = "hostname"

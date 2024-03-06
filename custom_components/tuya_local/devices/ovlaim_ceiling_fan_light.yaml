@@ -50,8 +50,6 @@ secondary_entities:
         range:
           min: 0
           max: 100
-        mapping:
-          - scale: 0.392
       - id: 17
         name: color_temp
         type: integer
@@ -81,4 +79,3 @@ secondary_entities:
             value: "4 hours"
           - dps_val: "8h"
             value: "8 hours"
-

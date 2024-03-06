@@ -1,0 +1,50 @@
+pack_waste_collection:
+  waste_collection_schedule:
+    sources:
+      - name: renosyd_dk
+        args:
+          house_number: "020491"
+
+  sensor:
+    - platform: waste_collection_schedule
+      name: next_restaffald
+      types:
+        - Restaffald
+      value_template: >-
+        {% if value.daysTo == 0 %}
+          I dag
+        {% elif value.daysTo == 1 %}
+          I morgen
+        {% else %}
+          Om {{value.daysTo}} dage
+        {% endif %}
+    - platform: waste_collection_schedule
+      name: next_pap_papir
+      types:
+        - Pap
+        - Papir
+      value_template: >-
+        {% if value.daysTo == 0 %}
+          I dag
+        {% elif value.daysTo == 1 %}
+          I morgen
+        {% else %}
+          Om {{value.daysTo}} dage
+        {% endif %}
+    - platform: waste_collection_schedule
+      name: next_emballage
+      types:
+        - Glas
+        - Metal
+        - Hård plast
+      value_template: >-
+        {% if value.daysTo == 0 %}
+          I dag
+        {% elif value.daysTo == 1 %}
+          I morgen
+        {% else %}
+          Om {{value.daysTo}} dage
+        {% endif %}
+    - platform: waste_collection_schedule
+      name: GarbageTypes
+      value_template: '{{value.types|join(", ")}}'

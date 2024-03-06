@@ -34,7 +34,11 @@ pack_webasto:
               {% if runTime < 0.15 %}
                 {% set runTime = 0.05 * diff | round(1) %}
               {% endif %}
-              {{ ((60 * runTime) | int) }}
+              {% if runTime > 90 %}
+                90
+              {%else%}
+                {{ ((60 * runTime) | int) }}
+              {% endif %}
             {%else%}
               0
             {%endif%}

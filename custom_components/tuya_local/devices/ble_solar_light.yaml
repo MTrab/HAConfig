@@ -27,8 +27,7 @@ primary_entity:
         min: 10
         max: 1000
       mapping:
-        - scale: 3.92
-          constraint: standby
+        - constraint: standby
           conditions:
             - dps_val: true
               value_redirect: standby_brightness
@@ -241,4 +240,3 @@ secondary_entities:
             value: 50
           - dps_val: high
             value: 80
-            

@@ -1,4 +1,0 @@
-zone: home
-devices:
-  - device_tracker.kia_location
-tolerance: 200

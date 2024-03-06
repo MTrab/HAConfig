@@ -1,0 +1,98 @@
+blueprint:
+  name: Water wastage automation
+  description: Run a sequence when water wastage is detected.
+  domain: automation
+  input:
+    active_water_usage:
+      name: Input for active water usage
+      description: Should be liters per minute. This sensor is required to check if
+        water is currently being used.
+      selector:
+        entity:
+          domain:
+          - sensor
+          multiple: false
+    helper_boolean:
+      name: Helper input boolean
+      description: Please select an input boolean helper to be used to track the active
+        water usage.
+      selector:
+        entity:
+          domain:
+          - input_boolean
+          multiple: false
+    consider_active_above:
+      name: Minimum active water usage level
+      description: With this input you can set the threshold of liters per minute.
+        If the active water usage is above this level, the automation will consider
+        water as being actively being used.
+      default: 0.1
+      selector:
+        number:
+          min: 0.0
+          max: 5.0
+          step: 0.1
+          unit_of_measurement: l/min
+          mode: slider
+    debounce_water_usage:
+      name: Debounce active water usage
+      description: Sometimes, the active water usage sensor may give wrong levels
+        of active water usage. The active water usage helper boolean will stay active
+        for this amount of time, to flatten out errors.
+      default: 0:00:30
+      selector:
+        duration: {}
+    consider_water_wastage:
+      name: Active water usage trigger time
+      description: If water is actively being continuously used for this amount of
+        time, the configured sequence will be triggered.
+      default: 0:30:00
+      selector:
+        duration: {}
+    action_on_water_wastage:
+      name: Action on water wastage
+      description: Sequence that will be triggered after water wastage is detected.
+      default: []
+      selector:
+        action: {}
+  source_url: https://gist.github.com/d-bunschoten/5f9657c56653811929a1b39c519bc005
+trigger:
+- platform: numeric_state
+  entity_id: !input active_water_usage
+  below: !input consider_active_above
+  id: low
+  for: !input debounce_water_usage
+- platform: numeric_state
+  entity_id: !input active_water_usage
+  above: !input consider_active_above
+  id: high
+- platform: state
+  entity_id: !input helper_boolean
+  to: 'on'
+  for: !input consider_water_wastage
+  id: water_alert
+condition: []
+action:
+- choose:
+  - conditions:
+    - condition: trigger
+      id: high
+    sequence:
+    - service: input_boolean.turn_on
+      target:
+        entity_id: !input helper_boolean
+      data: {}
+  - conditions:
+    - condition: trigger
+      id: low
+    sequence:
+    - service: input_boolean.turn_off
+      target:
+        entity_id: !input helper_boolean
+      data: {}
+  - conditions:
+    - condition: trigger
+      id: water_alert
+    sequence: !input action_on_water_wastage
+mode: parallel
+max: 3

@@ -19,26 +19,6 @@ sensors:
     manufacturer: tuya
     model: TS0505A
 
-  # Loftlys i køkken
-  # - entity_id: light.kitchen_1
-  #   unique_id: kitchenCeiling1
-  #   manufacturer: ikea
-  #   model: LED1537R6
-  - entity_id: light.kitchen_2
-    unique_id: kitchenCeiling2
-    manufacturer: ikea
-    model: LED1537R6
-  - entity_id: light.kitchen_3
-    unique_id: kitchenCeiling3
-    manufacturer: ikea
-    model: LED1537R6
-  - create_group: kitchen
-    unique_id: kitchenCeilingPowercalc
-    entities:
-      # - entity_id: light.kitchen_1
-      - entity_id: light.kitchen_2
-      - entity_id: light.kitchen_3
-
   # 3D printer bord
   - entity_id: switch.core_a8_mains
     unique_id: 3dprintPowercalc
