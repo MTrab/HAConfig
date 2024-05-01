@@ -3,3 +3,4 @@ any_home:
   entities:
     - person.gaest
     - person.malene_trab
+    - person.pia_nielsen

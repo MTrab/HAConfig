@@ -4,6 +4,7 @@ products:
     name: Mellerware Comfy Medium
 primary_entity:
   entity: climate
+  translation_only_key: heater
   dps:
     - id: 1
       type: boolean
@@ -21,7 +22,11 @@ primary_entity:
               hidden: true
             - dps_val: CF
               value: heat
-            - value: heat
+            - dps_val: [EC, AF]
+              value: heat
+              hidden: true
+            - dps_val: ST
+              value: "off"
               hidden: true
     - id: 2
       type: integer
@@ -81,16 +86,14 @@ primary_entity:
       name: custom_program
 secondary_entities:
   - entity: lock
-    name: Child lock
-    icon: "mdi:hand-back-right-off"
+    translation_key: child_lock
     category: config
     dps:
       - id: 7
         type: boolean
         name: lock
   - entity: select
-    name: Timer
-    icon: "mdi:timer"
+    translation_key: timer
     category: config
     dps:
       - id: 19
@@ -148,7 +151,7 @@ secondary_entities:
           - dps_val: 24h
             value: 24 hours
   - entity: sensor
-    name: Time remaining
+    translation_key: time_remaining
     class: duration
     category: diagnostic
     dps:
@@ -157,7 +160,6 @@ secondary_entities:
         name: sensor
         unit: min
   - entity: binary_sensor
-    name: Fault
     class: problem
     category: diagnostic
     dps:

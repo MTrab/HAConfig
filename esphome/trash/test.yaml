@@ -1,0 +1,29 @@
+esphome:
+  name: test
+  friendly_name: test
+
+esp8266:
+  board: d1_mini
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "lnRV4oeR0ocqZGt9ODKlwy6vwE7pUl0EVyLzzjrh4GI="
+
+ota:
+  password: "65bdef2ba820fc42a5ce541edc3c0cb3"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Test Fallback Hotspot"
+    password: "YYQqC1JeHYeg"
+
+captive_portal:
+    

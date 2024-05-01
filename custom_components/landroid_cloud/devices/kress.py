@@ -20,13 +20,7 @@ from ..const import (
     ATTR_TIMEEXTENSION,
     LandroidFeatureSupport,
 )
-from ..device_base import (
-    SUPPORT_LANDROID_BASE,
-    LandroidCloudButtonBase,
-    LandroidCloudMowerBase,
-    LandroidCloudSelectEntity,
-    LandroidCloudSelectZoneEntity,
-)
+from ..device_base import SUPPORT_LANDROID_BASE, LandroidCloudMowerBase
 from ..utils.logger import LoggerType
 
 # from homeassistant.helpers.dispatcher import dispatcher_send
@@ -62,58 +56,6 @@ CONFIG_SCHEME = vol.Schema(
         vol.Optional(ATTR_MULTIZONE_PROBABILITIES): str,
     }
 )
-
-
-class Button(LandroidCloudButtonBase, ButtonEntity):
-    """Definition of Kress button."""
-
-    def __init__(
-        self,
-        description: ButtonEntityDescription,
-        hass: HomeAssistant,
-        api: LandroidAPI,
-    ) -> None:
-        """Initialize a Kress button."""
-        super().__init__(description, hass, api)
-        self.device: WorxCloud = self.api.device
-        self.log(
-            LoggerType.SELECT,
-            "Adding %s",
-            description.key,
-        )
-
-
-class Select(LandroidCloudSelectEntity):
-    """Definition of Kress select entity."""
-
-    def __init__(
-        self,
-        description: SelectEntityDescription,
-        hass: HomeAssistant,
-        api: LandroidAPI,
-    ):
-        """Init new Kress Select entity."""
-        super().__init__(description, hass, api)
-        self.device: WorxCloud = self.api.device
-        self.log(
-            LoggerType.SELECT,
-            "Adding %s",
-            description.key,
-        )
-
-
-class ZoneSelect(Select, LandroidCloudSelectZoneEntity):
-    """Definition of a Kress zone selector."""
-
-    def __init__(
-        self,
-        description: SelectEntityDescription,
-        hass: HomeAssistant,
-        api: LandroidAPI,
-    ):
-        """Init new Kress Zone Select entity."""
-        super().__init__(description, hass, api)
-        self.device: WorxCloud = self.api.device
 
 
 class MowerDevice(LandroidCloudMowerBase, LawnMowerEntity):

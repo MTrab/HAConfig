@@ -1,6 +1,7 @@
 name: Prosto Heater
 primary_entity:
   entity: climate
+  translation_only_key: heater
   dps:
     - id: 1
       type: boolean
@@ -59,8 +60,7 @@ secondary_entities:
           - dps_val: "auto"
             value: Auto
   - entity: select
-    name: Timer
-    icon: "mdi:timer"
+    translation_key: timer
     category: config
     dps:
       - id: 19

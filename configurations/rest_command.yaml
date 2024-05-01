@@ -1,5 +1,5 @@
 update_traccar_niro:
-  url: "http://10.254.254.9:5055/?id=123456789&lat={{ state_attr('device_tracker.kia_location','latitude') }}&lon={{ state_attr('device_tracker.kia_location','longitude') }}&ignition={% if states('sensor.kia_battery') | float(0) >= 14 %}1{% else %}0{% endif %}"
+  url: "http://10.254.254.9:5055/?id=123456789&lat={{ state_attr('device_tracker.kia_location','latitude') }}&lon={{ state_attr('device_tracker.kia_location','longitude') }}&ignition={% if states('sensor.kia_battery') | float(0) > 13 %}1{% else %}0{% endif %}&speed={{ state_attr('device_tracker.kia_location','speed') }}&heading={{ state_attr('device_tracker.kia_location','direction') }}"
 
 update_traccar_mt_oneplus:
-  url: "http://10.254.254.9:5055/?id=malene_op&lat={{ state_attr('device_tracker.mtopnord2','latitude') }}&lon={{ state_attr('device_tracker.mtopnord2','longitude') }}&speed={{ state_attr('device_tracker.mtopnord2','speed') }}&altitude={{ state_attr('device_tracker.mtopnord2','altitude') }}&course={{ state_attr('device_tracker.mtopnord2','course') }}"
+  url: "http://10.254.254.9:5055/?id=malene_op&lat={{ state_attr('device_tracker.mtopnord2','latitude') }}&lon={{ state_attr('device_tracker.mtopnord2','longitude') }}&speed={{ state_attr('device_tracker.mtopnord2','speed') }}&altitude={{ state_attr('device_tracker.mtopnord2','altitude') }}&heading={{ state_attr('device_tracker.mtopnord2','course') }}"

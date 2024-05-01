@@ -1,17 +1,17 @@
 {
     "config": {
         "abort": {
-            "already_configured": "Der Sensor ist bereits konfiguriert, geben Sie eine Unique-Id an"
+            "already_configured": "Der Sensor ist bereits konfiguriert, bitte eine einzigartige ID angeben"
         },
         "error": {
-            "daily_energy_mandatory": "Sie müssen mindestens Value oder Valuetemplate angeben",
+            "daily_energy_mandatory": "Du musst mindestens einen Wert oder ein Werte-Template angeben",
             "entity_mandatory": "Die Auswahl einer Entität ist für jede Strategie mit Ausnahme des Playbooks erforderlich",
-            "fixed_mandatory": "Sie müssen mindestens Leistung, Leistung-Template oder Leistung je Zustand angeben",
+            "fixed_mandatory": "Du musst mindestens Leistung, Leistungs-Template oder Leistung je Zustand angeben",
             "fixed_states_power_only": "Diese Entität kann nur mit Leistung je Zustand und nicht mit Leistung arbeiten",
-            "group_mandatory": "Sie müssen mindestens Untergruppen oder Leistung- und Energie-Entitäten definieren",
-            "linear_mandatory": "Sie müssen mindestens Minimale Leistung oder Kalibrierungswert angeben",
-            "linear_min_higher_as_max": "Maximale Leistung kann nicht niedriger sein als Minimale Leistung",
-            "linear_unsupported_domain": "Die Domäne der Entität wird für den linearen Modus nicht unterstützt. Muss einer der folgenden Werte sein: Ventilator, Licht oder Mediaplayer. Sie können jedoch die Kalibrierungsoption verwenden",
+            "group_mandatory": "Du musst mindestens Untergruppen oder Leistungs- und Energie-Entitäten definieren",
+            "linear_mandatory": "Du musst mindestens die minimale Leistung oder den Kalibrierungswert angeben",
+            "linear_min_higher_as_max": "Die maximale Leistung kann nicht niedriger als die minimale Leistung sein",
+            "linear_unsupported_domain": "Die Domäne der Entität wird für den linearen Modus nicht unterstützt. Muss einer der folgenden Werte sein: Ventilator, Licht oder Mediaplayer. Du kannst jedoch die Kalibrierungsoption verwenden",
             "lut_unsupported_color_mode": "Das LUT-Profil unterstützt einen der Farbmodi Ihres Lichts nicht. Siehe in die Logs für weitere Informationen",
             "lut_wrong_domain": "Nur Licht Entitäten können den LUT Modus verwenden",
             "playbook_mandatory": "Sie müssen mindestens ein Playbook angeben",
@@ -54,25 +54,27 @@
             "group": {
                 "data": {
                     "area": "Bereich",
-                    "device": "Gerät",
+                    "create_energy_sensor": "Energiesensor erstellen",
                     "create_utility_meters": "Utilitymeter erstellen",
+                    "device": "Gerät",
                     "group_energy_entities": "Energie-Entitäten der Gruppe",
                     "group_member_sensors": "Mitglied powercalc sensors",
                     "group_power_entities": "Leistungs-Entitäten der Gruppe",
                     "hide_members": "Mitglieder ausblenden",
+                    "include_non_powercalc_sensors": "Nicht powercalc Sensoren einschließen",
                     "name": "Name",
                     "sub_groups": "Untergruppen",
-                    "unique_id": "Unique-Id",
-                    "include_non_powercalc_sensors": "Include non powercalc sensors"
+                    "unique_id": "Unique-Id"
                 },
                 "data_description": {
                     "area": "Fügt alle Powercalc-Sensoren aus dem angegebenen Bereich hinzu",
+                    "create_energy_sensor": "Ob powercalc einen kWh Sensor erstellen muss",
                     "device": "Füge die von Powercalc erstellten Gruppenentitäten einem bestehenden Gerät hinzu",
                     "group_energy_entities": "Weitere Energiesensoren (kWh) aus Ihrer HA-Installation zum Einbeziehen",
                     "group_member_sensors": "Powercalc-Sensoren zur Aufnahme in die Gruppe",
                     "group_power_entities": "Weitere Leistungssensoren (W) von Ihrer HA-Installation zum Einbeziehen",
-                    "sub_groups": "Alle Sensoren aus den ausgewählten Untergruppen werden ebenfalls zu dieser Gruppe hinzugefügt",
-                    "include_non_powercalc_sensors": "Control whether to include non powercalc sensors when using the area option"
+                    "include_non_powercalc_sensors": "Lege fest, ob nicht-powercalc-Sensoren bei Verwendung der Bereichs-Option mit einbezogen werden sollen",
+                    "sub_groups": "Alle Sensoren aus den ausgewählten Untergruppen werden ebenfalls zu dieser Gruppe hinzugefügt"
                 },
                 "title": "Einen Gruppensensor erstellen"
             },
@@ -118,12 +120,14 @@
                 "data": {
                     "autostart": "Autostart",
                     "playbooks": "Playbook",
-                    "repeat": "Wiederholen"
+                    "repeat": "Wiederholen",
+                    "states_trigger": "Status Auslöser"
                 },
                 "data_description": {
                     "autostart": "Geben Sie an, wenn ein bestimmtes Playbook beim Start von HA gestartet werden soll. i.e. 'program1'",
                     "playbooks": "Geben Sie in jeder Zeile ein Playbook ein. Example\n\nprogram1: washing_machine/program1.csv",
-                    "repeat": "Umschalten, wenn Sie das Playbook nach Abschluss wiederholen möchten"
+                    "repeat": "Umschalten, wenn Sie das Playbook nach Abschluss wiederholen möchten",
+                    "states_trigger": "Trigger a playbook based on a state change. Example\n\nplaying: program1"
                 },
                 "title": "Playbook-Konfiguration"
             },
@@ -135,7 +139,7 @@
                     "multiply_factor": "Multiplikationsfaktor",
                     "multiply_factor_standby": "Multiplikationsfaktor Standby",
                     "unavailable_power": "Leistung im Status 'nicht verfügbar'",
-                    "utility_meter_tariffs": "Utility meter tariffs"
+                    "utility_meter_tariffs": "Verbrauchszähler Tarife"
                 },
                 "data_description": {
                     "calculation_enabled_condition": "Die konfigurierte Leistungsberechnungsstrategie wird nur ausgeführt, wenn diese Vorlage den Wert true oder 1 ergibt, andernfalls zeigt der Leistungsmesser 0 an",
@@ -143,7 +147,7 @@
                     "multiply_factor": "Multipliziert die berechnete Leistung mit diesem Faktor. Kann für Licht-Gruppen nützlich sein",
                     "multiply_factor_standby": "ob der Multiplikationsfaktor auch auf die Standby-Leistung angewendet werden soll",
                     "unavailable_power": "Leistung in W zur Aufzeichnung, wenn die Quell-Entität nicht verfügbar ist",
-                    "utility_meter_tariffs": "A list of supported tariffs, leave empty if only a single tariff is needed."
+                    "utility_meter_tariffs": "Eine Liste der unterstützten Tarife, leer lassen, wenn nur ein einziger Tarif benötigt wird."
                 },
                 "description": "Die folgenden Optionen sind für die erweiterte Powercalc-Konfiguration gedacht. Die meisten Benutzer werden diese Optionen nicht verwenden, so dass Sie diese überspringen können",
                 "title": "Erweiterte Optionen"
@@ -153,12 +157,12 @@
                     "create_utility_meters": "Utilitymeter erstellen",
                     "entity_id": "Quell-Entität",
                     "name": "Name",
-                    "device": "Device"
+                    "device": "Gerät"
                 },
                 "data_description": {
                     "create_utility_meters": "Powercalc soll Utility-Meter erstellen, die täglich, stündlich usw. zyklisch sind",
                     "name": "Basisname für den Energie- und Versorgungszähler. Der vollständige Name der Entität wird entsprechend der Einstellung energy_sensor_naming festgelegt",
-                    "device": "Add the created energy sensor to an specific device"
+                    "device": "Fügen Sie den erzeugten Energiesensor zu einem bestimmten Gerät hinzu"
                 },
                 "description": "Derzeit können bestimmte Einstellungen nur global konfiguriert werden",
                 "title": "Erstellen eines Energiesensors für einen vorhandenen Leistungssensor"
@@ -182,6 +186,18 @@
                     "virtual_power": "Virtuelle Leistung (manuell)"
                 },
                 "title": "Wählen Sie Ihren Sensortyp"
+            },
+            "utility_meter_options": {
+                "title": "Verbrauchszähler Einstellungen",
+                "description": "Definieren Sie die Einstellungen für die Erstellung von Verbrauchszählern",
+                "data": {
+                    "utility_meter_types": "Intervalle",
+                    "utility_meter_tariffs": "Tarife"
+                },
+                "data_description": {
+                    "utility_meter_types": "Erstelle Verbrauchszähler für bestimmte Zeitintervalle",
+                    "utility_meter_tariffs": "Eine Liste der unterstützten Tarife, leer lassen, wenn nur ein einziger Tarif benötigt wird."
+                }
             },
             "virtual_power": {
                 "data": {
@@ -261,11 +277,12 @@
                     "repeat": "Wiederholen",
                     "standby_power": "Standby-Leistung",
                     "states_power": "Leistung je Zustand",
+                    "states_trigger": "State trigger",
                     "sub_groups": "Untergruppen",
                     "unavailable_power": "Leistung im Status 'nicht verfügbar'",
                     "unit_of_measurement": "Maßeinheit",
                     "update_frequency": "Aktualisierungsfrequenz",
-                    "utility_meter_tariffs": "Utility meter tariffs",
+                    "utility_meter_tariffs": "Verbrauchszähler Tarife",
                     "value": "Wert",
                     "value_template": "Wert-Template"
                 },
@@ -287,9 +304,10 @@
                     "power_template": "Template wird ausgewertet, um den Leistungswert in W zu erhalten",
                     "repeat": "Umschalten, wenn Sie das Playbook nach Abschluss wiederholen möchten",
                     "states_power": "Ein 'state: power' Paar in jeder Zeile, siehe Beispiel oben",
+                    "states_trigger": "Trigger a playbook based on a state change. Example\n\nplaying: program1",
                     "sub_groups": "Alle Sensoren aus den ausgewählten Untergruppen werden ebenfalls zu dieser Gruppe hinzugefügt",
                     "unavailable_power": "Leistung in W zur Aufzeichnung, wenn die Quell-Entität nicht verfügbar ist",
-                    "utility_meter_tariffs": "A list of supported tariffs, leave empty if only a single tariff is needed."
+                    "utility_meter_tariffs": "Eine Liste der unterstützten Tarife, leer lassen, wenn nur ein einziger Tarif benötigt wird."
                 }
             }
         }
@@ -338,6 +356,10 @@
                 }
             },
             "name": "GUI-Konfiguration ändern"
+        },
+        "get_active_playbook": {
+            "description": "Get current running playbook",
+            "name": "Get active playbook"
         },
         "increase_daily_energy": {
             "description": "Erhöht den Sensor um einen bestimmten Wert.",

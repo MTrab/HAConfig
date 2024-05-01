@@ -1,0 +1,19 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "Enheden er allerede konfigureret"
+        },
+        "error": {
+            "invalid_auth": "Ugyldig autentificering"
+        },
+        "step": {
+            "user": {
+                "data": {
+                    "email": "Email",
+                    "password": "Kodeord"
+                }
+            }
+        },
+        "title": "Webasto Connect (ThermoConnect)"
+    }
+}

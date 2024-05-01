@@ -9,6 +9,9 @@ exclude:
     - climate
   entities:
     - sun.sun
+    - sensor.next_restaffald
+    - sensor.next_pap_papir
+    - sensor.next_emballage
   entity_globs:
     - sensor.infopanel_*
   event_types:

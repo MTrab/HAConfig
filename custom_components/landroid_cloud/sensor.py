@@ -12,7 +12,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.util import dt as dt_utils
 
 from .api import LandroidAPI
-from .const import ATTR_DEVICES, DOMAIN
+from .const import ATTR_DEVICES, DOMAIN, ERROR_MAP, STATE_MAP
 from .device_base import LandroidSensor, LandroidSensorEntityDescription
 
 SENSORS = [
@@ -35,7 +35,7 @@ SENSORS = [
         entity_category=EntityCategory.DIAGNOSTIC,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.TEMPERATURE,
-        entity_registry_enabled_default=False,
+        entity_registry_enabled_default=True,
         native_unit_of_measurement="°C",
         value_fn=lambda landroid: (
             landroid.battery["temperature"]
@@ -49,7 +49,7 @@ SENSORS = [
         entity_category=EntityCategory.DIAGNOSTIC,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
-        entity_registry_enabled_default=False,
+        entity_registry_enabled_default=True,
         native_unit_of_measurement=" ",
         value_fn=lambda landroid: (
             landroid.battery["cycles"]["total"]
@@ -76,15 +76,16 @@ SENSORS = [
         entity_category=EntityCategory.DIAGNOSTIC,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.DURATION,
-        entity_registry_enabled_default=False,
+        entity_registry_enabled_default=True,
         native_unit_of_measurement="h",
         suggested_display_precision=0,
         value_fn=lambda landroid: (
-            round(landroid.blades["total_on"] / 60, 0)
+            round(landroid.blades["total_on"] / 60, 2)
             if "total_on" in landroid.blades
             else None
         ),
         icon="mdi:saw-blade",
+        attributes=["total_on"],
     ),
     LandroidSensorEntityDescription(
         key="blades_current_on",
@@ -92,15 +93,16 @@ SENSORS = [
         entity_category=EntityCategory.DIAGNOSTIC,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.DURATION,
-        entity_registry_enabled_default=False,
+        entity_registry_enabled_default=True,
         native_unit_of_measurement="h",
         suggested_display_precision=0,
         value_fn=lambda landroid: (
-            round(landroid.blades["current_on"] / 60, 0)
+            round(landroid.blades["current_on"] / 60, 2)
             if "current_on" in landroid.blades
             else None
         ),
         icon="mdi:saw-blade",
+        attributes=["current_on"],
     ),
     LandroidSensorEntityDescription(
         key="blades_reset_at",
@@ -112,11 +114,12 @@ SENSORS = [
         native_unit_of_measurement="h",
         suggested_display_precision=0,
         value_fn=lambda landroid: (
-            round(landroid.blades["reset_at"] / 60, 0)
+            round(landroid.blades["reset_at"] / 60, 2)
             if "reset_at" in landroid.blades
             else None
         ),
         icon="mdi:history",
+        attributes=["reset_at"],
     ),
     LandroidSensorEntityDescription(
         key="blades_reset_time",
@@ -133,12 +136,13 @@ SENSORS = [
     LandroidSensorEntityDescription(
         key="error",
         name="Error",
+        translation_key="landroid_cloud_error",
         entity_category=EntityCategory.DIAGNOSTIC,
         state_class=None,
         device_class=SensorDeviceClass.ENUM,
         entity_registry_enabled_default=True,
         native_unit_of_measurement=None,
-        value_fn=lambda landroid: landroid.error["description"],
+        value_fn=lambda landroid: ERROR_MAP[landroid.error["id"]],
         attributes=["id"],
         icon="mdi:alert-circle",
     ),
@@ -148,7 +152,7 @@ SENSORS = [
         entity_category=None,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
-        entity_registry_enabled_default=False,
+        entity_registry_enabled_default=True,
         native_unit_of_measurement="°",
         value_fn=lambda landroid: landroid.orientation["pitch"],
         suggested_display_precision=1,
@@ -160,7 +164,7 @@ SENSORS = [
         entity_category=None,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
-        entity_registry_enabled_default=False,
+        entity_registry_enabled_default=True,
         native_unit_of_measurement="°",
         value_fn=lambda landroid: landroid.orientation["roll"],
         suggested_display_precision=1,
@@ -172,24 +176,11 @@ SENSORS = [
         entity_category=None,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
-        entity_registry_enabled_default=False,
+        entity_registry_enabled_default=True,
         native_unit_of_measurement="°",
         value_fn=lambda landroid: landroid.orientation["yaw"],
         suggested_display_precision=1,
         icon="mdi:axis-z-rotate-clockwise",
-    ),
-    LandroidSensorEntityDescription(
-        key="rainsensor_delay",
-        name="Rainsensor Delay",
-        entity_category=EntityCategory.DIAGNOSTIC,
-        state_class=None,
-        device_class=SensorDeviceClass.DURATION,
-        entity_registry_enabled_default=True,
-        native_unit_of_measurement="min",
-        value_fn=lambda landroid: (
-            landroid.rainsensor["delay"] if "delay" in landroid.rainsensor else None
-        ),
-        icon="mdi:weather-rainy",
     ),
     LandroidSensorEntityDescription(
         key="rainsensor_remaining",
@@ -212,14 +203,15 @@ SENSORS = [
         entity_category=EntityCategory.DIAGNOSTIC,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=SensorDeviceClass.DISTANCE,
-        entity_registry_enabled_default=False,
+        entity_registry_enabled_default=True,
         native_unit_of_measurement="km",
-        suggested_display_precision=0,
+        suggested_display_precision=2,
         value_fn=lambda landroid: (
-            round(landroid.statistics["distance"] / 1000, 0)
+            round(landroid.statistics["distance"] / 1000, 3)
             if "distance" in landroid.statistics
             else None
         ),
+        attributes=["distance"],
     ),
     LandroidSensorEntityDescription(
         key="worktime_total",
@@ -227,15 +219,16 @@ SENSORS = [
         entity_category=EntityCategory.DIAGNOSTIC,
         state_class=SensorStateClass.MEASUREMENT,
         device_class=None,
-        entity_registry_enabled_default=False,
+        entity_registry_enabled_default=True,
         native_unit_of_measurement="hours",
         suggested_display_precision=0,
         value_fn=lambda landroid: (
-            round(landroid.statistics["worktime_total"] / 60, 0)
+            round(landroid.statistics["worktime_total"] / 60, 2)
             if "worktime_total" in landroid.statistics
             else None
         ),
         icon="mdi:update",
+        attributes=["worktime_total"],
     ),
     LandroidSensorEntityDescription(
         key="rssi",

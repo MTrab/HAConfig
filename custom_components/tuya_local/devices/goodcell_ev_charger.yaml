@@ -94,7 +94,6 @@ secondary_entities:
     name: Clear energy
     class: restart
     category: config
-    hidden: true
     dps:
       - id: 16
         type: boolean
@@ -154,7 +153,7 @@ secondary_entities:
         type: integer
         name: sensor
         unit: kWh
-        class: measurement
+        class: total_increasing
         mapping:
           - scale: 10
   - entity: sensor
@@ -179,6 +178,8 @@ secondary_entities:
         name: sensor
         unit: V
         class: measurement
+        mapping:
+          - scale: 10
   - entity: sensor
     name: Voltage L3
     class: voltage
@@ -189,6 +190,8 @@ secondary_entities:
         name: sensor
         unit: V
         class: measurement
+        mapping:
+          - scale: 10
   - entity: sensor
     name: Current L1
     class: current

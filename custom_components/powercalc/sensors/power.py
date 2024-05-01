@@ -32,6 +32,7 @@ from homeassistant.helpers import start
 from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.event import (
+    EventStateChangedData,
     TrackTemplate,
     async_call_later,
     async_track_state_change_event,
@@ -261,17 +262,20 @@ async def create_real_power_sensor(
     power_sensor_id = sensor_config.get(CONF_POWER_SENSOR_ID)
     unique_id = sensor_config.get(CONF_UNIQUE_ID)
     device_id = None
+    unit_of_measurement = None
     ent_reg = er.async_get(hass)
     entity_entry = ent_reg.async_get(power_sensor_id)  # type: ignore
     if entity_entry:
         if not unique_id:
             unique_id = entity_entry.unique_id
         device_id = entity_entry.device_id
+        unit_of_measurement = entity_entry.unit_of_measurement
 
     return RealPowerSensor(
         entity_id=power_sensor_id,  # type: ignore
         device_id=device_id,
         unique_id=unique_id,
+        unit_of_measurement=unit_of_measurement,
     )
 
 
@@ -384,7 +388,7 @@ class VirtualPowerSensor(SensorEntity, PowerSensor):
         assert self._strategy_instance is not None
         self.init_calculation_enabled_condition()
 
-        async def appliance_state_listener(event: Event) -> None:
+        async def appliance_state_listener(event: Event[EventStateChangedData]) -> None:
             """Handle for state changes for dependent sensors."""
             new_state = event.data.get("new_state")
             await self._handle_source_entity_state_change(
@@ -681,6 +685,17 @@ class VirtualPowerSensor(SensorEntity, PowerSensor):
 
         await self._strategy_instance.stop_playbook()
 
+    def get_active_playbook(self) -> dict[str, str]:
+        """Stop an active playbook"""
+        assert self._strategy_instance is not None
+        if not isinstance(self._strategy_instance, PlaybookStrategy):
+            raise HomeAssistantError("supported only playbook enabled sensors")
+
+        playbook = self._strategy_instance.get_active_playbook()
+        if not playbook:
+            return {}
+        return {"id": playbook.key}
+
     async def async_switch_sub_profile(self, profile: str) -> None:
         """Switches to a new sub profile"""
         if (
@@ -717,12 +732,14 @@ class RealPowerSensor(PowerSensor):
     def __init__(
         self,
         entity_id: str,
+        unit_of_measurement: str | None = None,
         device_id: str | None = None,
         unique_id: str | None = None,
     ) -> None:
         self.entity_id = entity_id
         self._device_id = device_id
         self._unique_id = unique_id
+        self._attr_unit_of_measurement = unit_of_measurement or UnitOfPower.WATT
 
     @property
     def device_id(self) -> str | None:

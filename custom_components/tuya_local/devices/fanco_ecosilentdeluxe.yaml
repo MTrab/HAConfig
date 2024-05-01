@@ -41,8 +41,7 @@ secondary_entities:
               min: 3000
               max: 5000
   - entity: select
-    name: Timer
-    icon: "mdi:timer"
+    translation_key: timer
     category: config
     dps:
       - id: 22
@@ -60,7 +59,7 @@ secondary_entities:
           - dps_val: "4"
             value: "4 hours"
   - entity: sensor
-    name: Timer
+    translation_key: time_remaining
     category: diagnostic
     class: duration
     dps:

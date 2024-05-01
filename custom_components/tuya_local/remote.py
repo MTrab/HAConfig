@@ -2,6 +2,7 @@
 Implementation of Tuya remote control devices
 Based on broadlink integration for code saving under HA storage
 """
+
 import asyncio
 import json
 import logging
@@ -194,7 +195,7 @@ class TuyaLocalRemote(TuyaLocalEntity, RemoteEntity):
             if self._delay_dp:
                 dps = dps | self._delay_dp.get_values_to_set(self._device, delay)
             if self._type_dp:
-                dps = dps | self._type_dp.get_values_to_seet(self._device, 0)
+                dps = dps | self._type_dp.get_values_to_set(self._device, 0)
         else:
             dps = dps | self._send_dp.get_values_to_set(
                 self._device,

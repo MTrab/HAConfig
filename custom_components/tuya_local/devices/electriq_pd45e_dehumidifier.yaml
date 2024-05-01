@@ -61,8 +61,7 @@ secondary_entities:
         type: boolean
         name: oscillate
   - entity: lock
-    name: Child lock
-    icon: "mdi:hand-back-right-off"
+    translation_key: child_lock
     category: config
     dps:
       - id: 7
@@ -76,14 +75,4 @@ secondary_entities:
         type: integer
         name: sensor
         unit: C
-        class: measurement
-  - entity: sensor
-    class: humidity
-    deprecated: humidifier
-    category: diagnostic
-    dps:
-      - id: 3
-        type: integer
-        name: sensor
-        unit: "%"
         class: measurement

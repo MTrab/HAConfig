@@ -28,16 +28,14 @@ secondary_entities:
       - id: 2
         type: string
         name: option
-        category: config
         mapping:
           - dps_val: auto_clean
             value: Auto clean
           - dps_val: manual_clean
             value: Manual clean
   - entity: switch
-    name: UV sterilization
+    translation_key: uv_sterilization
     category: config
-    icon: "mdi:alarm-light"
     class: switch
     dps:
       - id: 13
@@ -49,6 +47,7 @@ secondary_entities:
       - id: 16
         name: switch
         type: boolean
+        optional: true
   - entity: number
     category: config
     name: Cleaning delay

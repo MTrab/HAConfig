@@ -8,7 +8,7 @@ primary_entity:
       name: switch
 secondary_entities:
   - entity: light
-    name: Night light
+    translation_key: nightlight
     dps:
       - id: 27
         name: switch
@@ -45,8 +45,7 @@ secondary_entities:
               max: 1000
   - entity: number
     category: config
-    icon: "mdi:timer"
-    name: Timer
+    translation_key: timer
     dps:
       - id: 33
         type: integer

@@ -45,8 +45,7 @@ primary_entity:
       optional: true
 secondary_entities:
   - entity: switch
-    name: UV sterilization
-    icon: "mdi:sun-wireless"
+    translation_key: uv_sterilization
     category: config
     dps:
       - id: 21
@@ -71,17 +70,12 @@ secondary_entities:
         type: boolean
         optional: true
   - entity: light
-    name: LED
+    translation_key: indicator
     category: config
     dps:
       - id: 5
         name: switch
         type: boolean
-        mapping:
-          - dps_val: true
-            icon: "mdi:led-on"
-          - dps_val: false
-            icon: "mdi:led-off"
   - entity: fan
     name: Spray level
     icon: "mdi:heat-wave"
@@ -123,8 +117,7 @@ secondary_entities:
         unit: F
         optional: true
   - entity: select
-    name: Timer
-    icon: "mdi:timer"
+    translation_key: timer
     category: config
     dps:
       - id: 19
@@ -163,7 +156,7 @@ secondary_entities:
         type: integer
         optional: true
   - entity: select
-    name: Display temperature unit
+    translation_key: temperature_unit
     category: config
     dps:
       - id: 18
@@ -172,14 +165,11 @@ secondary_entities:
         optional: true
         mapping:
           - dps_val: c
-            value: Celsius
-            icon: "mdi:temperature-celsius"
+            value: celsius
           - dps_val: f
-            value: Fahrenheit
-            icon: "mdi:temperature-fahrenheit"
+            value: fahrenheit
   - entity: binary_sensor
-    name: Low water
-    class: problem
+    translation_key: tank_empty
     category: diagnostic
     dps:
       - id: 22

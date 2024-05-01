@@ -1,6 +1,7 @@
 name: Orion Heater
 primary_entity:
   entity: climate
+  translation_only_key: heater
   dps:
     - id: 1
       type: boolean
@@ -41,8 +42,7 @@ primary_entity:
           value: "on"
 secondary_entities:
   - entity: select
-    name: Timer
-    icon: "mdi:timer"
+    translation_key: timer
     category: config
     dps:
       - id: 19

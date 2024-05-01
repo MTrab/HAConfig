@@ -6,7 +6,7 @@ products:
     name: Kogan KASBKSTFANSA
 primary_entity:
   entity: fan
-  translation_key: fan_with_presets
+  translation_only_key: fan_with_presets
   dps:
     - id: 1
       type: boolean
@@ -78,7 +78,6 @@ secondary_entities:
         optional: true
         name: alternate
   - entity: binary_sensor
-    name: Fault
     class: problem
     category: diagnostic
     dps:
@@ -90,8 +89,7 @@ secondary_entities:
             value: false
           - value: true
   - entity: select
-    name: Timer
-    icon: "mdi:timer"
+    translation_key: timer
     category: config
     dps:
       - id: 11
@@ -117,9 +115,8 @@ secondary_entities:
           - dps_val: "8"
             value: "8 hours"
   - entity: sensor
-    name: Time Remaining
+    translation_key: time_remaining
     class: duration
-    icon: "mdi:timer"
     category: diagnostic
     dps:
       - id: 12

@@ -1,6 +1,7 @@
 """
 Setup for different kinds of Tuya humidifier devices
 """
+
 import logging
 
 from homeassistant.components.humidifier import (
@@ -129,9 +130,8 @@ class TuyaLocalHumidifier(TuyaLocalEntity, HumidifierEntity):
     @property
     def available_modes(self):
         """Return the list of presets that this device supports."""
-        if self._mode_dp is None:
-            return None
-        return self._mode_dp.values(self._device)
+        if self._mode_dp:
+            return self._mode_dp.values(self._device)
 
     async def async_set_mode(self, mode):
         """Set the preset mode."""

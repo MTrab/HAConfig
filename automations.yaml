@@ -714,7 +714,7 @@
     device_id: 24ba3139aa039e754aa5e126a868c1f5
     entity_id: sensor.pir_hall_illuminance
     domain: sensor
-    below: 130
+    below: 200
   - condition: state
     entity_id: group.any_home
     state: home
@@ -2447,11 +2447,12 @@
   description: ''
   trigger:
   - platform: numeric_state
-    entity_id: proximity.malene_home
+    entity_id:
+    - proximity.kia_home
     below: '15'
   condition:
   - condition: state
-    entity_id: proximity.malene_home
+    entity_id: proximity.kia_home
     state: towards
     attribute: dir_of_travel
   - condition: state
@@ -2476,6 +2477,14 @@
     - condition: template
       value_template: '{{ (states(''sensor.kia_temperature'') | float(0)) < (states(''input_number.webasto_low_point'')
         | float(0)) }}'
+    - condition: or
+      conditions:
+      - condition: state
+        entity_id: sensor.hjem_kia_niro_direction_of_travel
+        state: stationary
+      - condition: state
+        entity_id: sensor.hjem_kia_niro_direction_of_travel
+        state: arrived
   action:
   - service: switch.turn_on
     target:
@@ -2506,6 +2515,9 @@
   - condition: state
     entity_id: automation.auto_webasto_turn_on_at_calculated_start_time
     state: 'on'
+  - condition: numeric_state
+    entity_id: sensor.kia_temperature
+    below: 16
   action:
   - service: switch.turn_on
     data: {}
@@ -2684,4 +2696,75 @@
         - action: URI
           title: Åbn kamera
           uri: /lovelace/camera
+  mode: single
+- id: '1711441376534'
+  alias: TTS - ChatGPT - Greet Pia Welcome Home
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - person.pia_nielsen
+    to: home
+    enabled: false
+  - platform: state
+    entity_id:
+    - binary_sensor.pia_samsung_ping
+    to: 'on'
+    enabled: true
+  condition:
+  - condition: time
+    after: 09:00:00
+    before: '21:00:00'
+  action:
+  - wait_for_trigger:
+    - type: opened
+      platform: device
+      device_id: f717a0cbeca42322e0440d68a708e8ef
+      entity_id: 8218e5d12b3e697845ab7fc4467d1b09
+      domain: binary_sensor
+    continue_on_timeout: false
+    timeout: 00:05:00
+  - service: conversation.process
+    data:
+      agent_id: 566e2ddad12ef92916ee7b102fe86f43
+      text: '{% from ''random_tts.jinja'' import tts %} {{ tts() }} der byder velkommen
+        hjem til {{[''Pia'', ''den skønne Pia'', ''den søde Pia'']|random()}}'
+    response_variable: chatgpt
+  - wait_for_trigger:
+    - type: motion
+      platform: device
+      device_id: 7565b2d2c98ed8355cac357b12cfd5ea
+      entity_id: 8c73e13bd3ca4ff14d4d400bb58f5392
+      domain: binary_sensor
+    continue_on_timeout: false
+    timeout: 00:05:00
+  - service: media_player.volume_set
+    data:
+      entity_id: media_player.nesthub8311
+      volume_level: 0.6
+  - service: tts.google_cloud_say
+    data_template:
+      entity_id: media_player.nesthub8311
+      message: <speak>{{chatgpt.response.speech.plain.speech | trim | replace('\"','')}}</speak>
+      cache: false
+      language: da-DK
+      options:
+        gender: female
+  mode: restart
+- id: '1711442773491'
+  alias: PING - Pia Samsung
+  description: ''
+  trigger:
+  - platform: time_pattern
+    seconds: /5
+  condition:
+  - condition: state
+    entity_id: device_tracker.pia_samsung
+    state: not_home
+    enabled: true
+  action:
+  - service: homeassistant.update_entity
+    target:
+      entity_id: binary_sensor.pia_samsung_ping
+    data: {}
   mode: single

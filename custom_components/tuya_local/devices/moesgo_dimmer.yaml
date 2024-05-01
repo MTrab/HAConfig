@@ -45,9 +45,8 @@ secondary_entities:
           - dps_val: halogen
             value: Halogen
   - entity: number
-    name: Timer
+    translation_key: timer
     category: config
-    icon: "mdi:timer"
     dps:
       - id: 6
         type: integer
@@ -76,7 +75,7 @@ secondary_entities:
           - dps_val: "memory"
             value: "Last state"
   - entity: light
-    name: Backlight
+    translation_key: backlight
     category: config
     dps:
       - id: 26

@@ -4,6 +4,7 @@ products:
     name: Arlec Panel Heater PEH225HA
 primary_entity:
   entity: climate
+  translation_only_key: heater
   dps:
     - id: 1
       name: hvac_mode
@@ -11,10 +12,8 @@ primary_entity:
       mapping:
         - dps_val: true
           value: "heat"
-          icon: "mdi:radiator"
         - dps_val: false
           value: "off"
-          icon: "mdi:radiator-disabled"
     - id: 2
       name: temperature
       type: integer
@@ -39,17 +38,15 @@ primary_entity:
           value: unknown
 secondary_entities:
   - entity: lock
-    name: Child lock
-    icon: "mdi:hand-back-right-off"
+    translation_key: child_lock
     category: config
     dps:
       - id: 7
         type: boolean
         name: lock
   - entity: number
-    name: Timer
+    translation_key: timer
     category: config
-    icon: "mdi:timer"
     dps:
       - id: 19
         type: string

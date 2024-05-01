@@ -83,8 +83,7 @@ primary_entity:
           value: reverse
 secondary_entities:
   - entity: select
-    name: Timer
-    icon: "mdi:timer"
+    translation_key: timer
     dps:
       - id: 6
         type: string
@@ -109,7 +108,7 @@ secondary_entities:
           - dps_val: "8"
             value: "8 hours"
   - entity: sensor
-    name: Time remaining
+    translation_key: time_remaining
     class: duration
     category: diagnostic
     dps:

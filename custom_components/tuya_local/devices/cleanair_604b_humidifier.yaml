@@ -47,8 +47,7 @@ secondary_entities:
         name: sensor
         unit: C
   - entity: select
-    name: Timer
-    icon: mdi:timer
+    translation_key: timer
     dps:
       - id: 19
         name: option
@@ -81,7 +80,7 @@ secondary_entities:
           - dps_val: 12h
             value: 12 hours
   - entity: sensor
-    name: Time remaining
+    translation_key: time_remaining
     class: duration
     dps:
       - id: 20
@@ -89,9 +88,7 @@ secondary_entities:
         type: integer
         unit: min
   - entity: binary_sensor
-    name: Water tank empty
-    icon: mdi:water-remove
-    class: problem
+    translation_key: tank_empty
     category: diagnostic
     dps:
       - id: 22
@@ -115,8 +112,7 @@ secondary_entities:
             value: true
           - value: false
   - entity: switch
-    name: Ionizer
-    icon: mdi:creation
+    translation_key: ionizer
     dps:
       - id: 25
         type: boolean
@@ -139,8 +135,7 @@ secondary_entities:
         name: sensor
         unit: "%"
   - entity: switch
-    name: UV light
-    icon: mdi:sun-wireless
+    translation_key: uv_sterilization
     dps:
       - id: 101
         type: boolean

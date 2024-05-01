@@ -1,12 +1,10 @@
 name: Beok TGR81 thermostat
 products:
-  - id: gogb05wrtredz3bs
-    name: Avatto WT81 thermostat
   - id: gw173aldekvpzalg
-    name: Avatto ME81 thermostat
+    name: Avatto WT200W-EH
 primary_entity:
   entity: climate
-  translation_key: thermostat
+  translation_only_key: thermostat
   dps:
     - id: 1
       name: hvac_mode
@@ -48,7 +46,6 @@ primary_entity:
       optional: true
       mapping:
         - dps_val: close
-          icon: "mdi:radiator-disabled"
           constraint: hvac_mode
           conditions:
             - dps_val: true
@@ -59,10 +56,8 @@ primary_entity:
           constraint: hvac_mode
           conditions:
             - dps_val: true
-              icon: "mdi:radiator"
               value: heating
             - dps_val: false
-              icon: "mdi:radiator-disabled"
               value: "off"
     - id: 45
       name: fault_code
@@ -81,26 +76,20 @@ secondary_entities:
           min: -9
           max: 9
   - entity: switch
-    name: Anti-frost
-    icon: "mdi:snowflake-melt"
+    translation_key: anti_frost
     category: config
     dps:
       - id: 10
         type: boolean
         name: switch
   - entity: lock
-    name: Child lock
+    translation_key: child_lock
     category: config
     dps:
       - id: 40
         optional: true
         type: boolean
         name: lock
-        mapping:
-          - dps_val: true
-            icon: "mdi:hand-back-right-off"
-          - dps_val: false
-            icon: "mdi:hand-back-right"
   - entity: select
     name: Sensor selection
     category: config
@@ -120,7 +109,6 @@ secondary_entities:
             icon: "mdi:thermometer"
             value: Both
   - entity: binary_sensor
-    name: Error
     category: diagnostic
     class: problem
     dps:

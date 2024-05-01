@@ -54,8 +54,7 @@ secondary_entities:
         unit: C
         class: measurement
   - entity: select
-    name: Timer
-    icon: "mdi:timer"
+    translation_key: timer
     category: config
     dps:
       - id: 22
@@ -89,7 +88,7 @@ secondary_entities:
           - dps_val: "12"
             value: "12 hours"
   - entity: sensor
-    name: Timer remaining
+    translation_key: time_remaining
     class: duration
     category: diagnostic
     dps:
@@ -98,7 +97,6 @@ secondary_entities:
         name: sensor
         unit: min
   - entity: binary_sensor
-    name: Fault
     class: problem
     category: diagnostic
     dps:
