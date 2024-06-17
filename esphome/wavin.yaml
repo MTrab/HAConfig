@@ -5,7 +5,7 @@ substitutions:
   name: Wavin
   board: nodemcu
   platform: ESP8266
-  log_level: DEBUG
+  log_level: INFO
 
 # CHANNEL friendly names (If using spaces remember to add ")
   channel_01_friendly_name: Toilet

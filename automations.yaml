@@ -802,8 +802,9 @@
       exclude:
         entity_id:
         - sensor.mtopnord2_battery_level
+        - sensor.samsung_s24plus_battery_level
       actions:
-      - service: notify.mobile_app_mtopnord2
+      - service: notify.mobile_app_samsung_s24plus
         data:
           message: 'Low battery detected on: {{sensors}}'
 - id: '1633628292945'
@@ -1046,7 +1047,7 @@
   - condition: template
     value_template: '{{ trigger.to_state.state != trigger.from_state.state }}'
   action:
-  - service: notify.mobile_app_mtopnord2
+  - service: notify.mobile_app_samsung_s24plus
     data_template:
       message: '{{ trigger.from_state.name }} skiftede fra {{ trigger.from_state.state
         }} til {{ trigger.to_state.state }}'
@@ -1084,7 +1085,7 @@
     to: '10'
   condition: []
   action:
-  - service: notify.mobile_app_mtopnord2
+  - service: notify.mobile_app_samsung_s24plus
     data:
       message: Du skal afsted om 10 minutter
       data:
@@ -1370,7 +1371,7 @@
   - condition: template
     value_template: '{{ trigger.payload_json[''after''][''top_score''] > 0.79 }}'
   action:
-  - service: notify.mobile_app_mtopnord2
+  - service: notify.mobile_app_samsung_s24plus
     data:
       message: Person registreret
       title: Der blev registreret en person ved døren
@@ -1691,7 +1692,7 @@
       - condition: trigger
         id: 'on'
       sequence:
-      - service: notify.mobile_app_mtopnord2
+      - service: notify.mobile_app_samsung_s24plus
         data:
           message: command_dnd
           title: total_silence
@@ -1699,7 +1700,7 @@
       - condition: trigger
         id: 'off'
       sequence:
-      - service: notify.mobile_app_mtopnord2
+      - service: notify.mobile_app_samsung_s24plus
         data:
           message: command_dnd
           title: 'off'
@@ -1865,7 +1866,7 @@
   - service: notify.persistent_notification
     data:
       message: Rust went down
-  - service: notify.mobile_app_mtopnord2
+  - service: notify.mobile_app_samsung_s24plus
     data:
       message: Rust serveren gik ned
       title: Rust er nede
@@ -2345,7 +2346,7 @@
     entity_id: 0917becc67d94a8b300cb5b2d0ba8abf
     domain: sensor
     id: high
-    above: -10
+    above: -5
     for:
       hours: 0
       minutes: 5
@@ -2369,7 +2370,7 @@
         id:
         - offline
       sequence:
-      - service: notify.mobile_app_mtopnord2
+      - service: notify.mobile_app_samsung_s24plus
         data:
           message: Extra fryser sensor er offline!
           title: Sensor offline
@@ -2378,7 +2379,7 @@
         id:
         - high
       sequence:
-      - service: notify.mobile_app_mtopnord2
+      - service: notify.mobile_app_samsung_s24plus
         data:
           message: Temperatur i extra fryser er for høj!
           title: '!! FOR HØJ TEMPERATUR I FRYSEREN !!'
@@ -2387,7 +2388,7 @@
         id:
         - low
       sequence:
-      - service: notify.mobile_app_mtopnord2
+      - service: notify.mobile_app_samsung_s24plus
         data:
           message: Temperaturen i extra fryser er for lav
           title: For lav temperatur i fryseren
@@ -2581,7 +2582,7 @@
       token: tAfPa43Dr0Vp
       key: new_ip
       value: '{{ states(''sensor.myip'') }}'
-  - service: notify.mobile_app_mtopnord2
+  - service: notify.mobile_app_samsung_s24plus
     data:
       message: WAN IP address has changed!
   mode: queued
@@ -2686,7 +2687,7 @@
       entity_id: person.malene_trab
       state: home
   action:
-  - service: notify.mobile_app_mtopnord2
+  - service: notify.mobile_app_samsung_s24plus
     metadata: {}
     data:
       message: Der blev detekteret en person ved døren!

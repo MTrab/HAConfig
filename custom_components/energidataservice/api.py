@@ -8,6 +8,7 @@ from functools import partial
 from importlib import import_module
 from logging import getLogger
 
+import homeassistant.util.dt as dt_util
 import voluptuous as vol
 from aiohttp import ClientConnectorError, ServerDisconnectedError
 from homeassistant.config_entries import ConfigEntry
@@ -46,9 +47,9 @@ class APIConnector:
         self, hass: HomeAssistant, entry: ConfigEntry, rand_min: int, rand_sec: int
     ) -> None:
         """Initialize Energi Data Service Connector."""
-        self._connectors = Connectors()
-        self.forecasts = Forecast()
-        self.tariffs = Tariff()
+        self._connectors = None
+        self.forecasts = None
+        self.tariffs = None
         self.hass = hass
         self._last_tick = None
         self._tomorrow_valid = False
@@ -85,12 +86,24 @@ class APIConnector:
         self._region = RegionHandler(
             (entry.options.get(CONF_AREA) or entry.data.get(CONF_AREA)) or "FIXED"
         )
-        self._tz = hass.config.time_zone
+        # self._tz = hass.config.time_zone
+        self._tz = dt_util.get_default_time_zone()
         self._source = None
         self.forecast = entry.options.get(CONF_ENABLE_FORECAST) or False
         self.tariff = entry.options.get(CONF_ENABLE_TARIFFS) or False
         self._carnot_user = entry.options.get(CONF_EMAIL) or None
         self._carnot_apikey = entry.options.get(CONF_API_KEY) or None
+
+    async def initialize(self) -> None:
+        """Initialize the API connectors."""
+        self._connectors = Connectors(hass=self.hass)
+        await self._connectors.load_connectors()
+
+        self.forecasts = Forecast(hass=self.hass)
+        await self.forecasts.load_modules()
+
+        self.tariffs = Tariff(hass=self.hass)
+        await self.tariffs.load_modules()
 
     async def updateco2(self, dt=None) -> None:  # type: ignore pylint: disable=unused-argument
         """Fetch CO2 emissions from API."""
@@ -103,8 +116,8 @@ class APIConnector:
 
         try:
             for endpoint in connectors:
-                module = import_module(
-                    endpoint.namespace, __name__.removesuffix(".api")
+                module = await self.hass.async_add_executor_job(
+                    import_module, endpoint.namespace, __name__.removesuffix(".api")
                 )
                 api = module.Connector(
                     self._region, self._client, self._tz, self._config
@@ -145,8 +158,8 @@ class APIConnector:
 
         try:
             for endpoint in connectors:
-                module = import_module(
-                    endpoint.namespace, __name__.removesuffix(".api")
+                module = await self.hass.async_add_executor_job(
+                    import_module, endpoint.namespace, __name__.removesuffix(".api")
                 )
                 api = module.Connector(
                     self._region, self._client, self._tz, self._config
@@ -191,8 +204,7 @@ class APIConnector:
 
                 midnight = datetime.strptime("23:59:59", "%H:%M:%S")
                 refresh = datetime.strptime(self.next_data_refresh, "%H:%M:%S")
-                datetime.utcnow()
-                now_local = datetime.now().astimezone(timezone(self._tz))
+                now_local = dt_util.now(self._tz)
 
                 _LOGGER.debug(
                     "Now: %s:%s:%s (local time)",
@@ -232,9 +244,11 @@ class APIConnector:
         """Update Carnot data if enabled."""
         if self.forecast:
             self.predictions_calculated = False
-            forecast_endpoint = self.forecasts.get_endpoint(self._region.region)
-            forecast_module = import_module(
-                forecast_endpoint[0].namespace, __name__.removesuffix(".api")
+            forecast_endpoint = await self.forecasts.get_endpoint(self._region.region)
+            forecast_module = await self.hass.async_add_executor_job(
+                import_module,
+                forecast_endpoint[0].namespace,
+                __name__.removesuffix(".api"),
             )
             carnot = forecast_module.Connector(self._region, self._client, self._tz)
             self.predictions_currency = forecast_module.DEFAULT_CURRENCY
@@ -267,10 +281,13 @@ class APIConnector:
     async def async_get_tariffs(self) -> None:
         """Get tariff data."""
         if self.tariff:
-            tariff_endpoint = self.tariffs.get_endpoint(self._region.region)
-            tariff_module = import_module(
-                tariff_endpoint[0].namespace, __name__.removesuffix(".api")
+            tariff_endpoint = await self.tariffs.get_endpoint(self._region.region)
+            tariff_module = await self.hass.async_add_executor_job(
+                import_module,
+                tariff_endpoint[0].namespace,
+                __name__.removesuffix(".api"),
             )
+
             tariff = tariff_module.Connector(
                 self.hass,
                 self._client,

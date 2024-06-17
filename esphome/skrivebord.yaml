@@ -3,7 +3,7 @@ substitutions:
   device_verbose_name: "Skrivebord"
   board: nodemcu
   platform: ESP8266
-  log_level: DEBUG
+  log_level: INFO
 
 packages:
   wifi: !include common/wifi.yaml

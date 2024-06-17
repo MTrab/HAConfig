@@ -14,7 +14,7 @@ from homeassistant.components.sensor import (
     SensorEntity,
     SensorStateClass,
 )
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.const import (
     ATTR_ENTITY_ID,
     ATTR_UNIT_OF_MEASUREMENT,
@@ -52,6 +52,7 @@ from homeassistant.util.unit_conversion import (
     PowerConverter,
 )
 
+from custom_components.powercalc.config_flow import ConfigFlow
 from custom_components.powercalc.const import (
     ATTR_ENTITIES,
     ATTR_IS_GROUP,
@@ -279,14 +280,32 @@ async def add_to_associated_group(
     we need to add this config entry to the group members sensors and update the group.
     """
     sensor_type = config_entry.data.get(CONF_SENSOR_TYPE)
-    if sensor_type != SensorType.VIRTUAL_POWER:
+    if sensor_type not in [SensorType.VIRTUAL_POWER, SensorType.DAILY_ENERGY]:
         return None
 
-    if CONF_GROUP not in config_entry.data:
+    if CONF_GROUP not in config_entry.data or not config_entry.data.get(CONF_GROUP):
         return None
 
     group_entry_id = str(config_entry.data.get(CONF_GROUP))
     group_entry = hass.config_entries.async_get_entry(group_entry_id)
+
+    # When we are not dealing with a uuid, the user has set a group name manually
+    # Create a new group entry for this group
+    if not group_entry and len(group_entry_id) != 32:
+        group_entry = ConfigEntry(
+            version=ConfigFlow.VERSION,
+            minor_version=ConfigFlow.MINOR_VERSION,
+            domain=DOMAIN,
+            source=SOURCE_IMPORT,
+            title=group_entry_id,
+            data={
+                CONF_SENSOR_TYPE: SensorType.GROUP,
+                CONF_NAME: group_entry_id,
+            },
+            options={},
+            unique_id=group_entry_id,
+        )
+        await hass.config_entries.async_add(group_entry)
 
     if not group_entry:
         _LOGGER.warning(
@@ -499,6 +518,7 @@ class GroupedSensor(BaseEntity, RestoreSensor, SensorEntity):
         self.entity_id = entity_id
         self.source_device_id = device_id
         self._prev_state_store: PreviousStateStore = PreviousStateStore(hass)
+        self._native_value_exact = Decimal(0)
 
     async def async_added_to_hass(self) -> None:
         """Register state listeners."""
@@ -510,15 +530,9 @@ class GroupedSensor(BaseEntity, RestoreSensor, SensorEntity):
             last_sensor_state = await self.async_get_last_sensor_data()
             try:
                 if last_sensor_state and last_sensor_state.native_value:
-                    self._attr_native_value = round(
-                        Decimal(last_sensor_state.native_value),  # type: ignore
-                        self._rounding_digits,
-                    )
+                    self._set_native_value(Decimal(last_sensor_state.native_value))  #type: ignore
                 elif last_state:
-                    self._attr_native_value = round(
-                        Decimal(last_state.state),
-                        self._rounding_digits,
-                    )
+                    self._set_native_value(Decimal(last_state.state))
                 _LOGGER.debug(
                     "%s: Restoring state: %s",
                     self.entity_id,
@@ -583,7 +597,7 @@ class GroupedSensor(BaseEntity, RestoreSensor, SensorEntity):
         if not available_states:
             if self._sensor_config.get(CONF_IGNORE_UNAVAILABLE_STATE):
                 if isinstance(self, GroupedPowerSensor):
-                    self._attr_native_value = 0
+                    self._set_native_value(Decimal(0))
                 self._attr_available = True
             else:
                 self._attr_available = False
@@ -591,13 +605,13 @@ class GroupedSensor(BaseEntity, RestoreSensor, SensorEntity):
             return
 
         summed = self.calculate_new_state(available_states, states)
-        self._attr_native_value = round(summed, self._rounding_digits)
+        self._set_native_value(summed)
         self._attr_available = True
         self.async_write_ha_state()
 
     def _get_state_value_in_native_unit(self, state: State) -> Decimal:
         """Convert value of member entity state to match the unit of measurement of the group sensor."""
-        value = float(state.state)
+        value = state.state
         unit_of_measurement = state.attributes.get(ATTR_UNIT_OF_MEASUREMENT)
         if (
             unit_of_measurement
@@ -609,11 +623,16 @@ class GroupedSensor(BaseEntity, RestoreSensor, SensorEntity):
                 else PowerConverter
             )
             value = unit_converter.convert(
-                value,
+                float(value),
                 unit_of_measurement,
                 self._attr_native_unit_of_measurement,
             )
         return Decimal(value)
+
+    def _set_native_value(self, value: Decimal) -> None:
+        self._native_value_exact = value
+        self._attr_native_value = round(value, self._rounding_digits)
+        self.async_write_ha_state()
 
     @abstractmethod
     def calculate_new_state(
@@ -681,7 +700,7 @@ class GroupedEnergySensor(GroupedSensor, EnergySensor):
     async def async_reset(self) -> None:
         """Reset the group sensor and underlying member sensor when supported."""
         _LOGGER.debug("%s: Reset grouped energy sensor", self.entity_id)
-        self._attr_native_value = 0
+        self._set_native_value(Decimal(0))
         self.async_write_ha_state()
 
         for entity_id in self._entities:
@@ -701,7 +720,7 @@ class GroupedEnergySensor(GroupedSensor, EnergySensor):
 
     async def async_calibrate(self, value: str) -> None:
         _LOGGER.debug("%s: Calibrate group energy sensor to: %s", self.entity_id, value)
-        self._attr_native_value = Decimal(value)
+        self._set_native_value(Decimal(value))
         self.async_write_ha_state()
 
     def calculate_new_state(
@@ -712,8 +731,8 @@ class GroupedEnergySensor(GroupedSensor, EnergySensor):
         """Calculate the new group energy sensor state
         For each member sensor we calculate the delta by looking at the previous known state and compare it to the current.
         """
-        group_sum = Decimal(self._attr_native_value) if self._attr_native_value else Decimal(0)  # type: ignore
-        _LOGGER.debug("%s: Recalculate, current value: %d", self.entity_id, group_sum)
+        group_sum = Decimal(self._native_value_exact) if self._native_value_exact else Decimal(0)
+        _LOGGER.debug("%s: Recalculate, current value: %s", self.entity_id, group_sum)
         for entity_state in member_states:
             if entity_state.state in [STATE_UNKNOWN, STATE_UNAVAILABLE]:
                 _LOGGER.debug(
@@ -726,13 +745,7 @@ class GroupedEnergySensor(GroupedSensor, EnergySensor):
                 entity_state.entity_id,
             )
             cur_state_value = self._get_state_value_in_native_unit(entity_state)
-
-            if prev_state:
-                prev_state_value = self._get_state_value_in_native_unit(prev_state)
-            else:
-                prev_state_value = (
-                    cur_state_value if self._attr_native_value else Decimal(0)
-                )
+            prev_state_value = self._get_state_value_in_native_unit(prev_state) if prev_state else Decimal(0)
             self._prev_state_store.set_entity_state(
                 self.entity_id,
                 entity_state.entity_id,

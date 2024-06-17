@@ -11,7 +11,13 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
-from homeassistant.const import PERCENTAGE, UnitOfLength, UnitOfPressure, UnitOfTemperature, UnitOfTime
+from homeassistant.const import (
+    PERCENTAGE,
+    UnitOfLength,
+    UnitOfPressure,
+    UnitOfTemperature,
+    UnitOfTime,
+)
 from homeassistant.core import callback
 
 from .const import OBJ, DOMAIN, METHODS, PRINTERSTATES, PRINTSTATES
@@ -77,28 +83,6 @@ SENSORS: tuple[MoonrakerSensorDescription, ...] = [
         if sensor.coordinator.data["status"]["display_status"]["message"] is not None
         else "",
         subscriptions=[("display_status", "message")],
-    ),
-    MoonrakerSensorDescription(
-        key="bed_target",
-        name="Bed Target",
-        value_fn=lambda sensor: float(
-            sensor.coordinator.data["status"]["heater_bed"]["target"] or 0.0
-        ),
-        subscriptions=[("heater_bed", "target")],
-        icon="mdi:radiator",
-        unit=UnitOfTemperature.CELSIUS,
-        state_class=SensorStateClass.MEASUREMENT,
-    ),
-    MoonrakerSensorDescription(
-        key="bed_temp",
-        name="Bed Temperature",
-        value_fn=lambda sensor: float(
-            sensor.coordinator.data["status"]["heater_bed"]["temperature"] or 0.0
-        ),
-        subscriptions=[("heater_bed", "temperature")],
-        icon="mdi:radiator",
-        unit=UnitOfTemperature.CELSIUS,
-        state_class=SensorStateClass.MEASUREMENT,
     ),
     MoonrakerSensorDescription(
         key="filename",
@@ -225,17 +209,6 @@ SENSORS: tuple[MoonrakerSensorDescription, ...] = [
         unit=PERCENTAGE,
     ),
     MoonrakerSensorDescription(
-        key="bed_power",
-        name="Bed Power",
-        value_fn=lambda sensor: int(
-            sensor.coordinator.data["status"]["heater_bed"]["power"] * 100
-        ),
-        subscriptions=[("heater_bed", "power")],
-        icon="mdi:flash",
-        unit=PERCENTAGE,
-        state_class=SensorStateClass.MEASUREMENT,
-    ),
-    MoonrakerSensorDescription(
         key="total_layer",
         name="Total Layer",
         value_fn=lambda sensor: sensor.empty_result_when_not_printing(
@@ -339,7 +312,8 @@ async def async_setup_optional_sensors(coordinator, entry, async_add_entities):
             desc = MoonrakerSensorDescription(
                 key=f"{split_obj[0]}_{split_obj[1]}",
                 status_key=obj,
-                name=split_obj[1].removesuffix("_temp").replace("_", " ").title() + " Temp",
+                name=split_obj[1].removesuffix("_temp").replace("_", " ").title()
+                + " Temp",
                 value_fn=lambda sensor: sensor.coordinator.data["status"][
                     sensor.status_key
                 ]["temperature"],
@@ -401,7 +375,6 @@ async def async_setup_optional_sensors(coordinator, entry, async_add_entities):
                     )
                     sensors.append(desc)
 
-
         elif split_obj[0] in fan_keys:
             desc = MoonrakerSensorDescription(
                 key=f"{split_obj[0]}_{split_obj[1]}",
@@ -448,9 +421,12 @@ async def async_setup_optional_sensors(coordinator, entry, async_add_entities):
             desc = MoonrakerSensorDescription(
                 key=f"{split_obj[0]}_{split_obj[1]}_power",
                 status_key=obj,
-                name=f"{split_obj[1].replace("_", " ")} Power".title(),
+                name=f"{split_obj[1].replace('_', ' ')} Power".title(),
                 value_fn=lambda sensor: int(
-                    sensor.coordinator.data["status"][sensor.status_key]["power"] * 100
+                    (
+                        sensor.coordinator.data["status"][sensor.status_key]["power"]
+                        or 0.0
+                    ) * 100
                 ),
                 subscriptions=[(obj, "power")],
                 icon="mdi:flash",
@@ -486,17 +462,24 @@ async def async_setup_optional_sensors(coordinator, entry, async_add_entities):
                 state_class=SensorStateClass.MEASUREMENT,
             )
             sensors.append(desc)
-        elif obj.startswith("extruder"):
+        elif obj.startswith("extruder") or obj.startswith("heater_bed"):
+            if obj.startswith("extruder"):
+                icon = "mdi:printer-3d-nozzle-heat"
+                base_name = obj
+            else:
+                icon = "mdi:radiator"
+                base_name = "Bed"
+
             desc = MoonrakerSensorDescription(
                 key=f"{obj}_temp",
                 status_key=obj,
-                name=f"{obj} Temperature".title(),
+                name=f"{base_name} Temperature".title(),
                 value_fn=lambda sensor: float(
                     sensor.coordinator.data["status"][sensor.status_key]["temperature"]
                     or 0.0
                 ),
                 subscriptions=[(obj, "temperature")],
-                icon="mdi:printer-3d-nozzle-heat",
+                icon=icon,
                 unit=UnitOfTemperature.CELSIUS,
                 state_class=SensorStateClass.MEASUREMENT,
             )
@@ -505,13 +488,13 @@ async def async_setup_optional_sensors(coordinator, entry, async_add_entities):
             desc = MoonrakerSensorDescription(
                 key=f"{obj}_target",
                 status_key=obj,
-                name=f"{obj} Target".title(),
+                name=f"{base_name} Target".title(),
                 value_fn=lambda sensor: float(
                     sensor.coordinator.data["status"][sensor.status_key]["target"]
                     or 0.0
                 ),
                 subscriptions=[(obj, "target")],
-                icon="mdi:printer-3d-nozzle-heat",
+                icon=icon,
                 unit=UnitOfTemperature.CELSIUS,
                 state_class=SensorStateClass.MEASUREMENT,
             )
@@ -520,9 +503,12 @@ async def async_setup_optional_sensors(coordinator, entry, async_add_entities):
             desc = MoonrakerSensorDescription(
                 key=f"{obj}_power",
                 status_key=obj,
-                name=f"{obj} Power".title(),
+                name=f"{base_name} Power".title(),
                 value_fn=lambda sensor: int(
-                    sensor.coordinator.data["status"][sensor.status_key]["power"] * 100
+                    (
+                        sensor.coordinator.data["status"][sensor.status_key]["power"]
+                        or 0.0
+                    ) * 100
                 ),
                 subscriptions=[(obj, "power")],
                 icon="mdi:flash",

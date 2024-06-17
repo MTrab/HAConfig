@@ -39,7 +39,6 @@ scene: !include scenes.yaml
 
 ######################################
 # Integrations without configuration
-media_extractor:
 wake_on_lan:
 
 ######################################

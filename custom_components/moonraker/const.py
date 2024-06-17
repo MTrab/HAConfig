@@ -1,4 +1,5 @@
 """Constants for Moonraker."""
+
 from enum import Enum
 
 from homeassistant.const import Platform
@@ -6,7 +7,7 @@ from homeassistant.const import Platform
 # Base component constants
 DOMAIN = "moonraker"
 DOMAIN_DATA = f"{DOMAIN}_data"
-VERSION = "1.2.0"
+VERSION = "1.2.1"
 MANIFACTURER = "@marcolivierarsenault"
 
 # Platforms
@@ -26,6 +27,7 @@ CONF_TLS = "tls"
 CONF_PRINTER_NAME = "printer_name"
 CONF_OPTION_CAMERA_STREAM = "camera_stream_url"
 CONF_OPTION_CAMERA_SNAPSHOT = "camera_snapshot_url"
+CONF_OPTION_POLLING_RATE = "polling_rate"
 
 # API dict keys
 HOSTNAME = "hostname"

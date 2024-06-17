@@ -3,12 +3,11 @@ substitutions:
   device_verbose_name: "Water Valve"
   board: nodemcuv2
   platform: ESP8266
-  log_level: DEBUG
+  log_level: INFO
 
 packages:
   wifi: !include common/wifi.yaml
   logger: !include common/logger.yaml
-  web: !include common/web.yaml
 
 esphome:
   friendly_name: ${device_verbose_name}
@@ -40,18 +39,6 @@ binary_sensor:
 button:
   - <<: !include common/button/restart.yaml
 
-number:
-  - platform: template
-    id: on_time
-    name: "On time"
-    min_value: 0.01
-    step: 0.01
-    max_value: 60
-    unit_of_measurement: minutes
-    optimistic: true
-    restore_value: true
-    icon: mdi:timer
-
 switch:
   - platform: gpio
     id: ch01
@@ -59,25 +46,3 @@ switch:
     name: "Valve"
     restore_mode: ALWAYS_OFF
     icon: mdi:water-pump
-    on_turn_on:
-      then:
-        if:
-          condition:
-            - switch.is_on: auto_off
-          then:
-            - delay: !lambda 'return (id(on_time).state*1000*60);'
-            - switch.turn_off: ch01
-  - platform: template
-    icon: mdi:timer-stop
-    id: auto_off
-    name: "Auto Shut-off"
-    restore_mode: RESTORE_DEFAULT_ON
-    optimistic: true
-  - platform: template
-    icon: mdi:timer-play
-    id: auto_on
-    name: "Auto Turn-On"
-    restore_mode: RESTORE_DEFAULT_ON
-    optimistic: true
-    on_turn_on:
-      - switch.turn_on: auto_off

@@ -9,7 +9,7 @@ from homeassistant.const import (
 )
 
 DOMAIN = "places"
-VERSION = "v2.6.2"
+VERSION = "v2.7.0"
 EVENT_TYPE = DOMAIN + "_state_update"
 PLATFORM = Platform.SENSOR
 ENTITY_ID_FORMAT = Platform.SENSOR + ".{}"
@@ -328,6 +328,8 @@ DISPLAY_OPTIONS_MAP = {
     "city": ATTR_CITY,
     "city_clean": ATTR_CITY_CLEAN,
     "postal_town": ATTR_POSTAL_TOWN,
+    "suburb": ATTR_POSTAL_TOWN,
+    "borough": ATTR_POSTAL_TOWN,
     "region": ATTR_REGION,
     "state": ATTR_REGION,
     "state_abbr": ATTR_STATE_ABBR,
